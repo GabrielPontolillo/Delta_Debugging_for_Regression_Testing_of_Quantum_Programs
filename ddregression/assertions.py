@@ -1,10 +1,5 @@
 # This code is from previous work at https://github.com/GabrielPontolillo/Quantum_Algorithm_Implementations
-from msilib.schema import Error
 import warnings
-
-warnings.simplefilter(action='ignore', category=FutureWarning)
-warnings.simplefilter(action='ignore', category=RuntimeWarning)
-
 import pandas as pd
 import math
 from math import pi, sqrt, sin, cos
@@ -16,6 +11,9 @@ from statsmodels.stats.proportion import proportions_ztest
 
 from qiskit import execute
 from qiskit.circuit import ClassicalRegister
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
 
 def assertPhase(backend, quantumCircuit, qubits_to_assert, expected_phases, measurements_to_make):
@@ -599,5 +597,3 @@ def run_test(test_method: list[Callable], input_generator: list[Callable], shots
         print("####################")
         print("all tests successful")
         print("####################")
-
-
