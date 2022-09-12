@@ -83,7 +83,6 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
     n = 2  # Initial granularity
 
     while 1:
-        print("ddloop")
         assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
         assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
 
@@ -98,7 +97,6 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
         offset = 0
         j = 0
         while j < n:
-            print("loop")
             i = (j + offset) % n
             next_c_pass = listunion(c_pass, deltas[i])
             next_c_fail = listminus(c_fail, deltas[i])
