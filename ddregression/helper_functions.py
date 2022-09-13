@@ -61,7 +61,8 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
         print(e)
         print(list_to_circuit(new_sequence, 2))
         while e["position_old"] > i:
-            new_sequence.append(s1[i])
+            if len(s1) > i:
+                new_sequence.append(s1[i])
             i = i + 1
         if e["position_old"] == i:
             if e["operation"] == "delete":
@@ -117,8 +118,9 @@ def calculate_offset(edit_script, orig_deltas):
 
 
 def connect_diffs(deltas):
+    print("\n\n\n in connect diffs \n\n\n")
     for diff in deltas:
-        pass
+        print(diff)
 
 
 def circuit_to_list(circuit: QuantumCircuit):

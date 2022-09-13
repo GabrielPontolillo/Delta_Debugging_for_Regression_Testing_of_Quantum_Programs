@@ -1,7 +1,7 @@
 from result_classes import Passed, Failed, Inconclusive
 from diff_algorithm import diff, print_edit_sequence
 from dd import dd, split, listunion, listminus
-from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit
+from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit, connect_diffs
 from assertions import assertPhase
 
 from entangle_qiskit_example import qiskit_entangle, qiskit_entangle_circ
@@ -135,11 +135,13 @@ def run_circ_test_2():
 
     orig_fail_deltas = diff(passing_input_list, failing_input_list)
     print(orig_fail_deltas)
-    # print(apply_edit_script(fail_deltas, passing_input_list, failing_input_list, fail_deltas), 2)
+    print(apply_edit_script(orig_fail_deltas, passing_input_list, failing_input_list, orig_fail_deltas), 2)
     #print(list_to_circuit(apply_edit_script(fail_deltas, passing_input_list, failing_input_list), 2))
     #print_edit_sequence(fail_deltas, passing_input_list,  failing_input_list)
-    # fail_deltas = [orig_fail_deltas[2], (orig_fail_deltas[0], orig_fail_deltas[3]),(orig_fail_deltas[1], orig_fail_deltas[4])]
-    fail_deltas = [(orig_fail_deltas[2], orig_fail_deltas[4]), (orig_fail_deltas[1], orig_fail_deltas[3]), orig_fail_deltas[0]]
+    # first fail_deltas = [orig_fail_deltas[2], (orig_fail_deltas[0], orig_fail_deltas[3]),(orig_fail_deltas[1], orig_fail_deltas[4])]
+    # second fail_deltas = [(orig_fail_deltas[2], orig_fail_deltas[4]), (orig_fail_deltas[1], orig_fail_deltas[3]), orig_fail_deltas[0]]
+    connect_diffs()
+    fail_deltas = [(orig_fail_deltas[0], orig_fail_deltas[4]), (orig_fail_deltas[1], orig_fail_deltas[6]),orig_fail_deltas[2],orig_fail_deltas[3],orig_fail_deltas[5]]
     print(fail_deltas)
     # fail_deltas = [fail_deltas[0], fail_deltas[3], fail_deltas[1], fail_deltas[4], fail_deltas[2]]
     print("\n\n\n")
@@ -181,23 +183,24 @@ def run_circ_test_2():
     # print("min change\n\n")
     # print(min_change)
     # print_edit_sequence([min_change[0][0], min_change[0][1]], passing_input_list, failing_input_list)
-    print("|||||||||||\n\n\n second execution \n\n\n||||||||||||||||||")
-    passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, orig_fail_deltas, passing_input_list, failing_input_list)
-    print("original failing")
-    print(failing)
-    print("original passing")
-    print(passing)
-    print("second  pass diffs and circuit")
-    print(passdiff)
 
-    print(list_to_circuit(apply_edit_script(passdiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
-
-    print("second fail diffs and circuit")
-    print(faildiff)
-
-    print(list_to_circuit(apply_edit_script(faildiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
-
-    print(print_edit_sequence(listminus(faildiff, passdiff), passing_input_list, failing_input_list))
+    # print("|||||||||||\n\n\n second execution \n\n\n||||||||||||||||||")
+    # passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, orig_fail_deltas, passing_input_list, failing_input_list)
+    # print("original failing")
+    # print(failing)
+    # print("original passing")
+    # print(passing)
+    # print("second  pass diffs and circuit")
+    # print(passdiff)
+    #
+    # print(list_to_circuit(apply_edit_script(passdiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
+    #
+    # print("second fail diffs and circuit")
+    # print(faildiff)
+    #
+    # print(list_to_circuit(apply_edit_script(faildiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
+    #
+    # print(print_edit_sequence(listminus(faildiff, passdiff), passing_input_list, failing_input_list))
 
 
 

@@ -63,6 +63,35 @@ def qiskit_entangle_patched():
 #     return qc_alice.compose(qc_bob)
 
 
+# def qiskit_entangle_patched_circ():
+#     from qiskit import Aer, QuantumCircuit
+#     from qiskit.quantum_info import Statevector
+#     backend = Aer.get_backend('aer_simulator')
+#
+#     MESSAGE = '10'
+#
+#     qc_alice = QuantumCircuit(2,2)
+#
+#     # Alice encodes the message
+#     if MESSAGE[-1] == '1':
+#         qc_alice.x(0)
+#     if MESSAGE[-2] == '1':
+#         qc_alice.x(1)
+#
+#     # then she creates entangled states
+#     qc_alice.h(1)
+#     qc_alice.cx(1,0)
+#
+#     ket = Statevector(qc_alice)
+#     ket.draw()
+#
+#     qc_bob = QuantumCircuit(2,2)
+#     # Bob unentangles
+#     qc_bob.cx(1,0)
+#     qc_bob.h(1)
+#     return qc_alice.compose(qc_bob)
+
+
 def qiskit_entangle_patched_circ():
     from qiskit import Aer, QuantumCircuit
     from qiskit.quantum_info import Statevector
