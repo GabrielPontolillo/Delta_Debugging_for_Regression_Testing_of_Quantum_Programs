@@ -1,13 +1,13 @@
 from result_classes import Passed, Failed, Inconclusive
 from diff_algorithm import diff, print_edit_sequence
 from dd import dd, split, listunion, listminus
-from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit, connect_diffs
+from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit
 from assertions import assertPhase
 
 from entangle_qiskit_example import qiskit_entangle, qiskit_entangle_circ
 from entangle_qiskit_example_after_patch import qiskit_entangle_patched, qiskit_entangle_patched_circ
 
-import inspect
+import itertools
 import numpy as np
 from typing import List
 from qiskit import QuantumCircuit, Aer, execute
@@ -22,33 +22,30 @@ pi = np.pi
 backend = Aer.get_backend('aer_simulator')
 
 
-## see if we can put an index on the diffs, compare with operations before
-## merging diffs
-
-def test_source(changes: List[any], src_pass, src_fail):
-    modified_function = apply_edit_script(changes, src_pass, src_fail)
-    modified_function.append("try:")
-    modified_function.append("    output = " + modified_function[0][4:-1])
-    modified_function.append("except:")
-    modified_function.append("    output = Inconclusive()")
-    modified_function = "\n".join(modified_function)
-    print(modified_function)
-    exec(modified_function, globals())
-    print(output)
-    if isinstance(output, Inconclusive):
-        return output
-    for out in output:
-        if len(output.keys()) == 1 and out == "10":
-            return Passed()
-        else:
-            return Failed()
+# def test_source(changes: List[any], src_pass, src_fail):
+#     modified_function = apply_edit_script(changes, src_pass, src_fail)
+#     modified_function.append("try:")
+#     modified_function.append("    output = " + modified_function[0][4:-1])
+#     modified_function.append("except:")
+#     modified_function.append("    output = Inconclusive()")
+#     modified_function = "\n".join(modified_function)
+#     print(modified_function)
+#     exec(modified_function, globals())
+#     print(output)
+#     if isinstance(output, Inconclusive):
+#         return output
+#     for out in output:
+#         if len(output.keys()) == 1 and out == "10":
+#             return Passed()
+#         else:
+#             return Failed()
 
 
 def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
     changed_circuit_list = apply_edit_script(changes, src_pass, src_fail, orig_deltas)
-    changed_circuit = list_to_circuit(changed_circuit_list, 2)
+    changed_circuit = list_to_circuit(changed_circuit_list)
 
-    changed_circuit.measure([0,1],[0,1])
+    changed_circuit.measure([0, 1], [0, 1])
 
     print(changed_circuit)
 
@@ -86,43 +83,7 @@ def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
 #     print("\n".join(apply_edit_script(passdiff, srcpass, srcfail)))
 
 
-# def run_circ_test():
-#     failing = qiskit_entangle_circ()
-#
-#     failing_input_list = circuit_to_list(failing)
-#
-#     passing = qiskit_entangle_patched_circ()
-#
-#     passing_input_list = circuit_to_list(passing)
-#
-#     fail_deltas = diff(passing_input_list, failing_input_list)
-#     print(passing_input_list)
-#     print(failing_input_list)
-#     print_edit_sequence(fail_deltas, passing_input_list, failing_input_list)
-#
-#     pass_deltas = []
-#
-#     # print(test_circuit(pass_deltas, passing_input_list, failing_input_list))
-#     passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, passing_input_list, failing_input_list)
-#
-#     print("original failing")
-#     print(failing)
-#     print("original passing")
-#     print(passing)
-#     print("new  pass diffs and circuit")
-#     print(passdiff)
-#
-#     print(list_to_circuit(apply_edit_script(passdiff, passing_input_list, failing_input_list), 2))
-#
-#     print("new fail diffs and circuit")
-#     print(faildiff)
-#
-#     print(list_to_circuit(apply_edit_script(faildiff, passing_input_list, failing_input_list), 2))
-#     #print(test_circuit(passdiff, passing_input_list, failing_input_list))
-#     #print(test_circuit(faildiff, passing_input_list, failing_input_list))
-
-
-def run_circ_test_2():
+def run_circ_test():
     failing = qiskit_entangle_circ()
     print(failing)
 
@@ -136,27 +97,26 @@ def run_circ_test_2():
     orig_fail_deltas = diff(passing_input_list, failing_input_list)
     print(orig_fail_deltas)
     print(apply_edit_script(orig_fail_deltas, passing_input_list, failing_input_list, orig_fail_deltas), 2)
-    #print(list_to_circuit(apply_edit_script(fail_deltas, passing_input_list, failing_input_list), 2))
-    #print_edit_sequence(fail_deltas, passing_input_list,  failing_input_list)
-    # first fail_deltas = [orig_fail_deltas[2], (orig_fail_deltas[0], orig_fail_deltas[3]),(orig_fail_deltas[1], orig_fail_deltas[4])]
-    # second fail_deltas = [(orig_fail_deltas[2], orig_fail_deltas[4]), (orig_fail_deltas[1], orig_fail_deltas[3]), orig_fail_deltas[0]]
-    connect_diffs()
-    fail_deltas = [(orig_fail_deltas[0], orig_fail_deltas[4]), (orig_fail_deltas[1], orig_fail_deltas[6]),orig_fail_deltas[2],orig_fail_deltas[3],orig_fail_deltas[5]]
+    # print(list_to_circuit(apply_edit_script(fail_deltas, passing_input_list, failing_input_list), 2))
+    # print_edit_sequence(fail_deltas, passing_input_list,  failing_input_list)
+    fail_deltas = orig_fail_deltas
+    # print(connect_diffs(orig_fail_deltas))
     print(fail_deltas)
     # fail_deltas = [fail_deltas[0], fail_deltas[3], fail_deltas[1], fail_deltas[4], fail_deltas[2]]
     print("\n\n\n")
-    #print_edit_sequence(fail_deltas, passing_input_list,  failing_input_list)
+    # print_edit_sequence(fail_deltas, passing_input_list,  failing_input_list)
     # print(apply_edit_script(fail_deltas, passing_input_list, failing_input_list, fail_deltas), 2)
-    #print(list_to_circuit(apply_edit_script(fail_deltas, passing_input_list, failing_input_list), 2))
+    # print(list_to_circuit(apply_edit_script(fail_deltas, passing_input_list, failing_input_list), 2))
 
-    #fail_deltas = [(fail_deltas[0], fail_deltas[2])]
-    #fail_deltas = [(fail_deltas[1], fail_deltas[3])]
+    # fail_deltas = [(fail_deltas[0], fail_deltas[2])]
+    # fail_deltas = [(fail_deltas[1], fail_deltas[3])]
 
     pass_deltas = []
 
     # print(test_circuit(pass_deltas, passing_input_list, failing_input_list))
-    passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, orig_fail_deltas, passing_input_list, failing_input_list)
-    #
+    passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, orig_fail_deltas, passing_input_list,
+                            failing_input_list)
+
     print("original failing")
     print(failing)
     print("original passing")
@@ -164,50 +124,112 @@ def run_circ_test_2():
     print("new  pass diffs and circuit")
     print(passdiff)
 
-    print(list_to_circuit(apply_edit_script(passdiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
+    print(list_to_circuit(apply_edit_script(passdiff, passing_input_list, failing_input_list, orig_fail_deltas)))
 
     print("new fail diffs and circuit")
     print(faildiff)
 
-    print(list_to_circuit(apply_edit_script(faildiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
+    print(list_to_circuit(apply_edit_script(faildiff, passing_input_list, failing_input_list, orig_fail_deltas)))
 
     print(print_edit_sequence(listminus(faildiff, passdiff), passing_input_list, failing_input_list))
-    #
+
     min_change = listminus(faildiff, passdiff)
     # maybe wrong  below
     fail_deltas = listminus(fail_deltas, min_change)
     orig_fail_deltas = listminus(orig_fail_deltas, min_change)
-    # print(faildiff)
-    # print([min_change[0][0], min_change[0][1]])
-    # print(fail_deltas)
-    # print("min change\n\n")
-    # print(min_change)
-    # print_edit_sequence([min_change[0][0], min_change[0][1]], passing_input_list, failing_input_list)
 
-    # print("|||||||||||\n\n\n second execution \n\n\n||||||||||||||||||")
-    # passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, orig_fail_deltas, passing_input_list, failing_input_list)
-    # print("original failing")
-    # print(failing)
-    # print("original passing")
-    # print(passing)
-    # print("second  pass diffs and circuit")
-    # print(passdiff)
-    #
-    # print(list_to_circuit(apply_edit_script(passdiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
-    #
-    # print("second fail diffs and circuit")
-    # print(faildiff)
-    #
-    # print(list_to_circuit(apply_edit_script(faildiff, passing_input_list, failing_input_list, orig_fail_deltas), 2))
-    #
-    # print(print_edit_sequence(listminus(faildiff, passdiff), passing_input_list, failing_input_list))
 
+def dd_repeat(passing_circuit, failing_circuit, test):
+    # print(failing_circuit)
+    failing_input_list = circuit_to_list(failing_circuit)
+
+    # print(passing_circuit)
+    passing_input_list = circuit_to_list(passing_circuit)
+
+    orig_fail_deltas = diff(passing_input_list, failing_input_list)
+    # print(orig_fail_deltas)
+    # print(apply_edit_script(orig_fail_deltas, passing_input_list, failing_input_list, orig_fail_deltas), 2)
+
+    fail_deltas = orig_fail_deltas
+    pass_deltas = []
+
+    delta_store = []
+    loops = len(orig_fail_deltas)
+    for i in range(loops):
+        print(f"#######\n\n Delta Debugging loop {i}\n\n #######")
+        try:
+            pass_diff, fail_diff = dd(pass_deltas, fail_deltas, test, orig_fail_deltas,
+                                      passing_input_list, failing_input_list)
+
+            print("\noriginal failing")
+            print(failing_circuit)
+            print("\noriginal passing")
+            print(passing_circuit)
+            print("\nNEW PASS diffs and circuit")
+            print(pass_diff)
+
+            print(list_to_circuit(apply_edit_script(pass_diff, passing_input_list,
+                                                    failing_input_list, orig_fail_deltas)))
+
+            print("\nNEW FAIL diffs and circuit")
+            print(fail_diff)
+
+            print(list_to_circuit(apply_edit_script(fail_diff, passing_input_list,
+                                                    failing_input_list, orig_fail_deltas)))
+
+            print(print_edit_sequence(listminus(fail_diff, pass_diff), passing_input_list, failing_input_list))
+
+            min_change = listminus(fail_diff, pass_diff)
+            fail_deltas = listminus(fail_deltas, min_change)
+            #orig_fail_deltas = listminus(orig_fail_deltas, min_change)
+
+            delta_store = listunion(delta_store, min_change)
+        except AssertionError as e:
+            print(e)
+            break
+    print(delta_store)
+    print_edit_sequence(delta_store, passing_input_list, failing_input_list)
+    return delta_store, orig_fail_deltas
+
+
+def further_narrowing(passing_circuit, failing_circuit, delta_store, orig_deltas, test):
+    print("\n\n\n In further narrowing \n\n\n")
+    assert isinstance(test(delta_store, passing_circuit, failing_circuit, orig_deltas), Failed)
+    assert isinstance(test([], passing_circuit, failing_circuit, orig_deltas), Passed)
+    delta_store_len = len(delta_store)
+    print(delta_store)
+    print(delta_store_len)
+    passing_deltas = []
+    for i in range(delta_store_len - 1):
+        print(i + 1)
+        for combination in itertools.combinations(delta_store, i+1):
+            print("\n")
+            #print(test(combination, passing_circuit, failing_circuit, orig_deltas))
+            if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
+                print("combination passed")
+                print(combination)
+                print_edit_sequence(combination, passing_circuit,  failing_circuit)
+                for delta in combination:
+                    if delta not in passing_deltas:
+                        passing_deltas.append(delta)
+    delta_store = listminus(delta_store, passing_deltas)
+    print("\n\nfailing test")
+    print(delta_store)
+    test(delta_store, passing_circuit, failing_circuit, orig_deltas)
+    print("\n\npassing test")
+    print(passing_deltas)
+    test(passing_deltas, passing_circuit, failing_circuit, orig_deltas)
+
+    return delta_store
 
 
 if __name__ == "__main__":
-    #run_src_test()
-    run_circ_test_2()
-    #qiskit_entangle_circ()
-    #print(qiskit_entangle_patched_circ())
-
-
+    deltas, orig_fail_deltas = dd_repeat(qiskit_entangle_patched_circ(), qiskit_entangle_circ(), test_circuit)
+    refined_deltas = further_narrowing(qiskit_entangle_patched_circ(), qiskit_entangle_circ(),
+                                       deltas, orig_fail_deltas, test_circuit)
+    print_edit_sequence(refined_deltas, circuit_to_list(qiskit_entangle_patched_circ()),
+                        circuit_to_list(qiskit_entangle_circ()))
+    # run_src_test()
+    # run_circ_test_2()
+    # qiskit_entangle_circ()
+    # print(qiskit_entangle_patched_circ())

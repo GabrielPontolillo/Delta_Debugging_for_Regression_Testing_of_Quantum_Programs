@@ -3,6 +3,7 @@ from diff_algorithm import diff, print_edit_sequence
 from dd import dd, split, listunion, listminus
 from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit
 from assertions import assertPhase
+from test_entangled_qiskit import dd_repeat, further_narrowing
 
 import pandas as pd
 import inspect
@@ -92,14 +93,14 @@ def test_qft(qft_circuit, rotation_amount):
     assert True
 
 
-def test_circuit(changes: List[any], src_pass, src_fail):
+def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
     """"""
     rotation = 7
     length = 3
-    passing_input_list = circuit_to_list(ret_passing(length, rotation))
-    failing_input_list = circuit_to_list(ret_failing(length, rotation))
-    changed_circuit_list = apply_edit_script(changes, passing_input_list, failing_input_list)
-    changed_circuit = list_to_circuit(changed_circuit_list, ret_passing(length, rotation).num_qubits)
+    passing_input_list = src_pass
+    failing_input_list = src_fail
+    changed_circuit_list = apply_edit_script(changes, passing_input_list, failing_input_list,  orig_deltas)
+    changed_circuit = list_to_circuit(changed_circuit_list)
 
     print(changed_circuit)
 
@@ -112,7 +113,7 @@ def test_circuit(changes: List[any], src_pass, src_fail):
         qubits.append(i)
     print(checks)
     print(qubits)
-    pvals = assertPhase(backend, changed_circuit, qubits, checks, 100000)
+    pvals = assertPhase(backend, changed_circuit, qubits, checks, 10000)
     #     print(estimatePhase(backend, qft_circuit, qubits, 100000))
     print(pvals)
     for res in pvals:
@@ -180,7 +181,6 @@ def test(changes: List[any], src_pass, src_fail):
 def ret_passing(length, rotation):
     x_circuit = QuantumCircuit(length)
     bin_amt = bin(rotation)[2:]
-    print(bin_amt)
     for i in range(len(bin_amt)):
         if bin_amt[i] == '1':
             x_circuit.x(len(bin_amt) - (i + 1))
@@ -211,7 +211,6 @@ def ret_passing(length, rotation):
 def ret_failing(length, rotation):
     x_circuit = QuantumCircuit(length)
     bin_amt = bin(rotation)[2:]
-    print(bin_amt)
     for i in range(len(bin_amt)):
         if bin_amt[i] == '1':
             x_circuit.x(len(bin_amt) - (i + 1))
@@ -224,6 +223,9 @@ def ret_failing(length, rotation):
             phase_ctr -= 1
     failing = qft_circuit
     failing = x_circuit + failing
+    failing.x(0)
+    failing.x(0)
+    failing.i(1)
     return failing
 
 
@@ -275,8 +277,16 @@ def test_circ():
 
 
 if __name__ == "__main__":
-    test_circ()
-
+    #test_circ()
+    rotation = 7
+    length = 3
+    deltas, orig_fail_deltas = dd_repeat(ret_passing(length, rotation), ret_failing(length, rotation), test_circuit)
+    print("the deltas")
+    print(deltas)
+    refined_deltas = further_narrowing(ret_passing(length, rotation), ret_failing(length, rotation),
+                                       deltas, orig_fail_deltas, test_circuit)
+    print_edit_sequence(refined_deltas, circuit_to_list(ret_passing(length, rotation)),
+                        circuit_to_list(ret_failing(length, rotation)))
 
     # srcpass = inspect.getsource(ret_passing).split("\n")
     # srcfail = inspect.getsource(ret_failing).split("\n")
