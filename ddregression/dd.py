@@ -83,15 +83,34 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
     n = 2  # Initial granularity
 
     while 1:
+        print("\n  dd while loop \n")
         assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
         assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
 
+        print("pass")
+        print_edit_sequence(c_pass,  source_pass, source_fail)
+        print(c_pass)
+        print(source_pass)
+        print("fail")
+        print_edit_sequence(c_fail,  source_pass, source_fail)
+        print(c_fail)
+        print(source_fail)
+        print("\n")
+
         delta = listminus(c_fail, c_pass)
 
+        print(f"n = {n}")
+        print(f"delta = {len(delta)}")
         if n > len(delta):
             return c_pass, c_fail  # No further minimizing
 
         deltas = split(delta, n)
+
+        print("edit split")
+        for d in deltas:
+            print_edit_sequence(d, source_pass, source_fail)
+            print("\n")
+
         assert len(deltas) == n
 
         offset = 0
@@ -101,39 +120,39 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
             next_c_pass = listunion(c_pass, deltas[i])
             next_c_fail = listminus(c_fail, deltas[i])
             print("pass circumstances")
-            print(next_c_pass)
+            # print(next_c_pass)
             print_edit_sequence(next_c_pass,  source_pass, source_fail)
-            print("\n\n")
+            print("\n")
             print("fail circumstances")
+            # print(next_c_fail)
             print_edit_sequence(next_c_fail, source_pass, source_fail)
-            print(next_c_fail)
 
             if isinstance(test(next_c_fail, source_pass, source_fail, orig_deltas), Failed) and n == 2:  # (1)
-                print("1")
+                print("fail test failed 1")
                 c_fail = next_c_fail
                 n = 2
                 offset = 0
                 break
             elif isinstance(test(next_c_fail, source_pass, source_fail, orig_deltas), Passed):  # (2)
-                print("2")
+                print("fail test passed 2")
                 c_pass = next_c_fail
                 n = 2
                 offset = 0
                 break
             elif isinstance(test(next_c_pass, source_pass, source_fail, orig_deltas), Failed):  # (3)
-                print("3")
+                print("pass test failed 3")
                 c_fail = next_c_pass
                 n = 2
                 offset = 0
                 break
             elif isinstance(test(next_c_fail, source_pass, source_fail, orig_deltas), Failed):  # (4)
-                print("4")
+                print("fail test failed 4")
                 c_fail = next_c_fail
                 n = max(n - - 1, 2)
                 offset = i
                 break
             elif isinstance(test(next_c_pass, source_pass, source_fail, orig_deltas), Passed):  # (5)
-                print("5")
+                print("pass test passed 5")
                 c_pass = next_c_pass
                 n = max(n - - 1, 2)
                 offset = i
