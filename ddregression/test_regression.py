@@ -83,8 +83,6 @@ def test_qft(qft_circuit, rotation_amount):
     for i in range(qft_circuit.num_qubits):
         checks.append(((360 / (2 ** (i + 1))) * rotation_amount) % 360)
         qubits.append(i)
-    print(checks)
-    print(qubits)
     pvals = assertPhase(backend, qft_circuit, qubits, checks, 100000)
     print(pvals)
     for res in pvals:
@@ -95,8 +93,6 @@ def test_qft(qft_circuit, rotation_amount):
 
 def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
     """"""
-    rotation = 7
-    length = 3
     passing_input_list = src_pass
     failing_input_list = src_fail
     changed_circuit_list = apply_edit_script(changes, passing_input_list, failing_input_list,  orig_deltas)
@@ -122,49 +118,49 @@ def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
     return Passed()
 
 
-def test(changes: List[any], src_pass, src_fail):
-    """"""
-    rotation = 7
-    length = 3
-
-    modified_function = apply_edit_script(changes, src_pass, src_fail)
-    print("modified function")
-
-    # modified_function = "".join(modified_function)
-    # print(modified_function)
-    # modified_function = modified_function.split("\n")
-
-    print("\n")
-    modified_function.append("try:")
-    modified_function.append("    changed_circuit = " + modified_function[0][4:-1].replace("length", str(length)).replace("rotation", str(rotation)))
-    modified_function.append("except:")
-    modified_function.append("    changed_circuit = Inconclusive()")
-    print("\n")
-    modified_function = "\n".join(modified_function)
-    print(modified_function)
-    exec(modified_function, globals())
-    print("circuit is ")
-    print(changed_circuit)
-    print("stop")
-    if isinstance(changed_circuit, Inconclusive):
-        return changed_circuit
-
-    checks = []
-    qubits = []
-
-    res = 0
-    for i in range(changed_circuit.num_qubits):
-        checks.append(((360 / (2 ** (i + 1))) * rotation) % 360)
-        qubits.append(i)
-    print(checks)
-    print(qubits)
-    pvals = assertPhase(backend, changed_circuit, qubits, checks, 100000)
-    #     print(estimatePhase(backend, qft_circuit, qubits, 100000))
-    print(pvals)
-    for res in pvals:
-        if res != np.NaN and res < 0.05/len(pvals):
-            return Failed()
-    return Passed()
+# def test(changes: List[any], src_pass, src_fail):
+#     """"""
+#     rotation = 7
+#     length = 3
+#
+#     modified_function = apply_edit_script(changes, src_pass, src_fail)
+#     print("modified function")
+#
+#     # modified_function = "".join(modified_function)
+#     # print(modified_function)
+#     # modified_function = modified_function.split("\n")
+#
+#     print("\n")
+#     modified_function.append("try:")
+#     modified_function.append("    changed_circuit = " + modified_function[0][4:-1].replace("length", str(length)).replace("rotation", str(rotation)))
+#     modified_function.append("except:")
+#     modified_function.append("    changed_circuit = Inconclusive()")
+#     print("\n")
+#     modified_function = "\n".join(modified_function)
+#     print(modified_function)
+#     exec(modified_function, globals())
+#     print("circuit is ")
+#     print(changed_circuit)
+#     print("stop")
+#     if isinstance(changed_circuit, Inconclusive):
+#         return changed_circuit
+#
+#     checks = []
+#     qubits = []
+#
+#     res = 0
+#     for i in range(changed_circuit.num_qubits):
+#         checks.append(((360 / (2 ** (i + 1))) * rotation) % 360)
+#         qubits.append(i)
+#     print(checks)
+#     print(qubits)
+#     pvals = assertPhase(backend, changed_circuit, qubits, checks, 100000)
+#     #     print(estimatePhase(backend, qft_circuit, qubits, 100000))
+#     print(pvals)
+#     for res in pvals:
+#         if res != np.NaN and res < 0.05/len(pvals):
+#             return Failed()
+#     return Passed()
 
 
 # def ret_passing(length, rotation):
@@ -214,6 +210,15 @@ def ret_failing(length, rotation):
     for i in range(len(bin_amt)):
         if bin_amt[i] == '1':
             x_circuit.x(len(bin_amt) - (i + 1))
+    x_circuit.x(0)
+    x_circuit.x(0)
+    x_circuit.i(1)
+    x_circuit.x(0)
+    x_circuit.x(0)
+    x_circuit.x(1)
+    x_circuit.x(1)
+    x_circuit.x(1)
+    x_circuit.x(1)
     qft_circuit = QuantumCircuit(length)
     for i in range(length):
         qft_circuit.h((length - 1) - i)
@@ -223,9 +228,6 @@ def ret_failing(length, rotation):
             phase_ctr -= 1
     failing = qft_circuit
     failing = x_circuit + failing
-    failing.x(0)
-    failing.x(0)
-    failing.i(1)
     return failing
 
 
@@ -283,10 +285,10 @@ if __name__ == "__main__":
     deltas, orig_fail_deltas = dd_repeat(ret_passing(length, rotation), ret_failing(length, rotation), test_circuit)
     print("the deltas")
     print(deltas)
-    refined_deltas = further_narrowing(ret_passing(length, rotation), ret_failing(length, rotation),
-                                       deltas, orig_fail_deltas, test_circuit)
-    print_edit_sequence(refined_deltas, circuit_to_list(ret_passing(length, rotation)),
-                        circuit_to_list(ret_failing(length, rotation)))
+    # refined_deltas = further_narrowing(ret_passing(length, rotation), ret_failing(length, rotation),
+    #                                    deltas, orig_fail_deltas, test_circuit)
+    # print_edit_sequence(refined_deltas, circuit_to_list(ret_passing(length, rotation)),
+    #                     circuit_to_list(ret_failing(length, rotation)))
 
     # srcpass = inspect.getsource(ret_passing).split("\n")
     # srcfail = inspect.getsource(ret_failing).split("\n")

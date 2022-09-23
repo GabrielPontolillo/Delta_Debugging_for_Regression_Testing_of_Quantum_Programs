@@ -126,6 +126,8 @@ def qiskit_entangle_circ():
     qc_bob.x(0)
     qc_bob.x(0)
     qc_bob.i(0)
+    qc_bob.x(1)
+    qc_bob.x(1)
     return qc_alice.compose(qc_bob)
 
 

@@ -51,10 +51,19 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
             orig_deltas_fixed.append(elem)
     edit_script = sorted(fixed, key=lambda k: (k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
     print("edit script")
-    print(edit_script)
+    for script in edit_script:
+        print(script)
+    print_edit_sequence(edit_script, s1, s2)
     print("original deltas fixed")
     print(orig_deltas_fixed)
+    for script in orig_deltas_fixed:
+        print(script)
+    print_edit_sequence(orig_deltas_fixed, s1, s2)
     edit_script = calculate_offset(edit_script, orig_deltas_fixed)
+    print("edit script after offset")
+    for script in edit_script:
+        print(script)
+    print_edit_sequence(edit_script, s1, s2)
     i, new_sequence = 0, []
     for e in edit_script:
         while e["position_old"] > i:
@@ -66,8 +75,8 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
                 i = i + 1
             elif e["operation"] == "insert":
                 new_sequence.append(s2[e["position_new"]])
-        # print(e)
-        # print(list_to_circuit(new_sequence))
+        print(e)
+        print(list_to_circuit(new_sequence))
     while i < len(s1):
         # print(list_to_circuit(new_sequence))
         new_sequence.append(s1[i])
@@ -112,71 +121,6 @@ def calculate_offset(edit_script, orig_deltas):
     return modified_script
 
 
-# def connect_diffs(deltas):
-#     linked_deltas = []
-#     linked_indexes = []
-#     print("########\n\n\n in connect diffs \n\n\n############")
-#     for i in range(len(deltas)):
-#         if deltas[i]["operation"] == "delete":
-#             del_target = deltas[i]["position_old"]
-#             for j in range(len(deltas)):
-#                 if deltas[j]["operation"] == "insert" and deltas[j]["position_old"] == del_target:
-#                     print((deltas[j], deltas[i]))
-#                     linked_deltas.append((deltas[j], deltas[i]))
-#                     linked_indexes.append(i)
-#                     linked_indexes.append(j)
-#                     break
-#     linked_indexes = sorted(linked_indexes)
-#     for i in range(len(deltas)):
-#         if i not in linked_indexes:
-#             linked_deltas.append(deltas[i])
-#     return linked_deltas
-
-
-# def connect_diffs(deltas):
-#     offset = 0
-#     for diff in deltas:
-#         if diff["operation"] == "delete":
-#             offset -= 1
-#         elif diff["operation"] == "insert":
-#             offset += 1
-#     linked_deltas = []
-#     linked_indexes = []
-#     print("########\n\n\n in connect diffs \n\n\n############")
-#     print(f"offset {offset}")
-#     for i in range(len(deltas)):
-#         if deltas[i]["operation"] == "delete":
-#             additional_offset = 0
-#             del_target = deltas[i]["position_old"]
-#             dupe = True
-#             copy_i = i
-#             while dupe and copy_i < len(deltas) - 1:
-#                 print(deltas[i])
-#                 print("inwhile")
-#                 ####################################
-#                 # we need to look in the actual circuit rather than deltas for equal instruction
-#                 ####################################
-#                 if deltas[copy_i] == deltas[copy_i+1]:
-#                     additional_offset += 1
-#                     copy_i += 1
-#                 else:
-#                     dupe = False
-#                     print("additional")
-#                     print(additional_offset)
-#             for j in range(len(deltas)):
-#                 if deltas[j]["operation"] == "insert" and deltas[j]["position_new"] == del_target + offset + additional_offset:
-#                     print((deltas[j], deltas[i]))
-#                     linked_deltas.append((deltas[j], deltas[i]))
-#                     linked_indexes.append(i)
-#                     linked_indexes.append(j)
-#                     break
-#     linked_indexes = sorted(linked_indexes)
-#     for i in range(len(deltas)):
-#         if i not in linked_indexes:
-#             linked_deltas.append(deltas[i])
-#     return linked_deltas
-
-
 def circuit_to_list(circuit: QuantumCircuit):
     """Converts a circuit into a list of instructions"""
     circuit_instructions = []
@@ -187,7 +131,7 @@ def circuit_to_list(circuit: QuantumCircuit):
 
 def get_quantum_register(instruction_arr: list[any]):
     """Infers size of a quantum circuit from the instructions"""
-    print(instruction_arr)
+    # print(instruction_arr)
     qarg_ret = None
     carg_ret = None
     for instruction, qargs, cargs in instruction_arr:
