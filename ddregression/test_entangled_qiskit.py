@@ -4,7 +4,7 @@ from dd import dd, split, listunion, listminus
 from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit
 from assertions import assertPhase
 
-from entangle_qiskit_example import qiskit_entangle, qiskit_entangle_circ
+from entangle_qiskit_example import qiskit_entangle, qiskit_entangle_circ, qiskit_entangle_circ_chaff_and_i
 from entangle_qiskit_example_after_patch import qiskit_entangle_patched, qiskit_entangle_patched_circ
 
 import itertools
@@ -158,7 +158,7 @@ def further_narrowing(passing_circuit, failing_circuit, delta_store, orig_deltas
             if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
                 print("combination passed")
                 print(combination)
-                print_edit_sequence(combination, passing_circuit,  failing_circuit)
+                #print_edit_sequence(combination, passing_circuit,  failing_circuit)
                 for delta in combination:
                     if delta not in passing_deltas:
                         passing_deltas.append(delta)
@@ -174,9 +174,16 @@ def further_narrowing(passing_circuit, failing_circuit, delta_store, orig_deltas
 
 
 if __name__ == "__main__":
-    deltas, orig_fail_deltas = dd_repeat(qiskit_entangle_patched_circ(), qiskit_entangle_circ(), test_circuit)
+    deltas, orig_fail_deltas = dd_repeat(qiskit_entangle_patched_circ(), qiskit_entangle_circ_chaff_and_i(), test_circuit)
+    print("\n orig deltas")
+    print_edit_sequence(orig_fail_deltas, circuit_to_list(qiskit_entangle_patched_circ()),
+                         circuit_to_list(qiskit_entangle_circ_chaff_and_i()))
+    print("\n deltas")
+    print_edit_sequence(deltas, circuit_to_list(qiskit_entangle_patched_circ()),
+                        circuit_to_list(qiskit_entangle_circ_chaff_and_i()))
     # refined_deltas = further_narrowing(qiskit_entangle_patched_circ(), qiskit_entangle_circ(),
     #                                    deltas, orig_fail_deltas, test_circuit)
+    # print(refined_deltas)
     # print_edit_sequence(refined_deltas, circuit_to_list(qiskit_entangle_patched_circ()),
     #                     circuit_to_list(qiskit_entangle_circ()))
     # run_src_test()
