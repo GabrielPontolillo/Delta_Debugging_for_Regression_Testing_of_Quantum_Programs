@@ -85,7 +85,9 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
     while 1:
         print("\n  dd while loop \n")
         assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
+        print("pass circumstances passed")
         assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
+        print("fail circumstances failed")
 
         # print("pass")
         # print_edit_sequence(c_pass,  source_pass, source_fail)
