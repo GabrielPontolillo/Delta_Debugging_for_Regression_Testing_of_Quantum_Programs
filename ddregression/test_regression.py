@@ -1,7 +1,7 @@
 from result_classes import Passed, Failed, Inconclusive
 from diff_algorithm import diff, print_edit_sequence
 from dd import dd, split, listunion, listminus
-from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit
+from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit, get_quantum_register
 from assertions import assertPhase
 from test_entangled_qiskit import dd_repeat, further_narrowing
 
@@ -93,57 +93,50 @@ def test_qft(qft_circuit, rotation_amount):
 
 def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
     """"""
+    p_values = []
+
     passing_input_list = src_pass
     failing_input_list = src_fail
-    changed_circuit_list = apply_edit_script(changes, passing_input_list, failing_input_list,  orig_deltas)
+    changed_circuit_list = apply_edit_script(changes, passing_input_list, failing_input_list, orig_deltas)
+    qlength, clength = get_quantum_register(changed_circuit_list)
     changed_circuit = list_to_circuit(changed_circuit_list)
 
-    print(changed_circuit)
+    for j in range(100):
+        rotation = random.randrange(0, 8)
+        x_circuit = QuantumCircuit(qlength)
+        bin_amt = bin(rotation)[2:]
+        for i in range(len(bin_amt)):
+            if bin_amt[i] == '1':
+                x_circuit.x(len(bin_amt) - (i + 1))
 
-    checks = []
-    qubits = []
+        inputted_circuit_to_test = x_circuit + changed_circuit
 
-    res = 0
-    for i in range(changed_circuit.num_qubits):
-        checks.append(((360 / (2 ** (i + 1))) * rotation) % 360)
-        qubits.append(i)
-    print(checks)
-    print(qubits)
-    pvals = assertPhase(backend, changed_circuit, qubits, checks, 10000)
-    #     print(estimatePhase(backend, qft_circuit, qubits, 100000))
-    print(pvals)
-    for res in pvals:
-        if res != np.NaN and res < 0.005:
-            return Failed()
+        checks = []
+        qubits = []
+
+        for i in range(inputted_circuit_to_test.num_qubits):
+            checks.append(((360 / (2 ** (i + 1))) * rotation) % 360)
+            qubits.append(i)
+        pvals = assertPhase(backend, inputted_circuit_to_test, qubits, checks, 1000)
+        p_values += pvals
+
+    p_values = sorted(p_values)
+
+    for i in range(len(p_values)):
+        if p_values[i] != np.NaN:
+            if p_values[i] < 0.01/(len(p_values)-i):
+                return Failed()
     return Passed()
 
 
-# def test(changes: List[any], src_pass, src_fail):
+# def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
 #     """"""
-#     rotation = 7
-#     length = 3
+#     passing_input_list = src_pass
+#     failing_input_list = src_fail
+#     changed_circuit_list = apply_edit_script(changes, passing_input_list, failing_input_list,  orig_deltas)
+#     changed_circuit = list_to_circuit(changed_circuit_list)
 #
-#     modified_function = apply_edit_script(changes, src_pass, src_fail)
-#     print("modified function")
-#
-#     # modified_function = "".join(modified_function)
-#     # print(modified_function)
-#     # modified_function = modified_function.split("\n")
-#
-#     print("\n")
-#     modified_function.append("try:")
-#     modified_function.append("    changed_circuit = " + modified_function[0][4:-1].replace("length", str(length)).replace("rotation", str(rotation)))
-#     modified_function.append("except:")
-#     modified_function.append("    changed_circuit = Inconclusive()")
-#     print("\n")
-#     modified_function = "\n".join(modified_function)
-#     print(modified_function)
-#     exec(modified_function, globals())
-#     print("circuit is ")
 #     print(changed_circuit)
-#     print("stop")
-#     if isinstance(changed_circuit, Inconclusive):
-#         return changed_circuit
 #
 #     checks = []
 #     qubits = []
@@ -154,13 +147,45 @@ def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
 #         qubits.append(i)
 #     print(checks)
 #     print(qubits)
-#     pvals = assertPhase(backend, changed_circuit, qubits, checks, 100000)
+#     pvals = assertPhase(backend, changed_circuit, qubits, checks, 10000)
 #     #     print(estimatePhase(backend, qft_circuit, qubits, 100000))
 #     print(pvals)
 #     for res in pvals:
-#         if res != np.NaN and res < 0.05/len(pvals):
+#         if res != np.NaN and res < 0.005:
 #             return Failed()
 #     return Passed()
+
+
+def regression_test_circuit(circuit_to_test):
+    """"""
+    p_values = []
+    qlength, clength = get_quantum_register(circuit_to_list(circuit_to_test))
+    for j in range(100):
+        rotation = random.randrange(0, 8)
+        x_circuit = QuantumCircuit(qlength)
+        bin_amt = bin(rotation)[2:]
+        for i in range(len(bin_amt)):
+            if bin_amt[i] == '1':
+                x_circuit.x(len(bin_amt) - (i + 1))
+
+        inputted_circuit_to_test = x_circuit + circuit_to_test
+
+        checks = []
+        qubits = []
+
+        for i in range(inputted_circuit_to_test.num_qubits):
+            checks.append(((360 / (2 ** (i + 1))) * rotation) % 360)
+            qubits.append(i)
+
+        pvals = assertPhase(backend, inputted_circuit_to_test, qubits, checks, 1000)
+        p_values += pvals
+
+    p_values = sorted(p_values)
+    for i in range(len(p_values)):
+        if p_values[i] != np.NaN:
+            if p_values[i] < 0.05/(len(p_values)-i):
+                assert False
+    assert True
 
 
 # def ret_passing(length, rotation):
@@ -174,12 +199,7 @@ def test_circuit(changes: List[any], src_pass, src_fail, orig_deltas):
 #     passing = x_circuit + passing
 #     return passing
 
-def ret_passing(length, rotation):
-    x_circuit = QuantumCircuit(length)
-    bin_amt = bin(rotation)[2:]
-    for i in range(len(bin_amt)):
-        if bin_amt[i] == '1':
-            x_circuit.x(len(bin_amt) - (i + 1))
+def ret_passing(length):
     qft_circuit = QuantumCircuit(length)
     for i in range(length):
         qft_circuit.h((length - 1) - i)
@@ -187,9 +207,7 @@ def ret_passing(length, rotation):
         for j in range((length - 1) - i):
             qft_circuit.cp(pi / 2 ** phase_ctr, j, (length - 1) - i)
             phase_ctr -= 1
-    passing = qft_circuit
-    passing = x_circuit + passing
-    return passing
+    return qft_circuit
 
 
 # def ret_failing(length, rotation):
@@ -204,107 +222,38 @@ def ret_passing(length, rotation):
 #     return failing
 
 
-def ret_failing(length, rotation):
-    x_circuit = QuantumCircuit(length)
-    bin_amt = bin(rotation)[2:]
-    for i in range(len(bin_amt)):
-        if bin_amt[i] == '1':
-            x_circuit.x(len(bin_amt) - (i + 1))
-    x_circuit.x(0)
-    x_circuit.x(0)
-    x_circuit.i(1)
-    x_circuit.x(0)
-    x_circuit.x(0)
-    x_circuit.x(1)
-    x_circuit.x(1)
-    x_circuit.x(1)
-    x_circuit.x(1)
+def ret_failing(length):
     qft_circuit = QuantumCircuit(length)
+    qft_circuit.x(0)
+    qft_circuit.x(0)
+    qft_circuit.i(1)
+    qft_circuit.x(0)
+    qft_circuit.x(0)
+    qft_circuit.x(1)
+    qft_circuit.x(1)
+    qft_circuit.x(1)
+    qft_circuit.x(1)
     for i in range(length):
         qft_circuit.h((length - 1) - i)
         phase_ctr = length - i
         for j in range((length - 1) - i):
             qft_circuit.cp(pi / 2 ** phase_ctr, j, (length - 1) - i)
             phase_ctr -= 1
-    failing = qft_circuit
-    failing = x_circuit + failing
-    return failing
-
-
-def test_circ():
-    rotation = 7
-    length = 3
-
-    failing = ret_failing(length, rotation)
-    failing_input_list = circuit_to_list(failing)
-
-    passing = ret_passing(length, rotation)
-    passing_input_list = circuit_to_list(passing)
-
-    fail_deltas = diff(passing_input_list, failing_input_list)
-    pass_deltas = []
-
-    print(passing)
-    print(failing)
-
-    print_edit_sequence(pass_deltas, passing_input_list, failing_input_list)
-    print("\n\n\n")
-    print_edit_sequence(fail_deltas, passing_input_list, failing_input_list)
-
-    #######
-    passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, passing_input_list, failing_input_list)
-
-    print_edit_sequence(passdiff, passing_input_list, failing_input_list)
-    print_edit_sequence(faildiff, passing_input_list, failing_input_list)
-
-    print(fail_deltas)
-    min_change = listminus(faildiff, passdiff)
-    print(min_change)
-
-    print("\n\n\n\n")
-    print(fail_deltas)
-    print("\n\n\n\n")
-    fail_deltas = listminus(fail_deltas, min_change)
-    print(fail_deltas)
-
-    ##########
-    #passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, passing_input_list, failing_input_list)
-    #min_change = listminus(faildiff, passdiff)
-    #fail_deltas = listminus(fail_deltas, min_change)
-    #########
-    #passdiff, faildiff = dd(pass_deltas, fail_deltas, test_circuit, passing_input_list, failing_input_list)
-
-
-    ## need to remove the circumstance from the delta
+    return qft_circuit
 
 
 if __name__ == "__main__":
     #test_circ()
-    rotation = 7
+    rotation = 0
+    # rotation = 7
     length = 3
-    deltas, orig_fail_deltas = dd_repeat(ret_passing(length, rotation), ret_failing(length, rotation), test_circuit)
+    deltas, orig_fail_deltas = dd_repeat(ret_passing(length), ret_failing(length), test_circuit)
     print("the deltas")
     print(deltas)
-    # refined_deltas = further_narrowing(ret_passing(length, rotation), ret_failing(length, rotation),
+    # refined_deltas = further_narrowing(ret_passing(length), ret_failing(length),
     #                                    deltas, orig_fail_deltas, test_circuit)
-    # print_edit_sequence(refined_deltas, circuit_to_list(ret_passing(length, rotation)),
-    #                     circuit_to_list(ret_failing(length, rotation)))
+    # print_edit_sequence(refined_deltas, circuit_to_list(ret_passing(length)),
+    #                     circuit_to_list(ret_failing(length)))
 
-    # srcpass = inspect.getsource(ret_passing).split("\n")
-    # srcfail = inspect.getsource(ret_failing).split("\n")
-    # fail_deltas = diff(srcpass, srcfail)
-    # pass_deltas = []
-    # #
-    # #print(test(fail_deltas, src_pass=srcpass, src_fail=srcfail))
-    # passdiff, faildiff = dd(pass_deltas, fail_deltas, test, srcpass, srcfail)
-    # print("\n\n\n passdiff")
-    # print(passdiff)
-    # #print_edit_sequence(passdiff, srcpass, srcfail)
-    # print("\n".join(apply_edit_script(passdiff, srcpass, srcfail)))
-    # print("\n\n\n faildiff")
-    # print(faildiff)
-    # #print_edit_sequence(faildiff, srcpass, srcfail)
-    # print("\n".join(apply_edit_script(faildiff, srcpass, srcfail)))
-    # print("\n\n\n")
-    # a = diff(passdiff, faildiff)
-    # print(a)
+    # print(QFT_basic())
+    # regression_test_circuit(QFT_basic())
