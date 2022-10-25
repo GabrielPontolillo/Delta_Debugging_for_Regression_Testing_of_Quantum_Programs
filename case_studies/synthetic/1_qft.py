@@ -161,7 +161,6 @@ def regression_test_circuit(circuit_to_test):
 
 
 if __name__ == "__main__":
-    #test_circ()
     rotation = 0
     # rotation = 7
     length = 3

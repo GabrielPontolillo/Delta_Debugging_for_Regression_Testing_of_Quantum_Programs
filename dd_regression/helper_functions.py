@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from diff_algorithm import print_edit_sequence
+from dd_regression.diff_algorithm import print_edit_sequence
 
 
 def apply_edit_script(edit_script, s1, s2, orig_deltas):

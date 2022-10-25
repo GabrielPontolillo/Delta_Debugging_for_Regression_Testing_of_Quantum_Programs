@@ -2,9 +2,9 @@
    A lot of this code is from the 'Why Programs Fail' book from Andreas Zeller
    *Some modifications made
 """
-from result_classes import Passed, Failed, Inconclusive
-from helper_functions import apply_edit_script, circuit_to_list, list_to_circuit
-from diff_algorithm import diff, print_edit_sequence
+from dd_regression.result_classes import Passed, Failed, Inconclusive
+from dd_regression.helper_functions import apply_edit_script, circuit_to_list, list_to_circuit
+from dd_regression.diff_algorithm import diff, print_edit_sequence
 
 import itertools
 

@@ -1,6 +1,7 @@
 # This code is from https://blog.robertelder.org/diff-algorithm/
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
 
+
 def diff(e, f, i=0, j=0):
     #  Documented at http://blog.robertelder.org/diff-algorithm/
     N, M, L, Z = len(e), len(f), len(e) + len(f), 2 * min(len(e), len(f)) + 2
