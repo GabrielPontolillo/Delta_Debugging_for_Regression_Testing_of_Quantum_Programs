@@ -1,3 +1,5 @@
+import random
+
 from qiskit import QuantumCircuit
 from dd_regression.diff_algorithm import print_edit_sequence
 
@@ -28,7 +30,7 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
         else:
             orig_deltas_fixed.append(elem)
     edit_script = sorted(fixed, key=lambda k: (
-    k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
+        k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
     print("edit script")
     # for script in edit_script:
     #     print(script)
@@ -89,18 +91,18 @@ def calculate_offset(edit_script, orig_deltas):
         after = orig_deltas[index + 1:]
         # print(f"after {after}")
         # for elem in before:
-            # print("elem")
-            # print(elem)
-            # if elem not in edit_script:
-                # print("elem not in script")
-                # print(elem)
-                # if elem["operation"] == "insert" and elem["position_old"] == delta["position_old"]:
-                #     offset += 1
-                # if elem["operation"] == "delete":
-                #     offset -= 1
-                # if elem["operation"] == "delete":
-                #     offset -= 1
-                # pass
+        # print("elem")
+        # print(elem)
+        # if elem not in edit_script:
+        # print("elem not in script")
+        # print(elem)
+        # if elem["operation"] == "insert" and elem["position_old"] == delta["position_old"]:
+        #     offset += 1
+        # if elem["operation"] == "delete":
+        #     offset -= 1
+        # if elem["operation"] == "delete":
+        #     offset -= 1
+        # pass
         consec = 0
         for elem in after:
             # print("elem")
@@ -134,7 +136,7 @@ def calculate_offset(edit_script, orig_deltas):
             e2["position_old"] = elem["position_old"] + elem["offset"]
         modified_script.append(e2)
     modified_script = sorted(modified_script, key=lambda k: (
-    k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
+        k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
     print("modified_script")
     print(modified_script)
     print("\n\n")
@@ -177,3 +179,51 @@ def list_to_circuit(instruction_arr: list[any]):
         return ret_qc
     else:
         return None
+
+
+def add_random_chaff(circuit: QuantumCircuit):
+    # print(circuit)
+    qarg, carg = get_quantum_register(circuit)
+    circ_list = circuit_to_list(circuit)
+    # print(circ_list)
+    # print(qarg.size)
+    qubit_size = qarg.size
+    # choose how many to append
+    for i in range(random.randint(1, 6)):
+        # choose what identities to append
+        j = random.randint(0, 5)
+        target_qubit = random.randint(0, qubit_size-1)
+        # print(target_qubit)
+        if j == 0:
+            qc = QuantumCircuit(qubit_size)
+            qc.x(target_qubit)
+            qc.x(target_qubit)
+        elif j == 1:
+            qc = QuantumCircuit(qubit_size)
+            qc.i(target_qubit)
+        elif j == 2:
+            qc = QuantumCircuit(qubit_size)
+            qc.y(target_qubit)
+            qc.y(target_qubit)
+        elif j == 3:
+            qc = QuantumCircuit(qubit_size)
+            qc.z(target_qubit)
+            qc.z(target_qubit)
+        elif j == 4:
+            qc = QuantumCircuit(qubit_size)
+            qc.h(target_qubit)
+            qc.h(target_qubit)
+        elif j == 5:
+            qc = QuantumCircuit(qubit_size)
+            qc.s(target_qubit)
+            qc.s(target_qubit)
+            qc.s(target_qubit)
+            qc.s(target_qubit)
+        qc_list = circuit_to_list(qc)
+        # choose where to append the chaff
+        insert_location = random.randint(0, len(circ_list))
+        # print(f"insert location {insert_location}")
+        circ_list[insert_location:insert_location] = qc_list
+        # print(circ_list)
+    # print(list_to_circuit(circ_list))
+    return circ_list
