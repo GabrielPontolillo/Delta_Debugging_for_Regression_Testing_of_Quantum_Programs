@@ -31,20 +31,20 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
             orig_deltas_fixed.append(elem)
     edit_script = sorted(fixed, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
-    print("edit script")
+    # print("edit script")
     # for script in edit_script:
     #     print(script)
-    print_edit_sequence(edit_script, s1, s2)
-    print("original deltas fixed")
+    # print_edit_sequence(edit_script, s1, s2)
+    # print("original deltas fixed")
     # print(orig_deltas_fixed)
     # for script in orig_deltas_fixed:
     #     print(script)
-    print_edit_sequence(orig_deltas_fixed, s1, s2)
+    # print_edit_sequence(orig_deltas_fixed, s1, s2)
     edit_script = calculate_offset(edit_script, orig_deltas_fixed)
     print("edit script after offset")
     # for script in edit_script:
     #     print(script)
-    print_edit_sequence(edit_script, s1, s2)
+    # print_edit_sequence(edit_script, s1, s2)
     i, new_sequence = 0, []
     for e in edit_script:
         while e["position_old"] > i:
@@ -56,9 +56,9 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
                 i = i + 1
             elif e["operation"] == "insert":
                 new_sequence.append(s2[e["position_new"]])
-        print(e)
+        # print(e)
         print_edit_sequence([e], s1, s2)
-        print(list_to_circuit(new_sequence))
+        # print(list_to_circuit(new_sequence))
     while i < len(s1):
         # print(list_to_circuit(new_sequence))
         new_sequence.append(s1[i])
@@ -74,11 +74,11 @@ def calculate_offset(edit_script, orig_deltas):
     :return:
     """
     print("############\n in calculate offset \n##############")
-    for script in orig_deltas:
-        print(script)
-    print("edit script")
-    for script in edit_script:
-        print(script)
+    # for script in orig_deltas:
+    #     print(script)
+    # print("edit script")
+    # for script in edit_script:
+    #     print(script)
     modified_script = []
     for delta in edit_script:
         offset = 0
@@ -121,9 +121,9 @@ def calculate_offset(edit_script, orig_deltas):
                 #     offset += 1
                 #     consec += 1
                 if elem["operation"] == "delete" and elem["position_old"] == delta["position_old"]:
-                    print(f"elem pos {elem['position_old']}")
-                    print(f"delta pos {delta['position_old']}")
-                    print(f"consec {consec}")
+                    # print(f"elem pos {elem['position_old']}")
+                    # print(f"delta pos {delta['position_old']}")
+                    # print(f"consec {consec}")
                     offset += 1
                     consec += 1
                 pass
@@ -139,7 +139,7 @@ def calculate_offset(edit_script, orig_deltas):
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
     print("modified_script")
     print(modified_script)
-    print("\n\n")
+    # print("\n\n")
     return modified_script
 
 

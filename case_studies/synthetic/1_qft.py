@@ -33,15 +33,15 @@ class QFTSynthetic(CaseStudyInterface):
     @staticmethod
     def qft_update(length):
         qft_circuit = QuantumCircuit(length)
-        # qft_circuit.x(0)
-        # qft_circuit.x(0)
-        # qft_circuit.i(1)
-        # qft_circuit.x(0)
-        # qft_circuit.x(0)
-        # qft_circuit.x(1)
-        # qft_circuit.x(1)
-        # qft_circuit.x(1)
-        # qft_circuit.x(1)
+        qft_circuit.x(0)
+        qft_circuit.x(0)
+        qft_circuit.i(1)
+        qft_circuit.x(0)
+        qft_circuit.x(0)
+        qft_circuit.x(1)
+        qft_circuit.x(1)
+        qft_circuit.x(1)
+        qft_circuit.x(1)
         for i in range(length):
             qft_circuit.h((length - 1) - i)
             phase_ctr = length - i

@@ -148,8 +148,6 @@ def dd_repeat(passing_circuit, failing_circuit, test):
             print(list_to_circuit(apply_edit_script(fail_diff, passing_input_list,
                                                     failing_input_list, orig_fail_deltas)))
 
-            print(print_edit_sequence(listminus(fail_diff, pass_diff), passing_input_list, failing_input_list))
-
             min_change = listminus(fail_diff, pass_diff)
 
             print(f"removed {min_change}")
@@ -165,10 +163,10 @@ def dd_repeat(passing_circuit, failing_circuit, test):
             break
     print(delta_store)
     print_edit_sequence(delta_store, passing_input_list, failing_input_list)
-    return delta_store, orig_fail_deltas
+    return delta_store, pass_deltas, orig_fail_deltas
 
 
-def filter_artifacts(passing_circuit, failing_circuit, delta_store, orig_deltas, test):
+def filter_artifacts(passing_circuit, failing_circuit, delta_store, pass_deltas, orig_deltas, test):
     """
     Filter the artifacts away from a set of deltas, less efficient that DD due to more thorough exploration
     :param passing_circuit: the circuit that returns a passing result when tested using the test function
@@ -184,10 +182,10 @@ def filter_artifacts(passing_circuit, failing_circuit, delta_store, orig_deltas,
     delta_store_len = len(delta_store)
     print(delta_store)
     print(delta_store_len)
-    passing_deltas = []
+    passing_deltas = pass_deltas
     for i in range(delta_store_len - 1):
         print(i + 1)
-        for combination in itertools.combinations(delta_store, i+1):
+        for combination in itertools.combinations(listminus(delta_store, passing_deltas), i+1):
             print("\n")
             # print(test(combination, passing_circuit, failing_circuit, orig_deltas))
             if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
@@ -197,13 +195,14 @@ def filter_artifacts(passing_circuit, failing_circuit, delta_store, orig_deltas,
                 for delta in combination:
                     if delta not in passing_deltas:
                         passing_deltas.append(delta)
+                break
     delta_store = listminus(delta_store, passing_deltas)
     print("\n\nfailing test")
     print(delta_store)
-    test(delta_store, passing_circuit, failing_circuit, orig_deltas)
+    print(test(delta_store, passing_circuit, failing_circuit, orig_deltas))
     print("\n\npassing test")
     print(passing_deltas)
-    test(passing_deltas, passing_circuit, failing_circuit, orig_deltas)
+    print(test(passing_deltas, passing_circuit, failing_circuit, orig_deltas))
 
     return delta_store
 

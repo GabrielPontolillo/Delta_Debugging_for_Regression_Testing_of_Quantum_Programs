@@ -1,3 +1,5 @@
+import time
+
 from abc import ABC, abstractmethod
 from dd_regression.dd_algorithm import dd_repeat, filter_artifacts
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit
@@ -53,12 +55,22 @@ class CaseStudyInterface(ABC):
         """
         base_circuit = self.failing_circuit()
         expected_deltas = self.expected_deltas_to_isolate()
-        for i in range(5):
+        for i in range(1):
             chaff_embedded_circuit_list = add_random_chaff(base_circuit.copy())
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
-            deltas, orig_fail_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function)
-            filtered_deltas = filter_artifacts(self.passing_circuit(), chaff_embedded_circuit,
-                                               deltas, orig_fail_deltas, self.test_function)
+            # deltas, orig_fail_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function)
+            # start = time.time()
+            # filtered_deltas = filter_artifacts(self.passing_circuit(), chaff_embedded_circuit,
+            #                                    deltas, orig_fail_deltas, self.test_function)
+            bstart = time.time()
+            deltas, passing_deltas, orig_fail_deltas = dd_repeat(self.passing_circuit(), self.failing_circuit(), self.test_function)
+            bend = time.time()
+            start = time.time()
+            filtered_deltas = filter_artifacts(self.passing_circuit(), self.failing_circuit(),
+                                               deltas, passing_deltas, orig_fail_deltas, self.test_function)
+            end = time.time()
+            print(bend - bstart)
+            print(end - start)
             print(filtered_deltas)
             print(expected_deltas)
 
