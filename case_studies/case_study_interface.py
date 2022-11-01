@@ -91,7 +91,8 @@ class CaseStudyInterface(ABC):
                     #    base_circuit_list[delta['position_new']] == chaff_embedded_circuit_list[idx['position_new']]
                     #        for idx in filtered_deltas):
 
-
+            """current issue - position_old is varying for insert
+            """
             end = time.time()
             print(bend - bstart)
             print(end - start)
