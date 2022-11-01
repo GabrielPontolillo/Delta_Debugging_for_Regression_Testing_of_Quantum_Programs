@@ -3,6 +3,8 @@ import time
 from abc import ABC, abstractmethod
 from dd_regression.dd_algorithm import dd_repeat, filter_artifacts
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit
+from dd_regression.diff_algorithm import print_edit_sequence
+
 
 
 class CaseStudyInterface(ABC):
@@ -73,20 +75,18 @@ class CaseStudyInterface(ABC):
                         print("delete found")
                         found += 1
                 else:
-                    print(f"delta {delta}")
-                    print(chaff_embedded_circuit)
-                    print(chaff_embedded_circuit_list)
-                    print(base_circuit)
-                    print(base_circuit_list)
-                    for filtered_delta in filtered_deltas:
-                        if filtered_delta["operation"] == "insert":
-                            print(filtered_delta["position_new"])
-                            print(chaff_embedded_circuit_list[filtered_delta['position_new']])
-                            print(delta["position_new"])
-                            print(base_circuit_list[delta['position_new']])
-                            print("insert found")
-                        if filtered_delta["operation"] == "insert" and filtered_delta["position_old"] == delta["position_old"]:
-                            found += 1
+                    print("passing to failing orig")
+                    print_edit_sequence(expected_deltas, self.passing_circuit(), self.failing_circuit())
+                    print("passing to failing filtered chaff")
+                    print_edit_sequence(filtered_deltas, self.passing_circuit(), chaff_embedded_circuit)
+                    # print(f"delta {delta}")
+                    # print(chaff_embedded_circuit)
+                    # print(chaff_embedded_circuit_list)
+                    # print(base_circuit)
+                    # print(base_circuit_list)
+                    # for filtered_delta in filtered_deltas:
+                    #     if filtered_delta["operation"] == "insert":                        if filtered_delta["operation"] == "insert" and filtered_delta["position_old"] == delta["position_old"]:
+                    #         found += 1
                     # if any(idx.get('position_new') is not None and idx['position_old'] == delta['position_old'] and
                     #    base_circuit_list[delta['position_new']] == chaff_embedded_circuit_list[idx['position_new']]
                     #        for idx in filtered_deltas):

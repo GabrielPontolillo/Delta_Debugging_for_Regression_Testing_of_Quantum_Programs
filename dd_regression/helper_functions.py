@@ -227,3 +227,16 @@ def add_random_chaff(circuit: QuantumCircuit):
         # print(circ_list)
     # print(list_to_circuit(circ_list))
     return circ_list
+
+
+def determine_delta_application_valid(delta_position_old, base_circuit_list, filtered_delta_position_old,
+                                      chaff_embedded_circuit_list):
+    """To be able to determine whether the delta that we are applying is correct, even after chaff is applied
+        We need a way to be able to calculate whether the isolated delta is being applied in the correct location
+        (Particularly for insert deltas)
+    """
+    # check the gates before and after, make sure that filtered deltas after include all before and after
+    before_old = orig_deltas[:index]
+    after_old = orig_deltas[index + 1:]
+
+
