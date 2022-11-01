@@ -191,7 +191,7 @@ def add_random_chaff(circuit: QuantumCircuit):
     # choose how many to append
     for i in range(random.randint(1, 6)):
         # choose what identities to append
-        j = random.randint(0, 5)
+        j = random.randint(0, 1)
         target_qubit = random.randint(0, qubit_size-1)
         # print(target_qubit)
         if j == 0:
