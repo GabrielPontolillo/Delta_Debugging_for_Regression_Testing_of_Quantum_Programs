@@ -79,11 +79,12 @@ class CaseStudyInterface(ABC):
                     print(base_circuit)
                     print(base_circuit_list)
                     for filtered_delta in filtered_deltas:
-                        print(filtered_delta["position_new"])
-                        print(chaff_embedded_circuit_list[filtered_delta['position_new']])
-                        print(delta["position_new"])
-                        print(base_circuit_list[delta['position_new']])
-                        print("insert found")
+                        if filtered_delta["operation"] == "insert":
+                            print(filtered_delta["position_new"])
+                            print(chaff_embedded_circuit_list[filtered_delta['position_new']])
+                            print(delta["position_new"])
+                            print(base_circuit_list[delta['position_new']])
+                            print("insert found")
                         if filtered_delta["operation"] == "insert" and filtered_delta["position_old"] == delta["position_old"]:
                             found += 1
                     # if any(idx.get('position_new') is not None and idx['position_old'] == delta['position_old'] and
