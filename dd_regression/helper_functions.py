@@ -42,8 +42,8 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     # print_edit_sequence(orig_deltas_fixed, s1, s2)
     edit_script = calculate_offset(edit_script, orig_deltas_fixed)
     print("edit script after offset")
-    # for script in edit_script:
-    #     print(script)
+    for script in edit_script:
+        print(script)
     # print_edit_sequence(edit_script, s1, s2)
     i, new_sequence = 0, []
     for e in edit_script:
@@ -137,9 +137,9 @@ def calculate_offset(edit_script, orig_deltas):
         modified_script.append(e2)
     modified_script = sorted(modified_script, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
-    print("modified_script")
-    print(modified_script)
-    # print("\n\n")
+    # print("modified_script")
+    # print(modified_script)
+    print("out of calculate offset")
     return modified_script
 
 
@@ -189,9 +189,10 @@ def add_random_chaff(circuit: QuantumCircuit):
     # print(qarg.size)
     qubit_size = qarg.size
     # choose how many to append
-    for i in range(random.randint(1, 6)):
+    # for i in range(random.randint(1, 2)):
+    for i in range(7):
         # choose what identities to append
-        j = random.randint(0, 1)
+        j = random.randint(0, 3)
         target_qubit = random.randint(0, qubit_size-1)
         # print(target_qubit)
         if j == 0:
@@ -209,16 +210,16 @@ def add_random_chaff(circuit: QuantumCircuit):
             qc = QuantumCircuit(qubit_size)
             qc.z(target_qubit)
             qc.z(target_qubit)
-        elif j == 4:
-            qc = QuantumCircuit(qubit_size)
-            qc.h(target_qubit)
-            qc.h(target_qubit)
-        elif j == 5:
-            qc = QuantumCircuit(qubit_size)
-            qc.s(target_qubit)
-            qc.s(target_qubit)
-            qc.s(target_qubit)
-            qc.s(target_qubit)
+        # elif j == 4:
+        #     qc = QuantumCircuit(qubit_size)
+        #     qc.h(target_qubit)
+        #     qc.h(target_qubit)
+        # elif j == 5:
+        #     qc = QuantumCircuit(qubit_size)
+        #     qc.s(target_qubit)
+        #     qc.s(target_qubit)
+        #     qc.s(target_qubit)
+        #     qc.s(target_qubit)
         qc_list = circuit_to_list(qc)
         # choose where to append the chaff
         insert_location = random.randint(0, len(circ_list))
@@ -236,7 +237,13 @@ def determine_delta_application_valid(delta_position_old, base_circuit_list, fil
         (Particularly for insert deltas)
     """
     # check the gates before and after, make sure that filtered deltas after include all before and after
-    before_old = orig_deltas[:index]
-    after_old = orig_deltas[index + 1:]
+    before_old = base_circuit_list[:delta_position_old]
+    print(before_old)
+    after_old = base_circuit_list[delta_position_old + 1:]
+    print(after_old)
+    before_new = chaff_embedded_circuit_list[:filtered_delta_position_old]
+    print(before_new)
+    after_new = chaff_embedded_circuit_list[filtered_delta_position_old + 1:]
+    print(after_new)
 
 

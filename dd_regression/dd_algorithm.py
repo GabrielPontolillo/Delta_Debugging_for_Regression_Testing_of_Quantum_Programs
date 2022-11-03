@@ -17,8 +17,12 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
 
     while 1:
         print("\n  dd while loop \n")
+        print_edit_sequence(c_pass, source_pass, source_fail)
+        print("edit sequence printed")
         assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
         print("pass circumstances passed")
+        print_edit_sequence(c_fail, source_pass, source_fail)
+        print("edit sequence printed")
         assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
         print("fail circumstances failed")
 
@@ -159,7 +163,12 @@ def dd_repeat(passing_circuit, failing_circuit, test):
 
             delta_store = listunion(delta_store, min_change)
         except AssertionError as e:
+            print("assertion error")
             print(e)
+            print("failing_circuit")
+            print(failing_circuit)
+            print("passing_circuit")
+            print(passing_circuit)
             break
     print(delta_store)
     print_edit_sequence(delta_store, passing_input_list, failing_input_list)
@@ -176,18 +185,17 @@ def filter_artifacts(passing_circuit, failing_circuit, delta_store, pass_deltas,
     :param test: the test funtion to use
     :return: isolated failing deltas, cleared from artifacts
     """
-    print("\n\n\n In further narrowing \n\n\n")
+    print("\n\n\n In filter artifacts \n\n\n")
+    print("delta store")
+    print(delta_store)
     assert isinstance(test(delta_store, passing_circuit, failing_circuit, orig_deltas), Failed)
     assert isinstance(test([], passing_circuit, failing_circuit, orig_deltas), Passed)
     delta_store_len = len(delta_store)
     print(delta_store)
     print(delta_store_len)
-    passing_deltas = pass_deltas
+    passing_deltas = []
     for i in range(delta_store_len - 1):
-        print(i + 1)
         for combination in itertools.combinations(listminus(delta_store, passing_deltas), i+1):
-            print("\n")
-            # print(test(combination, passing_circuit, failing_circuit, orig_deltas))
             if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
                 print("combination passed")
                 print(combination)
@@ -195,7 +203,8 @@ def filter_artifacts(passing_circuit, failing_circuit, delta_store, pass_deltas,
                 for delta in combination:
                     if delta not in passing_deltas:
                         passing_deltas.append(delta)
-                break
+                # wrong (if multiple same length combinations are passing)
+                # break
     delta_store = listminus(delta_store, passing_deltas)
     print("\n\nfailing test")
     print(delta_store)
