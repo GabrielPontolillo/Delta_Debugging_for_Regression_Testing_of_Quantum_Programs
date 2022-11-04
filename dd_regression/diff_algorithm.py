@@ -11,7 +11,8 @@ def diff(e, f, i=0, j=0):
             for r in range(0, 2):
                 c, d, o, m = (g, p, 1, 1) if r == 0 else (p, g, 0, -1)
                 for k in range(-(h - 2 * max(0, h - M)), h - 2 * max(0, h - N) + 1, 2):
-                    a = c[(k + 1) % Z] if (k == -h or k != h and c[(k - 1) % Z] < c[(k + 1) % Z]) else c[(k - 1) % Z] + 1
+                    a = c[(k + 1) % Z] if (k == -h or k != h and c[(k - 1) % Z] < c[(k + 1) % Z]) else c[(
+                                                                                                                     k - 1) % Z] + 1
                     b = a - k
                     s, t = a, b
                     while a < N and b < M and e[(1 - o) * N + m * a + (o - 1)] == f[(1 - o) * M + m * b + (o - 1)]:
@@ -66,15 +67,15 @@ def print_edit_sequence(es, s1, s2):
                           + " in s1.")
                 else:
                     if f["position_old"] != len(s1):
-                        print("Insert " + str(s2[f["position_new"]]) + " from s2 before position " + str(s1[f["position_old"]])
+                        print("Insert " + str(s2[f["position_new"]]) + " from s2 before position " + str(
+                            s1[f["position_old"]])
                               + " into s1.")
                     else:
                         # print("Insert " + str(s2[f["position_new"]]) + " from s2 after position " + str(
                         #     s1[f["position_old"]-1])
                         #       + " into s1.")
-                    print("Insert " + str(s2[f["position_new"]]) + " from s2 before position " + str(
-                        f["position_old"])
-                          + " into s1.")
+                        print("Insert " + str(s2[f["position_new"]]) + " from s2 before position " + str(
+                            f["position_old"]) + " into s1.")
         else:
             if e["operation"] == "delete":
                 print("Delete " + str(s1[e["position_old"]]) + " from s1 at position " + str(e["position_old"])
@@ -88,5 +89,5 @@ def print_edit_sequence(es, s1, s2):
                     # print("Insert " + str(s2[e["position_new"]]) + " from s2 after position " + str(
                     #     s1[e["position_old"] - 1])
                     #       + " into s1.")
-                print("Insert " + str(s2[e["position_new"]]) + " from s2 before position " + str(e["position_old"])
-                      + " into s1.")
+                    print("Insert " + str(s2[e["position_new"]]) + " from s2 before position " + str(e["position_old"])
+                          + " into s1.")
