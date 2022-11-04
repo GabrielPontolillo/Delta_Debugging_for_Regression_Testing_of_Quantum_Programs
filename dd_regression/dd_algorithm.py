@@ -17,13 +17,23 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
 
     while 1:
         print("\n  dd while loop \n")
+
         print_edit_sequence(c_pass, source_pass, source_fail)
         print("edit sequence printed")
-        assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
+        try:
+            assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
+        except AssertionError as e:
+            print("one failure for passing circumstances, retrying")
+            assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
         print("pass circumstances passed")
+
         print_edit_sequence(c_fail, source_pass, source_fail)
         print("edit sequence printed")
-        assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
+        try:
+            assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
+        except AssertionError as e:
+            print("one failure for failing circumstances, retrying")
+            assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
         print("fail circumstances failed")
 
         # print("pass")

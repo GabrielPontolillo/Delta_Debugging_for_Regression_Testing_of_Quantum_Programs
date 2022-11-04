@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dd_regression.dd_algorithm import dd_repeat, filter_artifacts
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit, \
     determine_delta_application_valid, apply_edit_script
-from dd_regression.diff_algorithm import print_edit_sequence
+from dd_regression.diff_algorithm import print_edit_sequence, diff
 
 
 class CaseStudyInterface(ABC):
@@ -111,6 +111,8 @@ class CaseStudyInterface(ABC):
             print(base_circuit)
             # print(list_to_circuit(apply_edit_script(expected_deltas, circuit_to_list(self.passing_circuit()),
             #                                         base_circuit_list, expected_deltas)))
+            print_edit_sequence(diff(circuit_to_list(self.passing_circuit()), chaff_embedded_circuit_list),
+                                self.passing_circuit(), chaff_embedded_circuit)
         print(found)
 
         # filtered_deltas = self.run_dd()
