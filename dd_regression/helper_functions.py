@@ -29,24 +29,18 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
                 orig_deltas_fixed.append(e)
         else:
             orig_deltas_fixed.append(elem)
+    """Removed sorted"""
     edit_script = sorted(fixed, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
-    # print("edit script")
-    # for script in edit_script:
-    #     print(script)
-    # print_edit_sequence(edit_script, s1, s2)
-    # print("original deltas fixed")
-    # print(orig_deltas_fixed)
-    # for script in orig_deltas_fixed:
-    #     print(script)
-    # print_edit_sequence(orig_deltas_fixed, s1, s2)
     edit_script = calculate_offset(edit_script, orig_deltas_fixed)
     print("edit script after offset")
+
     for script in edit_script:
         print(script)
-    # print_edit_sequence(edit_script, s1, s2)
     i, new_sequence = 0, []
+
     for e in edit_script:
+        print(e)
         while e["position_old"] > i:
             if len(s1) > i:
                 new_sequence.append(s1[i])
@@ -66,6 +60,43 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     return new_sequence
 
 
+# def calculate_offset(edit_script, orig_deltas):
+#     """
+#     Calculate offset to apply to the deltas, when only subsets of the overall deltas are applied
+#     :param edit_script:
+#     :param orig_deltas:
+#     :return:
+#     """
+#     print("############\n in calculate offset \n##############")
+#     modified_script = []
+#
+#     for delta in edit_script:
+#         offset = 0
+#         index = orig_deltas.index(delta)
+#         # before = orig_deltas[:index]
+#         after = orig_deltas[index + 1:]
+#         consec = 0
+#         for idx, elem in enumerate(after):
+#             if elem not in edit_script:
+#                 if elem["operation"] == "delete" and elem["position_old"] == delta["position_old"]:
+#                     """check consecutive deletions"""
+#                     offset += 1
+#                     consec += 1
+#                 pass
+#         delta["offset"] = offset
+#     for elem in edit_script:
+#         e2 = elem.copy()
+#         if e2["operation"] != "delete":
+#             e2["position_old"] = elem["position_old"] + elem["offset"]
+#         modified_script.append(e2)
+#     """removed sorted"""
+#     modified_script = sorted(modified_script, key=lambda k: (
+#         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
+#     # print("modified_script")
+#     # print(modified_script)
+#     print("out of calculate offset")
+#     return modified_script
+
 def calculate_offset(edit_script, orig_deltas):
     """
     Calculate offset to apply to the deltas, when only subsets of the overall deltas are applied
@@ -74,72 +105,46 @@ def calculate_offset(edit_script, orig_deltas):
     :return:
     """
     print("############\n in calculate offset \n##############")
-    # for script in orig_deltas:
-    #     print(script)
-    # print("edit script")
-    # for script in edit_script:
-    #     print(script)
+    print(edit_script)
+    print(orig_deltas)
     modified_script = []
-    for delta in edit_script:
+    for i, delta in enumerate(edit_script):
+        print("\n---")
+        print(delta)
+        print("---\n")
         offset = 0
-        index = orig_deltas.index(delta)
-        # print("id, delta, before, after")
-        # print(f"index {index}")
-        # print(f"delta {delta}")
-        # before = orig_deltas[:index]
-        # print(f"before {before}")
-        after = orig_deltas[index + 1:]
-        # print(f"after {after}")
-        # for elem in before:
-        # print("elem")
-        # print(elem)
-        # if elem not in edit_script:
-        # print("elem not in script")
-        # print(elem)
-        # if elem["operation"] == "insert" and elem["position_old"] == delta["position_old"]:
-        #     offset += 1
-        # if elem["operation"] == "delete":
-        #     offset -= 1
-        # if elem["operation"] == "delete":
-        #     offset -= 1
-        # pass
         consec = 0
-        for elem in after:
-            # print("elem")
-            # print(elem)
-            if elem not in edit_script:
-                # print("elem not in script")
-                # print(elem)
-                # if elem["operation"] == "insert" and elem["position_old"] == delta["position_old"]:
-                #     offset -= 1
-                # if elem["operation"] == "delete":
-                #     offset -= 1
-                # if elem["operation"] == "delete" and elem["position_old"] == delta["position_old"] + consec:
-                #     print(f"elem pos {elem['position_old']}")
-                #     print(f"delta pos {delta['position_old']}")
-                #     print(f"consec {consec}")
-                #     offset += 1
-                #     consec += 1
-                if elem["operation"] == "delete" and elem["position_old"] == delta["position_old"]:
-                    # print(f"elem pos {elem['position_old']}")
-                    # print(f"delta pos {delta['position_old']}")
-                    # print(f"consec {consec}")
-                    offset += 1
-                    consec += 1
-                pass
+        after = listminus(orig_deltas[i + 1:], edit_script)
+        print(after)
+        for j, elem in enumerate(after):
+            if after[j]["operation"] == "delete" and after[j]["position_old"] == edit_script[i]["position_old"] + consec:
+                consec += 1
+                offset += 1
+                print(after[j])
+                print(edit_script[i])
         delta["offset"] = offset
-    # print("edit_script")
-    # print(edit_script)
+    # for delta in edit_script:
+    #     offset = 0
+    #     index = orig_deltas.index(delta)
+    #     after = orig_deltas[index + 1:]
+    #     consec = 0
+    #     for idx, elem in enumerate(after):
+    #         if elem not in edit_script:
+    #             if elem["operation"] == "delete" and elem["position_old"] == delta["position_old"]:
+    #                 """check consecutive deletions"""
+    #                 offset += 1
+    #                 consec += 1
+    #             pass
+    #     delta["offset"] = offset
     for elem in edit_script:
         e2 = elem.copy()
-        if e2["operation"] != "delete":
-            e2["position_old"] = elem["position_old"] + elem["offset"]
-        modified_script.append(e2)
+    if e2["operation"] != "delete":
+        e2["position_old"] = elem["position_old"] + elem["offset"]
+    modified_script.append(e2)
     modified_script = sorted(modified_script, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
-    # print("modified_script")
-    # print(modified_script)
     print("out of calculate offset")
+    print(modified_script)
     return modified_script
 
 
@@ -193,7 +198,7 @@ def add_random_chaff(circuit: QuantumCircuit):
     for i in range(7):
         # choose what identities to append
         j = random.randint(0, 3)
-        target_qubit = random.randint(0, qubit_size-1)
+        target_qubit = random.randint(0, qubit_size - 1)
         # print(target_qubit)
         if j == 0:
             qc = QuantumCircuit(qubit_size)
@@ -247,3 +252,15 @@ def determine_delta_application_valid(delta_position_old, base_circuit_list, fil
     print(after_new)
 
 
+def listminus(c1, c2):
+    """Return all elements of C1 that are not in C2.
+    Assumes elements of C1 are hashable."""
+    diffs = []
+    for elem in c1:
+        found = False
+        for elem2 in c2:
+            if elem == elem2:
+                found = True
+        if not found:
+            diffs.append(elem)
+    return diffs

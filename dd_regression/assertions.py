@@ -541,9 +541,6 @@ def holm_bonferroni_correction(p_value_set, family_wise_alpha):
             else:
                 valuearr.append((tuple[0], tuple[1], pvalue))
 
-                # print("correction")
-    # print(valuearr)
-
     # p_values = [1 if math.isnan(x) else x for x in p_values]
     valuearr.sort(key=lambda arr: arr[2])
     # print(valuearr)

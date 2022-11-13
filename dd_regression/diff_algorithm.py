@@ -67,9 +67,10 @@ def print_edit_sequence(es, s1, s2):
                           + " in s1.")
                 else:
                     if f["position_old"] != len(s1):
+                        # print("Insert " + str(s2[f["position_new"]]) + " from s2 before position " + str(
+                        #     s1[f["position_old"]]) + " into s1.")
                         print("Insert " + str(s2[f["position_new"]]) + " from s2 before position " + str(
-                            s1[f["position_old"]])
-                              + " into s1.")
+                            f["position_old"]) + " into s1.")
                     else:
                         # print("Insert " + str(s2[f["position_new"]]) + " from s2 after position " + str(
                         #     s1[f["position_old"]-1])
@@ -82,9 +83,11 @@ def print_edit_sequence(es, s1, s2):
                       + " in s1.")
             else:
                 if e["position_old"] != len(s1):
-                    print("Insert " + str(s2[e["position_new"]]) + " from s2 before position " + str(
-                        s1[e["position_old"]])
+                    print("Insert " + str(s2[e["position_new"]]) + " from s2 before position " + str(e["position_old"])
                           + " into s1.")
+                    # print("Insert " + str(s2[e["position_new"]]) + " from s2 before position " + str(
+                    #     s1[e["position_old"]])
+                    #       + " into s1.")
                 else:
                     # print("Insert " + str(s2[e["position_new"]]) + " from s2 after position " + str(
                     #     s1[e["position_old"] - 1])
