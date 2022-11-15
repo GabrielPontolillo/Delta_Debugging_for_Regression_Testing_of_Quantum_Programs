@@ -18,20 +18,6 @@ warnings.simplefilter(action='ignore', category=DeprecationWarning)
 backend = Aer.get_backend('aer_simulator')
 
 
-# class QFTSynthetic(CaseStudyInterface):
-#     # failing circuit without parameter input for length
-#     # fixed length of 3
-#     @staticmethod
-#     def qft_basic():
-#         qft_circuit = QuantumCircuit(3)
-#         for i in range(3):
-#             qft_circuit.h(2 - i)
-#             phase_ctr = 2 - i
-#             for j in range(2 - i):
-#                 qft_circuit.cp(np.pi / 2 ** phase_ctr, j, 2 - i)
-#                 phase_ctr -= 1
-#         return qft_circuit
-
 class QFTSynthetic(CaseStudyInterface):
     # failing circuit without parameter input for length
     # fixed length of 3
@@ -46,45 +32,50 @@ class QFTSynthetic(CaseStudyInterface):
                 phase_ctr -= 1
         return qft_circuit
 
+# class QFTSynthetic(CaseStudyInterface):
+#     # failing circuit without parameter input for length
+#     # fixed length of 3
+#     @staticmethod
+#     def qft_basic():
+#         qft_circuit = QuantumCircuit(3)
+#         for i in range(3):
+#             qft_circuit.h(2 - i)
+#             phase_ctr = 2 - i
+#             for j in range(2 - i):
+#                 qft_circuit.cp(np.pi / 2 ** phase_ctr, j, 2 - i)
+#                 phase_ctr -= 1
+#         return qft_circuit
+
+    @staticmethod
+    def qft_update(length):
+        qft_circuit = QuantumCircuit(length)
+        for i in range(length):
+            qft_circuit.h((length - 1) - i)
+            phase_ctr = length - i
+            for j in range((length - 1) - i):
+                qft_circuit.cp(np.pi / 2 ** phase_ctr, j, (length - 1) - i)
+                phase_ctr -= 1
+        return qft_circuit
+
     # @staticmethod
     # def qft_update(length):
     #     qft_circuit = QuantumCircuit(length)
-    #     # qft_circuit.x(0)
-    #     # qft_circuit.x(0)
     #     # qft_circuit.i(1)
-    #     # qft_circuit.x(0)
     #     # qft_circuit.x(0)
     #     # qft_circuit.x(1)
     #     # qft_circuit.x(1)
     #     # qft_circuit.x(1)
     #     # qft_circuit.x(1)
     #     for i in range(length):
+    #         if i == 0:
+    #             qft_circuit.x(0)
     #         qft_circuit.h((length - 1) - i)
+    #         qft_circuit.x(0)
     #         phase_ctr = length - i
     #         for j in range((length - 1) - i):
     #             qft_circuit.cp(np.pi / 2 ** phase_ctr, j, (length - 1) - i)
     #             phase_ctr -= 1
     #     return qft_circuit
-
-    @staticmethod
-    def qft_update(length):
-        qft_circuit = QuantumCircuit(length)
-        # qft_circuit.i(1)
-        # qft_circuit.x(0)
-        # qft_circuit.x(1)
-        # qft_circuit.x(1)
-        # qft_circuit.x(1)
-        # qft_circuit.x(1)
-        for i in range(length):
-            if i == 0:
-                qft_circuit.x(0)
-            qft_circuit.h((length - 1) - i)
-            qft_circuit.x(0)
-            phase_ctr = length - i
-            for j in range((length - 1) - i):
-                qft_circuit.cp(np.pi / 2 ** phase_ctr, j, (length - 1) - i)
-                phase_ctr -= 1
-        return qft_circuit
 
     def expected_deltas_to_isolate(self):
         return [{'operation': 'delete', 'position_old': 1},
@@ -192,9 +183,9 @@ class QFTSynthetic(CaseStudyInterface):
 
 if __name__ == "__main__":
     qft = QFTSynthetic()
-    diffs = diff(qft.passing_circuit(), qft.failing_circuit())
-    apply_edit_script([diffs[0]], qft.passing_circuit(), qft.failing_circuit(), diffs)
+    # diffs = diff(qft.passing_circuit(), qft.failing_circuit())
+    # apply_edit_script([diffs[1]], qft.passing_circuit(), qft.failing_circuit(), diffs)
 
-    # qft.analyse_results()
+    qft.analyse_results()
 
 

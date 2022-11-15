@@ -123,24 +123,10 @@ def calculate_offset(edit_script, orig_deltas):
                 print(after[j])
                 print(edit_script[i])
         delta["offset"] = offset
-    # for delta in edit_script:
-    #     offset = 0
-    #     index = orig_deltas.index(delta)
-    #     after = orig_deltas[index + 1:]
-    #     consec = 0
-    #     for idx, elem in enumerate(after):
-    #         if elem not in edit_script:
-    #             if elem["operation"] == "delete" and elem["position_old"] == delta["position_old"]:
-    #                 """check consecutive deletions"""
-    #                 offset += 1
-    #                 consec += 1
-    #             pass
-    #     delta["offset"] = offset
-    for elem in edit_script:
-        e2 = elem.copy()
-    if e2["operation"] != "delete":
-        e2["position_old"] = elem["position_old"] + elem["offset"]
-    modified_script.append(e2)
+        e2 = delta.copy()
+        if e2["operation"] != "delete":
+            e2["position_old"] = delta["position_old"] + delta["offset"]
+        modified_script.append(e2)
     modified_script = sorted(modified_script, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
     print("out of calculate offset")
