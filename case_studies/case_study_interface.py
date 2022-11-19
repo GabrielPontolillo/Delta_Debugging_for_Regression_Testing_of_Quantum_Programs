@@ -3,11 +3,15 @@ import time
 from abc import ABC, abstractmethod
 from dd_regression.dd_algorithm import dd_repeat, filter_artifacts
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit, \
-    determine_delta_application_valid, apply_edit_script
+    determine_delta_application_valid, apply_edit_script, list_contains_list_in_same_order
 from dd_regression.diff_algorithm import print_edit_sequence, diff
 
 
 class CaseStudyInterface(ABC):
+    @abstractmethod
+    def get_algorithm_name(self):
+        pass
+
     @abstractmethod
     def expected_deltas_to_isolate(self):
         """
@@ -58,13 +62,15 @@ class CaseStudyInterface(ABC):
         base_circuit = self.failing_circuit()
         base_circuit_list = circuit_to_list(self.failing_circuit())
         expected_deltas = self.expected_deltas_to_isolate()
-        found = 0
-        for i in range(1):
+        expected_found = 0
+        artifact_tally = 0
+        expected_found_tally = 0
+        filtered_deltas_len_tally = 0
+        loops = 10
+        for i in range(loops):
+            print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(base_circuit.copy())
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
-            print(self.passing_circuit())
-            print(base_circuit)
-            print(chaff_embedded_circuit)
             bstart = time.time()
             deltas, passing_deltas, orig_fail_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit,
                                                                  self.test_function)
@@ -72,33 +78,60 @@ class CaseStudyInterface(ABC):
             start = time.time()
             filtered_deltas = filter_artifacts(self.passing_circuit(), chaff_embedded_circuit,
                                                deltas, passing_deltas, orig_fail_deltas, self.test_function)
-            # for delta in expected_deltas:
-            #     if delta["operation"] == "delete":
-            #         if any(idx['position_old'] == delta['position_old'] for idx in filtered_deltas):
-            #             print("delete found")
-            #             found += 1
-            #     else:
-            #         for f_delta in filtered_deltas:
-            #             pass
+            print("listing off deltas")
+
+            for filtered in filtered_deltas:
+                if filtered.get("offset") is not None:
+                    filtered.pop("offset")
+
+            filtered_copy = filtered_deltas.copy()
+
+            expected_found = 0
+            for e, exp in enumerate(expected_deltas):
+                elem_found = False
+                if exp["operation"] == "delete":
+                    if exp in filtered_copy:
+                        expected_found += 1
+                else:
+                    target = base_circuit_list[exp.get("position_new")][0]
+                    print(target)
+                    print(exp.get("position_new"))
+                    res = [x for x in filtered_copy if x.get("operation") == "insert" and chaff_embedded_circuit_list[x.get("position_new")][0] == target]
+                    print(".................           res            ...............")
+                    print(res)
+                    for elem in res:
+                        print(elem)
+                        print(elem.get("position_new"))
+                        after_base = base_circuit_list[exp.get("position_new") + 1:]
+                        before_base = base_circuit_list[:exp.get("position_new")]
+                        after_chaff = chaff_embedded_circuit_list[elem.get("position_new") + 1:]
+                        before_chaff = chaff_embedded_circuit_list[:elem.get("position_new")]
+                        after_check = list_contains_list_in_same_order(after_chaff, after_base)
+                        before_check = list_contains_list_in_same_order(before_chaff, before_base)
+                        # print("\nbefore base")
+                        # [print(x) for x in before_base]
+                        # print("\nbefore chaff")
+                        # [print(x) for x in before_chaff]
+                        # print("\nafter base")
+                        # [print(x) for x in after_base]
+                        # print("\nafter chaff")
+                        # [print(x) for x in after_chaff]
+                        # print(before_check)
+                        # print(after_check)
+                        if after_check and before_check:
+                            print("after and before check passed")
+                            print(elem)
+                            filtered_copy.remove(elem)
+                            expected_found += 1
+                            break
+            expected_found_tally += expected_found
+            artifact_tally += len(filtered_deltas) - expected_found
+            filtered_deltas_len_tally += len(filtered_deltas)
+
             print("passing to failing orig")
             print_edit_sequence(expected_deltas, self.passing_circuit(), self.failing_circuit())
             print("passing to failing filtered chaff")
             print_edit_sequence(filtered_deltas, self.passing_circuit(), chaff_embedded_circuit)
-            # print("determine validity")
-            # determine_delta_application_valid(delta["position_old"], base_circuit_list,
-            #                                   )
-            # print(f"delta {delta}")
-            # print(chaff_embedded_circuit)
-            # print(chaff_embedded_circuit_list)
-            # print(base_circuit)
-            # print(base_circuit_list)
-            # for filtered_delta in filtered_deltas:
-            #     if filtered_delta["operation"] == "insert":                        if filtered_delta["operation"] == "insert" and filtered_delta["position_old"] == delta["position_old"]:
-            #         found += 1
-            # if any(idx.get('position_new') is not None and idx['position_old'] == delta['position_old'] and
-            #    base_circuit_list[delta['position_new']] == chaff_embedded_circuit_list[idx['position_new']]
-            #        for idx in filtered_deltas):
-
             """current issue - compare failing circuit locations (with chaff and without)
                 look where inserted gate matches apply only that delta, compare gates before and after?
             """
@@ -106,55 +139,26 @@ class CaseStudyInterface(ABC):
             print(bend - bstart)
             print(end - start)
             print(chaff_embedded_circuit)
-            # print(list_to_circuit(apply_edit_script(filtered_deltas, circuit_to_list(self.passing_circuit()),
-            #                         chaff_embedded_circuit_list, orig_fail_deltas)))
+            print("apply script timing")
+            print(end - start)
             print(base_circuit)
             # print(list_to_circuit(apply_edit_script(expected_deltas, circuit_to_list(self.passing_circuit()),
             #                                         base_circuit_list, expected_deltas)))
             print_edit_sequence(diff(circuit_to_list(self.passing_circuit()), chaff_embedded_circuit_list),
                                 self.passing_circuit(), chaff_embedded_circuit)
-        print(found)
+            if artifact_tally > 0:
+                assert False
+        print(f"expected_found {expected_found_tally}")
+        print(f"length expected deltas * loops {len(expected_deltas * loops)}")
+        print(f"artifact tally {artifact_tally}")
+        """add length of all filtered deltas"""
+        print(f"{(expected_found_tally*100) / len(expected_deltas*loops)}% expected deltas found")
+        print(f"{artifact_tally*100/filtered_deltas_len_tally}% percentage of artifacts in results")
+        print(self.get_algorithm_name())
 
-        # filtered_deltas = self.run_dd()
-        # need to know what it was before chaff was added
-        # compare the position_new parts as those are the ones changed
-
-        # found = 0
-        # not_found = 0
-        # for delta in filtered_deltas:
-        #     if delta[""] == expected_deltas:
-        #         found += 1
-        #     else:
-        #         not_found += 1
-        # should never be able to find more than expected deltas
-        # assert found <= len(expected_deltas)
-        # percent_deltas_isolated = (found/len(expected_deltas)) * 100
-        # percent_chaff_isolated = (1 - found/len(filtered_deltas)) * 100
-        # return percent_deltas_isolated, percent_chaff_isolated
 
     def run_dd(self):
         deltas, orig_fail_deltas = dd_repeat(self.passing_circuit(), self.failing_circuit(), self.test_function)
         filtered_deltas = filter_artifacts(self.passing_circuit(), self.failing_circuit(),
                                            deltas, orig_fail_deltas, self.test_function)
         return filtered_deltas
-
-    # def analyse_results(self):
-    #     pre_chaff_circuit_list = circuit_to_list(self.failing_circuit())
-    #     expected_deltas = self.expected_deltas_to_isolate()
-    #     filtered_deltas = self.run_dd()
-    #     # need to know what it was before chaff was added
-    #     # compare the position_new parts as those are the ones changed
-    #     print(filtered_deltas)
-    #     print(expected_deltas)
-    #     found = 0
-    #     not_found = 0
-    #     for delta in filtered_deltas:
-    #         if delta[""] == expected_deltas:
-    #             found += 1
-    #         else:
-    #             not_found += 1
-    #     # should never be able to find more than expected deltas
-    #     assert found <= len(expected_deltas)
-    #     percent_deltas_isolated = (found/len(expected_deltas)) * 100
-    #     percent_chaff_isolated = (1 - found/len(filtered_deltas)) * 100
-    #     return percent_deltas_isolated, percent_chaff_isolated

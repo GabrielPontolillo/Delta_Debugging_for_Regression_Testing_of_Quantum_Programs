@@ -36,17 +36,17 @@ def assertPhase(backend, quantumCircuit, qubits_to_assert, expected_phases, meas
     ## if x and y counts are both 25/25/25/25, it means that we cannot calculate a phase
     ## we assume that a qubit that is in |0> or |1> position to have 50% chance to fall
     ## either way, like a coin toss: We treat X and Y results like coin tosses
-    pValues = pd.DataFrame(columns=['X', 'Y'])
-    pValues['X'] = resDf.apply(lambda row: applyChiSquareX(row, measurements_to_make / 2), axis=1)
-    pValues['Y'] = resDf.apply(lambda row: applyChiSquareY(row, measurements_to_make / 2), axis=1)
-
-    ## check p values on chi square test, we use a low value to be sure that
-    ## we only except if we are certain there is an issue with the x, y results
-    pValues = pValues > 0.00001
-
-    ## if both pvalues are more than 0.00001, we are pretty certain that the results follow an even distribution
-    ## likely that the qubit is not in the fourier basis (very likely in the |0> or |1> state)
-    pValues.apply(lambda row: assertIfBothTrue(row), axis=1)
+    # pValues = pd.DataFrame(columns=['X', 'Y'])
+    # pValues['X'] = resDf.apply(lambda row: applyChiSquareX(row, measurements_to_make / 2), axis=1)
+    # pValues['Y'] = resDf.apply(lambda row: applyChiSquareY(row, measurements_to_make / 2), axis=1)
+    #
+    # ## check p values on chi square test, we use a low value to be sure that
+    # ## we only except if we are certain there is an issue with the x, y results
+    # pValues = pValues > 0.00001
+    #
+    # ## if both pvalues are more than 0.00001, we are pretty certain that the results follow an even distribution
+    # ## likely that the qubit is not in the fourier basis (very likely in the |0> or |1> state)
+    # pValues.apply(lambda row: assertIfBothTrue(row), axis=1)
 
     ## this sequence of operations converts from measured results
     ## into an angle for phase:

@@ -19,22 +19,18 @@ def dd(c_pass, c_fail, test, orig_deltas, source_pass = None, source_fail = None
         print("\n  dd while loop \n")
 
         print_edit_sequence(c_pass, source_pass, source_fail)
-        print("edit sequence printed")
         try:
             assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
         except AssertionError as e:
             print("one failure for passing circumstances, retrying")
             assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
-        print("pass circumstances passed")
 
         print_edit_sequence(c_fail, source_pass, source_fail)
-        print("edit sequence printed")
         try:
             assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
         except AssertionError as e:
             print("one failure for failing circumstances, retrying")
             assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
-        print("fail circumstances failed")
 
         # print("pass")
         # print_edit_sequence(c_pass,  source_pass, source_fail)
@@ -197,22 +193,24 @@ def filter_artifacts(passing_circuit, failing_circuit, delta_store, pass_deltas,
     """
     print("\n\n\n In filter artifacts \n\n\n")
     print("delta store")
-    print(delta_store)
-    assert isinstance(test(delta_store, passing_circuit, failing_circuit, orig_deltas), Failed)
-    assert isinstance(test([], passing_circuit, failing_circuit, orig_deltas), Passed)
+    print(list_to_circuit(apply_edit_script(delta_store, passing_circuit, failing_circuit, orig_deltas)))
+    print(list_to_circuit(apply_edit_script(orig_deltas, passing_circuit, failing_circuit, orig_deltas)))
+
     delta_store_len = len(delta_store)
-    print(delta_store)
-    print(delta_store_len)
     passing_deltas = []
     for i in range(delta_store_len - 1):
         for combination in itertools.combinations(listminus(delta_store, passing_deltas), i+1):
-            if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
-                print("combination passed")
-                print(combination)
-                # print_edit_sequence(combination, passing_circuit,  failing_circuit)
-                for delta in combination:
-                    if delta not in passing_deltas:
-                        passing_deltas.append(delta)
+            # print(combination)
+            # print(".....")
+            # print(passing_deltas)
+            if not any(x in combination for x in passing_deltas) and isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
+                print("retrying")
+                if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
+                    print("combination passed")
+                    print_edit_sequence(combination, passing_circuit,  failing_circuit)
+                    for delta in combination:
+                        if delta not in passing_deltas:
+                            passing_deltas.append(delta)
                 # wrong (if multiple same length combinations are passing)
                 # break
     delta_store = listminus(delta_store, passing_deltas)

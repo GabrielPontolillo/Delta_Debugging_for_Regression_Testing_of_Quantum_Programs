@@ -13,7 +13,7 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     :param orig_deltas:
     :return:
     """
-    print("##############\nin apply edit script\n#############")
+    print("##############in apply edit script#############")
     # print_edit_sequence(edit_script, s1, s2)
     fixed = []
     orig_deltas_fixed = []
@@ -33,14 +33,10 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     edit_script = sorted(fixed, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
     edit_script = calculate_offset(edit_script, orig_deltas_fixed)
-    print("edit script after offset")
 
-    for script in edit_script:
-        print(script)
     i, new_sequence = 0, []
 
     for e in edit_script:
-        print(e)
         while e["position_old"] > i:
             if len(s1) > i:
                 new_sequence.append(s1[i])
@@ -60,68 +56,34 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     return new_sequence
 
 
-# def calculate_offset(edit_script, orig_deltas):
-#     """
-#     Calculate offset to apply to the deltas, when only subsets of the overall deltas are applied
-#     :param edit_script:
-#     :param orig_deltas:
-#     :return:
-#     """
-#     print("############\n in calculate offset \n##############")
-#     modified_script = []
-#
-#     for delta in edit_script:
-#         offset = 0
-#         index = orig_deltas.index(delta)
-#         # before = orig_deltas[:index]
-#         after = orig_deltas[index + 1:]
-#         consec = 0
-#         for idx, elem in enumerate(after):
-#             if elem not in edit_script:
-#                 if elem["operation"] == "delete" and elem["position_old"] == delta["position_old"]:
-#                     """check consecutive deletions"""
-#                     offset += 1
-#                     consec += 1
-#                 pass
-#         delta["offset"] = offset
-#     for elem in edit_script:
-#         e2 = elem.copy()
-#         if e2["operation"] != "delete":
-#             e2["position_old"] = elem["position_old"] + elem["offset"]
-#         modified_script.append(e2)
-#     """removed sorted"""
-#     modified_script = sorted(modified_script, key=lambda k: (
-#         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
-#     # print("modified_script")
-#     # print(modified_script)
-#     print("out of calculate offset")
-#     return modified_script
-
 def calculate_offset(edit_script, orig_deltas):
     """
     Calculate offset to apply to the deltas, when only subsets of the overall deltas are applied
-    :param edit_script:
-    :param orig_deltas:
+    look at the missing deltas from the original set of deltas, for each delta in the subset of deltas applied,
+    we look at the missing deletion deltas after with the same position_old and consecutive deletions thereafter
+    we apply an offset for each consecutive deletion after, such that the deltas can be applied correctly
+    :param edit_script: the list of deltas that (subset)
+    :param orig_deltas: original list of deltas (to compare ordering)
     :return:
     """
-    print("############\n in calculate offset \n##############")
-    print(edit_script)
-    print(orig_deltas)
+    # print("############ in calculate offset ##############")
+    # print(edit_script)
+    # print(orig_deltas)
     modified_script = []
     for i, delta in enumerate(edit_script):
-        print("\n---")
-        print(delta)
-        print("---\n")
+        # print("\n---")
+        # print(delta)
+        # print("---\n")
         offset = 0
         consec = 0
         after = listminus(orig_deltas[i + 1:], edit_script)
-        print(after)
+        # print(after)
         for j, elem in enumerate(after):
             if after[j]["operation"] == "delete" and after[j]["position_old"] == edit_script[i]["position_old"] + consec:
                 consec += 1
                 offset += 1
-                print(after[j])
-                print(edit_script[i])
+                # print(after[j])
+                # print(edit_script[i])
         delta["offset"] = offset
         e2 = delta.copy()
         if e2["operation"] != "delete":
@@ -130,7 +92,7 @@ def calculate_offset(edit_script, orig_deltas):
     modified_script = sorted(modified_script, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
     print("out of calculate offset")
-    print(modified_script)
+    # print(modified_script)
     return modified_script
 
 
@@ -181,9 +143,9 @@ def add_random_chaff(circuit: QuantumCircuit):
     qubit_size = qarg.size
     # choose how many to append
     # for i in range(random.randint(1, 2)):
-    for i in range(7):
+    for i in range(5):
         # choose what identities to append
-        j = random.randint(0, 3)
+        j = random.randint(0, 4)
         target_qubit = random.randint(0, qubit_size - 1)
         # print(target_qubit)
         if j == 0:
@@ -201,16 +163,16 @@ def add_random_chaff(circuit: QuantumCircuit):
             qc = QuantumCircuit(qubit_size)
             qc.z(target_qubit)
             qc.z(target_qubit)
-        # elif j == 4:
-        #     qc = QuantumCircuit(qubit_size)
-        #     qc.h(target_qubit)
-        #     qc.h(target_qubit)
-        # elif j == 5:
-        #     qc = QuantumCircuit(qubit_size)
-        #     qc.s(target_qubit)
-        #     qc.s(target_qubit)
-        #     qc.s(target_qubit)
-        #     qc.s(target_qubit)
+        elif j == 4:
+            qc = QuantumCircuit(qubit_size)
+            qc.h(target_qubit)
+            qc.h(target_qubit)
+        elif j == 5:
+            qc = QuantumCircuit(qubit_size)
+            qc.s(target_qubit)
+            qc.s(target_qubit)
+            qc.s(target_qubit)
+            qc.s(target_qubit)
         qc_list = circuit_to_list(qc)
         # choose where to append the chaff
         insert_location = random.randint(0, len(circ_list))
@@ -250,3 +212,13 @@ def listminus(c1, c2):
         if not found:
             diffs.append(elem)
     return diffs
+
+
+def list_contains_list_in_same_order(larger_list, smaller_list):
+    l = larger_list.copy()
+    s = smaller_list.copy()
+    for elem in l:
+        if len(s) > 0 and elem == s[0]:
+            s.pop(0)
+    return len(s) == 0
+

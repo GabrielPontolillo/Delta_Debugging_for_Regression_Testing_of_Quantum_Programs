@@ -19,6 +19,9 @@ backend = Aer.get_backend('aer_simulator')
 
 
 class QFTSynthetic(CaseStudyInterface):
+    def get_algorithm_name(self):
+        return "QFT Synthetic"
+
     # failing circuit without parameter input for length
     # fixed length of 3
     @staticmethod
@@ -127,7 +130,7 @@ class QFTSynthetic(CaseStudyInterface):
 
         passing_input_list = src_passing
         failing_input_list = src_failing
-        print(list_to_circuit(passing_input_list))
+        # print(list_to_circuit(passing_input_list))
         changed_circuit_list = apply_edit_script(deltas, passing_input_list, failing_input_list, original_deltas)
         qlength, clength = get_quantum_register(changed_circuit_list)
         changed_circuit = list_to_circuit(changed_circuit_list)
@@ -184,6 +187,7 @@ class QFTSynthetic(CaseStudyInterface):
 if __name__ == "__main__":
     qft = QFTSynthetic()
     # diffs = diff(qft.passing_circuit(), qft.failing_circuit())
+    #
     # apply_edit_script([diffs[1]], qft.passing_circuit(), qft.failing_circuit(), diffs)
 
     qft.analyse_results()
