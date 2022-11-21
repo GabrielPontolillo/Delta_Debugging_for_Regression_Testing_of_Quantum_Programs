@@ -32,7 +32,7 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     """Removed sorted"""
     edit_script = sorted(fixed, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
-    edit_script = calculate_offset(edit_script, orig_deltas_fixed)
+    edit_script = calculate_offset(edit_script, orig_deltas_fixed, s1, s2)
 
     i, new_sequence = 0, []
 
@@ -56,7 +56,7 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     return new_sequence
 
 
-def calculate_offset(edit_script, orig_deltas):
+def calculate_offset(edit_script, orig_deltas, orig_circ, mod_circ):
     """
     Calculate offset to apply to the deltas, when only subsets of the overall deltas are applied
     look at the missing deltas from the original set of deltas, for each delta in the subset of deltas applied,
@@ -79,11 +79,20 @@ def calculate_offset(edit_script, orig_deltas):
         after = listminus(orig_deltas[i + 1:], edit_script)
         # print(after)
         for j, elem in enumerate(after):
+            # if delete missing as the same position as the delta in edit script, as well as consequent ones
+            # however, if element we need to insert is the same as (need further mod)
             if after[j]["operation"] == "delete" and after[j]["position_old"] == edit_script[i]["position_old"] + consec:
+                print("check in calc offset")
+                print(orig_circ[edit_script[i]["position_old"] + consec])
+                print(orig_circ[after[j]["position_old"] + consec])
+                # print(mod_circ[edit_script[i]["position_new"]])
+            # if after[j]["operation"] == "delete" and (after[j]["position_old"] == edit_script[i]["position_old"] + consec or orig_circ[edit_script[i]["position_old"] + consec] == mod_circ[edit_script[i]["position_new"]]):
                 consec += 1
                 offset += 1
-                # print(after[j])
-                # print(edit_script[i])
+            #     # print(after[j])
+            #     # print(edit_script[i])
+            # if after[j]["operation"] == "delete":
+            #     offset += 1
         delta["offset"] = offset
         e2 = delta.copy()
         if e2["operation"] != "delete":
@@ -143,10 +152,11 @@ def add_random_chaff(circuit: QuantumCircuit):
     qubit_size = qarg.size
     # choose how many to append
     # for i in range(random.randint(1, 2)):
-    for i in range(5):
+    for i in range(2):
         # choose what identities to append
         j = random.randint(0, 4)
         target_qubit = random.randint(0, qubit_size - 1)
+        # target_qubit = 1
         # print(target_qubit)
         if j == 0:
             qc = QuantumCircuit(qubit_size)
@@ -176,6 +186,7 @@ def add_random_chaff(circuit: QuantumCircuit):
         qc_list = circuit_to_list(qc)
         # choose where to append the chaff
         insert_location = random.randint(0, len(circ_list))
+        # insert_location = 5
         # print(f"insert location {insert_location}")
         circ_list[insert_location:insert_location] = qc_list
         # print(circ_list)

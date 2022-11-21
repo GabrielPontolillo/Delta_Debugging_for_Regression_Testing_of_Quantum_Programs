@@ -203,16 +203,18 @@ def filter_artifacts(passing_circuit, failing_circuit, delta_store, pass_deltas,
             # print(combination)
             # print(".....")
             # print(passing_deltas)
-            if not any(x in combination for x in passing_deltas) and isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
-                print("retrying")
+            if not any(x in combination for x in passing_deltas):
+                print("allowed to run")
                 if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
-                    print("combination passed")
-                    print_edit_sequence(combination, passing_circuit,  failing_circuit)
-                    for delta in combination:
-                        if delta not in passing_deltas:
-                            passing_deltas.append(delta)
-                # wrong (if multiple same length combinations are passing)
-                # break
+                    print("retrying")
+                    if isinstance(test(combination, passing_circuit, failing_circuit, orig_deltas), Passed):
+                        print("combination passed")
+                        print_edit_sequence(combination, passing_circuit,  failing_circuit)
+                        for delta in combination:
+                            if delta not in passing_deltas:
+                                passing_deltas.append(delta)
+                    # wrong (if multiple same length combinations are passing)
+                    # break
     delta_store = listminus(delta_store, passing_deltas)
     print("\n\nfailing test")
     print(delta_store)
