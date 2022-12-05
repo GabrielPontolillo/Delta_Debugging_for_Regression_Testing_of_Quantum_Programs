@@ -83,8 +83,8 @@ def calculate_offset(edit_script, orig_deltas, orig_circ, mod_circ):
             # however, if element we need to insert is the same as (need further mod)
             if after[j]["operation"] == "delete" and after[j]["position_old"] == edit_script[i]["position_old"] + consec:
                 print("check in calc offset")
-                print(orig_circ[edit_script[i]["position_old"] + consec])
-                print(orig_circ[after[j]["position_old"] + consec])
+                # print(orig_circ[edit_script[i]["position_old"] + consec])
+                # print(orig_circ[after[j]["position_old"] + consec])
                 # print(mod_circ[edit_script[i]["position_new"]])
             # if after[j]["operation"] == "delete" and (after[j]["position_old"] == edit_script[i]["position_old"] + consec or orig_circ[edit_script[i]["position_old"] + consec] == mod_circ[edit_script[i]["position_new"]]):
                 consec += 1
