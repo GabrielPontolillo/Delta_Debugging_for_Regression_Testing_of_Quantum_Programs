@@ -13,7 +13,7 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
     :param orig_deltas:
     :return:
     """
-    print("##############in apply edit script#############")
+    # print("##############in apply edit script#############")
     # print_edit_sequence(edit_script, s1, s2)
     fixed = []
     orig_deltas_fixed = []
@@ -47,7 +47,7 @@ def apply_edit_script(edit_script, s1, s2, orig_deltas):
             elif e["operation"] == "insert":
                 new_sequence.append(s2[e["position_new"]])
         # print(e)
-        print_edit_sequence([e], s1, s2)
+        # print_edit_sequence([e], s1, s2)
         # print(list_to_circuit(new_sequence))
     while i < len(s1):
         # print(list_to_circuit(new_sequence))
@@ -100,7 +100,7 @@ def calculate_offset(edit_script, orig_deltas, orig_circ, mod_circ):
         modified_script.append(e2)
     modified_script = sorted(modified_script, key=lambda k: (
         k.get('position_old', None), "position_new" not in k, k.get("position_new", None)))
-    print("out of calculate offset")
+    # print("out of calculate offset")
     # print(modified_script)
     return modified_script
 
