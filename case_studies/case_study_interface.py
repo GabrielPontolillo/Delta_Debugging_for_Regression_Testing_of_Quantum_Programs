@@ -69,8 +69,11 @@ class CaseStudyInterface(ABC):
         loops = 10
         for i in range(loops):
             print(f"loop number {i}")
-            chaff_embedded_circuit_list = add_random_chaff(base_circuit.copy())
+            # chaff_embedded_circuit_list = add_random_chaff(base_circuit.copy())
+            # chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
+            chaff_embedded_circuit_list = base_circuit.copy()
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
+
             bstart = time.time()
             deltas, passing_deltas, orig_fail_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit,
                                                                  self.test_function)
