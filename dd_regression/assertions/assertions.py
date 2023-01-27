@@ -279,7 +279,7 @@ def estimatePhase(backend, quantumCircuit, qubits_to_assert, measurements_to_mak
 
 def record_xy_data(backend, quantumCircuit, qubits_to_assert, measurements_to_make):
     ## if "qubits to assert" is just a single value, convert it to a list containing the single value
-    if (not isinstance(qubits_to_assert, list)):
+    if not isinstance(qubits_to_assert, list):
         qubits_to_assert = [qubits_to_assert]
 
     ## needs to make at least 2 measurements, one for x axis, one for y axis

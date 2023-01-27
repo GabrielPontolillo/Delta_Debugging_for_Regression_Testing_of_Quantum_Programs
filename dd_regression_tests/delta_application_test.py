@@ -1,18 +1,145 @@
 import unittest
 import random
-from hypothesis import given, settings
-from hypothesis.strategies import composite, integers
+import time
+from hypothesis import given, settings, assume
+from hypothesis.strategies import composite, integers, text, lists, characters
 from qiskit import QuantumCircuit
 from qiskit.circuit.random import random_circuit
-from dd_regression.diff_algorithm import diff
-from dd_regression.helper_functions import circuit_to_list, list_to_circuit, apply_edit_script, listminus, list_contains_list_in_same_order
+from dd_regression.diff_algorithm_r import diff, apply_diffs, Addition, Removal
+from dd_regression.helper_functions import circuit_to_list, list_to_circuit, apply_edit_script, listminus, \
+    list_contains_list_in_same_order
+
 
 @composite
 def circuit(draw):
-    num_qubits = draw(integers(min_value=1, max_value=10))
-    depth = draw(integers(min_value=1, max_value=30))
-    seed = draw(integers(min_value=0))
-    return random_circuit(num_qubits=num_qubits, depth=depth, seed=seed)
+    num_qubits = draw(integers(min_value=1, max_value=6))
+    depth = draw(integers(min_value=1, max_value=20))
+    # seed = draw(integers(min_value=0))
+    return random_circuit(num_qubits=num_qubits, depth=depth)
+
+
+class TestDeltaApplication(unittest.TestCase):
+    @given(s1=lists(characters()), s2=lists(characters()))
+    @settings(deadline=30000)
+    def test_apply_edit_script_sample_ordering_check_before_subset(self, s1, s2):
+        assume(s1 != s2)
+        print(f" - new test - ")
+        # print(f"s1 {s1}")
+        # print(f"s2 {s2}")
+        diffs = diff(s1, s2)
+        # print(f"diffs {diffs}")
+        # Create a list of random indices
+        sample = ordered_sample(diffs)
+        applied = apply_diffs(s1, s2, sample)
+        print(f"applied {applied}")
+        s1c = [("a"+str(i), x) for i, x in enumerate(s1)]
+        s2c = [("b"+str(i), x) for i, x in enumerate(s2)]
+        applied_2 = apply_diffs(s1c, s2c, sample)
+        applied_base = apply_diffs(s1c, s2c, diffs)
+        # need to match
+        print(f"s1c {s1c}")
+        print(f"s2c {s2c}")
+        print(f"sample {sample}")
+        print(f"applied 2 {applied_2}")
+        print(f"applied base {applied_base}")
+        removal_idx = [x.location_index for x in sample if isinstance(x, Removal)]
+        print(removal_idx)
+        for i, elem in enumerate(applied_2):
+            for delta in sample:
+                if isinstance(delta, Addition):
+                    if s2c[delta.add_gate_index] == elem:
+                        print(delta.location_index)
+                        print(s1c[:delta.location_index])
+                        # get all elements from list 1 that were not removed by deltas,
+                        # check that they are present in output of applied list before addition location in orig circuit
+                        before_non_removed = [x for idx, x in enumerate(s1c[:delta.location_index]) if idx not in removal_idx]
+                        print(f"gates we need to see {before_non_removed}")
+                        print(f"before current addition {applied_2[:i]}")
+                        assert all(x in applied_2[:i] for x in before_non_removed)
+                        #look at all gates before this index on s1, if not removed they should be present in output
+
+
+    @given(s1=lists(characters()), s2=lists(characters()))
+    @settings(deadline=30000)
+    def test_apply_edit_script_sample_ordering_separate_lists(self, s1, s2):
+        assume(s1 != s2)
+        print(f" - new test - ")
+        print(f"s1 {s1}")
+        print(f"s2 {s2}")
+        diffs = diff(s1, s2)
+        print(f"diffs {diffs}")
+        # Create a list of random indices
+        sample = ordered_sample(diffs)
+        applied = apply_diffs(s1, s2, sample)
+        print(f"applied {applied}")
+        s1c = [("a"+str(i), x) for i, x in enumerate(s1)]
+        s2c = [("b"+str(i), x) for i, x in enumerate(s2)]
+        applied_2 = apply_diffs(s1c, s2c, sample)
+        a_idx, b_idx = -1, -1
+        print(f"applied_2 {applied_2}")
+        for elem in applied_2:
+            if elem[0][0] == 'a':
+                if int(elem[0][1:]) > a_idx:
+                    a_idx = int(elem[0][1:])
+                else:
+                    assert False
+            elif elem[0][0] == 'b':
+                if int(elem[0][1:]) > b_idx:
+                    b_idx = int(elem[0][1:])
+                else:
+                    assert False
+            else:
+                assert False
+
+
+    @given(s1=lists(characters()), s2=lists(characters()))
+    @settings(deadline=30000)
+    def test_apply_edit_script_sample(self, s1, s2):
+        assume(s1 != s2)
+        print(f" - new test - ")
+        print(f"s1 {s1}")
+        print(f"s2 {s2}")
+        diffs = diff(s1, s2)
+        print(f"diffs {diffs}")
+        # Create a list of random indices
+        sample = ordered_sample(diffs)
+        applied = apply_diffs(s1, s2, sample)
+        print(f"applied {applied}")
+        occurences_s1 = count_occurrences(s1)
+        occurences_applied = count_occurrences(applied)
+        modifier_deltas = deltas_to_modifier(sample, s1, s2)
+        print(f"occurences s1 {occurences_s1}")
+        print(f"modifier deltas {modifier_deltas}")
+        print(occurences_s1.keys() & modifier_deltas.keys())
+        # add delta modifier to s1 occurences
+        result = {key: occurences_s1.get(key, 0) + modifier_deltas.get(key, 0) for key in occurences_s1.keys() | modifier_deltas.keys()}
+        print(f"result {result}")
+        result_cleaned = {key: value for key, value in result.items() if value != 0}
+        print(f"result cleaned {result_cleaned}")
+        print(f"occurences applied {occurences_applied}")
+        assert result_cleaned == occurences_applied
+
+
+    @given(circuit(), circuit())
+    @settings(deadline=30000)
+    def test_apply_edit_script_apply_all_deltas(self, circuit_1, circuit_2):
+        c1 = circuit_to_list(circuit_1)
+        c2 = circuit_to_list(circuit_2)
+        diffs = diff(c1, c2)
+        print(list_to_circuit(c1))
+        print(list_to_circuit(c2))
+        print(diffs)
+        assert apply_diffs(c1, c2, diffs) == c2
+        assert apply_diffs(c1, c2, []) == c1
+
+
+    @given(lists(characters()), lists(characters()))
+    @settings(deadline=30000)
+    def test_apply_edit_script_apply_all_deltas_string(self, s1, s2):
+        diffs = diff(s1, s2)
+        assert apply_diffs(s1, s2, diffs) == s2
+        assert apply_diffs(s1, s2, []) == s1
+
 
 
 def simple_random_circuit(gates, register, seed):
@@ -20,7 +147,7 @@ def simple_random_circuit(gates, register, seed):
     qc = QuantumCircuit(register)
     for i in range(gates):
         gate_r = random.randint(0, 4)
-        qubit_r = random.randint(0, register-1)
+        qubit_r = random.randint(0, register - 1)
         if gate_r == 0:
             qc.x(qubit_r)
         elif gate_r == 1:
@@ -71,119 +198,52 @@ def count_unhashable_deltas(delta_sample_list, c1, c2):
                 count[idx] = count[idx] + 1
     return zip(elem, count)
 
-class TestDeltaApplication(unittest.TestCase):
-    # @given(circuit(), circuit())
-    # @settings(deadline=10000)
-    # def test_apply_edit_script_apply_all_deltas(self, circuit_1, circuit_2):
-    #     c1 = circuit_to_list(circuit_1)
-    #     c2 = circuit_to_list(circuit_2)
-    #     diffs = diff(c1, c2)
-    #     assert apply_edit_script(diffs, c1, c2, diffs) == c2
-    #     assert apply_edit_script([], c1, c2, diffs) == c1
 
-    # @given(integers(min_value=1, max_value=3), integers(min_value=2, max_value=10), integers(min_value=0),
-    #        integers(min_value=2, max_value=10), integers(min_value=0))
-    # @settings(deadline=10000)
-    # def test_apply_edit_script_apply_subset_check_amount_gates(self, num_qub, depth1, seed1, depth2, seed2):
-    #     circuit_1 = random_circuit(num_qubits=num_qub, depth=depth1, seed=seed1)
-    #     circuit_2 = random_circuit(num_qubits=num_qub, depth=depth2, seed=seed2)
-    #     if circuit_1 == circuit_2:
-    #         circuit_2.x(0)
-    #     c1 = circuit_to_list(circuit_1)
-    #     c2 = circuit_to_list(circuit_2)
-    #     diffs = diff(c1, c2)
-    #     sample = random.sample(diffs, len(diffs))
-    #     applied_sample_delta = apply_edit_script(sample, c1, c2, diffs)
-    #     c1_inst, count = count_unhashable(c1)
-    #     applied_inst, count_applied = count_unhashable(applied_sample_delta)
-    #     modifier = count_unhashable_deltas(sample, c1, c2)
-    #     for instruction, value in modifier:
-    #         try:
-    #             idx_c1 = c1_inst.index(instruction)
-    #             c1_count = count[idx_c1]
-    #         except ValueError:
-    #             c1_count = 0
-    #         try:
-    #             idx_applied = applied_inst.index(instruction)
-    #             applied_count = count_applied[idx_applied]
-    #         except ValueError:
-    #             applied_count = 0
-    #         assert applied_count - c1_count == value
+def count_occurrences(lst):
+    counts = {}
+    for obj in lst:
+        if obj not in counts:
+            counts[obj] = 1
+        else:
+            counts[obj] += 1
+    return counts
 
-    @given(integers(min_value=1, max_value=1), integers(min_value=1, max_value=7), integers(min_value=0),
-           integers(min_value=1, max_value=7), integers(min_value=0))
-    @settings(deadline=10000)
-    def test_apply_edit_script_apply_subset_check_position_gates(self, num_qub, depth1, seed1, depth2, seed2):
-        # circuit_1 = random_circuit(num_qubits=num_qub, depth=depth1, seed=seed1)
-        # circuit_2 = random_circuit(num_qubits=num_qub, depth=depth2, seed=seed2)
-        circuit_1 = simple_random_circuit(depth1, num_qub, seed1)
-        circuit_2 = simple_random_circuit(depth2, num_qub, seed2)
-        if circuit_1 == circuit_2:
-            circuit_2.x(0)
-        print(circuit_1)
-        print(circuit_2)
-        c1 = circuit_to_list(circuit_1)
-        c2 = circuit_to_list(circuit_2)
-        diffs = diff(c1, c2)
-        [print(s) for s in diffs]
-        # Create a list of random indices
-        indices = random.sample(range(len(diffs)), random.randint(1, len(diffs)))
 
-        # Use the indices to select the elements from the original list
-        # and keep the order of the indices
-        sample = [diffs[i] for i in sorted(indices)]
+def deltas_to_modifier(deltas, s1, s2):
+    elem = []
+    count = []
+    for delta in deltas:
+        if isinstance(delta, Removal):
+            instruction = s1[delta.location_index]
+            if instruction not in elem:
+                elem.append(instruction)
+                count.append(-1)
+            else:
+                idx = elem.index(instruction)
+                count[idx] = count[idx] - 1
+        else:
+            instruction = s2[delta.add_gate_index]
+            if instruction not in elem:
+                elem.append(instruction)
+                count.append(1)
+            else:
+                idx = elem.index(instruction)
+                count[idx] = count[idx] + 1
+    counts = {}
+    for i in range(len(elem)):
+        counts[elem[i]] = count[i]
+    # return zip(elem, count)
+    return counts
 
-        applied_sample_delta = apply_edit_script(sample, c1, c2, diffs)
 
-        # List of keys to keep in the new list
-        keys_to_keep = ['operation', 'position_old', 'position_new']
-
-        # Create a new list of dictionaries with only the specified keys
-        sample_copy = [{k: d.get(k) for k in keys_to_keep if d.get(k) is not None} for d in sample]
-
-        print("sample copy")
-        print(sample_copy)
-
-        print(list_to_circuit(applied_sample_delta))
-        [print(s) for s in diffs]
-        print("---------------")
-        [print(s) for s in sample]
-        print("@---@")
-        for delta in sample:
-            if delta["operation"] == "insert":
-                delta.pop("offset")
-                print(delta)
-                pos_old = delta["position_old"]
-                print("before this gate")
-                if len(c1) == pos_old:
-                    print("we need to place it at end")
-                else:
-                    print(c1[delta["position_old"]])
-                print("what we are inserting")
-                print(c2[delta["position_new"]])
-                assert c2[delta["position_new"]] in applied_sample_delta
-                # make sure we are not deleting that gate we are checking for
-                if {"operation": "delete", "position_old": pos_old} not in sample_copy:
-                    # if not placing at end
-                    # if check that there exists one version of the gate s.t. after it, we have the replaced gate
-                    if len(c1) != pos_old:
-                        found = False
-                        # check each instance of gate we inserted, if we do not find the gate that is supposed to be after (if it was not deleted)
-                        # assert false
-                        for idx, gate in enumerate(applied_sample_delta):
-                            if gate == c2[delta["position_new"]]:
-                                print("check")
-                                print(applied_sample_delta[idx+1:])
-                                print(applied_sample_delta[idx:])
-                                if c1[delta["position_old"]] in applied_sample_delta[idx+1:]:
-                                    found = True
-                                    break
-                        print("this ran?")
-                        assert found
-                        # after_app = applied_sample_delta[pos_old-1:]
-                        # print(applied_sample_delta)
-                        # print(after_app)
-                        # assert c1[delta["position_old"]] in after_app
+def ordered_sample(diffs):
+    a = range(len(diffs))
+    b = random.randint(0, len(diffs)-1)
+    indices = random.sample(a, b)
+    # Use the indices to select the elements from the original list
+    # and keep the order of the indices
+    sample = [diffs[i] for i in sorted(indices)]
+    return sample
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 # This code is from https://blog.robertelder.org/diff-algorithm/
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
 from dataclasses import dataclass
+import time
 
 
 @dataclass
@@ -25,8 +26,9 @@ class Replace:
     location_index: int
 
 
-def compute_lcs_len(li1, li2):
+def compute_lcs_len(li1, li2, diagnostic=False, timeit=False):
     """Computes a table of f(i, j) results."""
+    t1 = time.time()
     n = len(li1)
     m = len(li2)
 
@@ -50,6 +52,9 @@ def compute_lcs_len(li1, li2):
                 lcs[i][j] = 1 + lcs[i - 1][j - 1]
             else:
                 lcs[i][j] = max(lcs[i - 1][j], lcs[i][j - 1])
+    t2 = time.time()
+    if timeit:
+        print(f"time_taken compute lcs len for apply diffs= {t2 - t1}")
     return lcs
 
 
@@ -82,7 +87,7 @@ def find_lcs_list(li1, li2):
     return reversed(result)
 
 
-def diff(li1, li2):
+def diff(li1, li2, diagnostic=False, timeit=False):
     """Computes the optimal diff of the two given inputs.
 
   The result is a list where all elements are Removals, Additions or
@@ -90,6 +95,7 @@ def diff(li1, li2):
   """
     lcs = compute_lcs_len(li1, li2)
     results = []
+    t1 = time.time()
 
     i = len(li1)
     j = len(li2)
@@ -98,9 +104,10 @@ def diff(li1, li2):
         # If we reached the end of one of text1 (i == 0) or text2 (j == 0),
         # then we just need to print the remaining additions and removals.
         if i == 0:
-            print("-")
-            print(f"gate add {j - 1}")
-            print(f"index add {i}")
+            if diagnostic:
+                print("-")
+                print(f"gate add {j - 1}")
+                print(f"index add {i}")
             results.append(Addition(j - 1, i))
             j -= 1
         elif j == 0:
@@ -124,25 +131,34 @@ def diff(li1, li2):
 
     # Reverse results because we iterated over the texts from the end but
     # want the results to be in forward order.
+    t2 = time.time()
+    if timeit:
+        print(f"time_taken for diffing = {t2 - t1}")
     return list(reversed(results))
 
 
-def apply_diffs(li1, li2, diffs):
+def apply_diffs(li1, li2, diffs, diagnostic=False, timeit=False):
+    t1 = time.time()
     res = []
     li1_idx = 0
     for d in diffs:
-        print(f"loop {li1_idx}")
+        if diagnostic:
+            print(f"index {li1_idx}")
         # if current index before first diff's target, add current value in list 1
         while d.location_index > li1_idx:
+            if diagnostic:
+                print(f"while loop first {li1_idx}, location {d.location_index}")
             res.append(li1[li1_idx])
             li1_idx += 1
         # if current index in diff target, apply diff accordingly
         if d.location_index == li1_idx:
             if isinstance(d, Addition):
-                print(d.add_gate_index)
-                print(d.location_index)
+                if diagnostic:
+                    print(f"adding gate {d.add_gate_index} at {d.location_index}")
                 res.append(li2[d.add_gate_index])
             elif isinstance(d, Removal):
+                if diagnostic:
+                    print(f"removing gate at {d.location_index}")
                 li1_idx += 1
             elif isinstance(d, Replace):
                 res.append(li2[d.add_gate_index])
@@ -151,8 +167,13 @@ def apply_diffs(li1, li2, diffs):
                 raise ValueError("Unrecognized type in diffs")
     # add all values in original list after we went through all diffs
     while li1_idx < len(li1):
+        if diagnostic:
+            print(f"final while {li1_idx} < {len(li1)}")
         res.append(li1[li1_idx])
         li1_idx += 1
+    t2 = time.time()
+    if timeit:
+        print(f"time_taken for apply diffs= {t2 - t1}")
     return res
 
 
