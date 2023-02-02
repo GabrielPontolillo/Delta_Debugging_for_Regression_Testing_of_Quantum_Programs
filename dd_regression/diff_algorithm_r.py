@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import time
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Addition:
     # location of gate to insert (from list 2)
     add_gate_index: any
@@ -12,18 +12,24 @@ class Addition:
     location_index: int
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Removal:
     # location of gate to remove (from list 1)
     location_index: int
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Replace:
     # location of gate to insert (from list 2)
     add_gate_index: any
     # location of gate to replace (from list 1)
     location_index: int
+
+
+@dataclass
+class Experiment:
+    p_value: float
+    input_state: []
 
 
 def compute_lcs_len(li1, li2, diagnostic=False, timeit=False):

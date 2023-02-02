@@ -1,24 +1,21 @@
-# This code is from previous work at https://github.com/GabrielPontolillo/Quantum_Algorithm_Implementations
+# This code is modified from previous work at https://github.com/GabrielPontolillo/Quantum_Algorithm_Implementations
 import warnings
-import pandas as pd
-import math
-from math import pi, sqrt, sin, cos
-import numpy as np
 import scipy.stats as sci
-from collections.abc import Callable
-
-from statsmodels.stats.proportion import proportions_ztest
+import heapq
 
 from qiskit import execute, Aer
+
 backend = Aer.get_backend('aer_simulator')
 
 from qiskit.circuit import ClassicalRegister
+from dd_regression.diff_algorithm_r import Experiment
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
 
-
+# circuit 1 = tested circuit
+# circuit 2 = expected value
 def assert_equal(circuit_1, qubit_register_1, circuit_2, qubit_register_2, measurements=10000):
     circuit_1.add_register(ClassicalRegister(1))
     c1z = measure_z(circuit_1.copy(), [qubit_register_1])
@@ -50,10 +47,69 @@ def assert_equal(circuit_1, qubit_register_1, circuit_2, qubit_register_2, measu
         merged_counts_2[missing] = 0
     merged_counts_2 = {i: merged_counts_2[i] for i in ["x0", "x1", "y0", "y1", "z0", "z1"]}
 
-    # calculate the chi-squared test statistic
-    statistic, pvalue = sci.chisquare(f_obs=list(merged_counts_1.values()), f_exp=list(merged_counts_2.values()))
+    contingency_table_x = [[merged_counts_1.get(x, 0), merged_counts_2.get(x, 0)] for x in ["x0", "x1"]]
 
-    return pvalue
+    contingency_table_y = [[merged_counts_1.get(x, 0), merged_counts_2.get(x, 0)] for x in ["y0", "y1"]]
+
+    contingency_table_z = [[merged_counts_1.get(x, 0), merged_counts_2.get(x, 0)] for x in ["z0", "z1"]]
+
+    # print(contingency_table_x)
+    # print(contingency_table_y)
+    # print(contingency_table_z)
+    # we do a chi square test if we have all values above 5
+    # otherwise we do fisher's exact test
+
+    # calculate the chi-squared test statistic
+    # _, pvalue = sci.chisquare_gof(f_obs=list(merged_counts_1.values()), f_exp=list(merged_counts_2.values()))
+    _, p_value_x = sci.fisher_exact(contingency_table_x)
+    _, p_value_y = sci.fisher_exact(contingency_table_y)
+    _, p_value_z = sci.fisher_exact(contingency_table_z)
+    # print(p_value_x)
+    # print(p_value_y)
+    # print(p_value_z)
+    return p_value_x, p_value_y, p_value_z, merged_counts_1, merged_counts_2
+
+
+# circuit 1 = tested circuit
+# circuit 2 = expected value
+def assert_equal_state(circuit_1, qubit_register_1, merged_counts_2, measurements=10000):
+    circuit_1.add_register(ClassicalRegister(1))
+    c1z = measure_z(circuit_1.copy(), [qubit_register_1])
+    c1x = measure_x(circuit_1.copy(), [qubit_register_1])
+    c1y = measure_y(circuit_1.copy(), [qubit_register_1])
+    z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
+    x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
+    y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
+    z_cleaned_counts_1 = {"z" + k[-1]: v for (k, v) in z_counts_1.items()}
+    x_cleaned_counts_1 = {"x" + k[-1]: v for (k, v) in x_counts_1.items()}
+    y_cleaned_counts_1 = {"y" + k[-1]: v for (k, v) in y_counts_1.items()}
+    merged_counts_1 = z_cleaned_counts_1 | x_cleaned_counts_1 | y_cleaned_counts_1
+    for missing in [x for x in ["x0", "x1", "y0", "y1", "z0", "z1"] if x not in merged_counts_1.keys()]:
+        merged_counts_1[missing] = 0
+    merged_counts_1 = {i: merged_counts_1[i] for i in ["x0", "x1", "y0", "y1", "z0", "z1"]}
+
+    contingency_table_x = [[merged_counts_1.get(x, 0), merged_counts_2.get(x, 0)] for x in ["x0", "x1"]]
+
+    contingency_table_y = [[merged_counts_1.get(x, 0), merged_counts_2.get(x, 0)] for x in ["y0", "y1"]]
+
+    contingency_table_z = [[merged_counts_1.get(x, 0), merged_counts_2.get(x, 0)] for x in ["z0", "z1"]]
+
+    # print(contingency_table_x)
+    # print(contingency_table_y)
+    # print(contingency_table_z)
+    # we do a chi square test if we have all values above 5
+    # otherwise we do fisher's exact test
+
+    # calculate the chi-squared test statistic
+    # _, pvalue = sci.chisquare_gof(f_obs=list(merged_counts_1.values()), f_exp=list(merged_counts_2.values()))
+    _, p_value_x = sci.fisher_exact(contingency_table_x)
+    _, p_value_y = sci.fisher_exact(contingency_table_y)
+    _, p_value_z = sci.fisher_exact(contingency_table_z)
+    # print(p_value_x)
+    # print(p_value_y)
+    # print(p_value_z)
+    return p_value_x, p_value_y, p_value_z, merged_counts_1, merged_counts_2
+
 
 def measure_y(circuit, qubit_indexes):
     cBitIndex = 0
@@ -80,3 +136,15 @@ def measure_x(circuit, qubit_indexes):
         circuit.measure(index, cBitIndex)
         cBitIndex += 1
     return circuit
+
+
+# make this return a list of failures p_value, index pairs
+def holm_bonferroni_correction(exp_pairs, family_wise_alpha):
+    failing_indexes = set()
+    exp_pairs.sort(key=lambda x: x[1])
+    # print(exp_pairs)
+    for i in range(len(exp_pairs)):
+        if exp_pairs[i][1] <= (family_wise_alpha / (len(exp_pairs) - i)):
+            failing_indexes.add(exp_pairs[i][0])
+    return failing_indexes
+

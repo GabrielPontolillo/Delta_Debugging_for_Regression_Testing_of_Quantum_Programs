@@ -6,11 +6,10 @@ from qiskit import QuantumCircuit, Aer
 from qiskit.quantum_info import random_statevector
 
 from case_studies.case_study_interface import CaseStudyInterface
-from dd_regression.assertions.assertions import assertPhase
-from dd_regression.assertions.assert_equal import assert_equal
-from dd_regression.helper_functions import apply_edit_script, circuit_to_list, list_to_circuit, get_quantum_register
-from dd_regression.result_classes import Passed, Failed
-from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs
+from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, holm_bonferroni_correction
+from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register
+from dd_regression.result_classes import Passed, Failed, Inconclusive
+from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs, Experiment
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -50,7 +49,7 @@ class QPESynthetic(CaseStudyInterface):
         return qc
 
     def expected_deltas_to_isolate(self):
-        return []
+        return [Removal(location_index=4)]
 
     def passing_circuit(self):
         return self.quantum_teleportation()
@@ -63,13 +62,24 @@ class QPESynthetic(CaseStudyInterface):
 
     # generate circuit, and return if pass or fail
     def test_function(self, deltas, passing_circ, failing_circ):
-        p_values = []
+        self.tests_performed += 1
+        print(f"self.test_cache {self.test_cache}")
+        if self.test_cache.get(tuple(deltas), None) is not None:
+            # print(f"deltas already tested, returning cache of {deltas}")
+            # print(f"cache {self.test_cache.get(tuple(deltas), None)}")
+            return self.test_cache.get(tuple(deltas), None)
+        # if len(deltas) == 0:
+        #     return Passed()
+        experiments = []
+        verification_experiments = []
+        self.tests_performed_no_cache += 1
 
-        # changed_circuit_list = apply_diffs(passing_circ, failing_circ, deltas)
-        changed_circuit_list = apply_diffs(passing_circ, failing_circ, [])
+        changed_circuit_list = apply_diffs(passing_circ, failing_circ, deltas)
         qlength, clength = get_quantum_register(changed_circuit_list)
         changed_circuit = list_to_circuit(changed_circuit_list)
-        for j in range(1):
+        # print(changed_circuit)
+        # generate random input state vector and apply statistical test to expected output
+        for j in range(50):
             # initialize to random state and append the applied delta modified circuit
             init_state = QuantumCircuit(qlength)
             init_vector = random_statevector(2)
@@ -79,62 +89,70 @@ class QPESynthetic(CaseStudyInterface):
             # create a new circuit with just state initialization to compare with
             qc = QuantumCircuit(1)
             qc.initialize(init_vector, 0)
-            p_value = assert_equal(inputted_circuit_to_test, 2, qc, 0, measurements=5000)
-            print(p_value)
 
-            #need to store array of pvalues with inputs, as well as measurements
-            #for each failure compare to original failure
+            # get pvalue of test
+            p_value_x, p_value_y, p_value_z, measurements_1, measurements_2 = assert_equal(inputted_circuit_to_test, 2,
+                                                                                           qc, 0, measurements=1000)
 
+            # store p_value and input state to get the p_value
+            experiments.append((init_vector, p_value_x, p_value_y, p_value_z, measurements_1, measurements_2))
 
+        exp_pairs = []
+        for idx, experiment in enumerate(experiments):
+            exp_pairs.append((idx, experiment[1]))
+            exp_pairs.append((idx, experiment[2]))
+            exp_pairs.append((idx, experiment[3]))
 
-    # # generate circuit, and return if pass or fail
-    # def test_function(self, deltas, src_passing, src_failing, original_deltas):
-    #     """"""
-    #     p_values = []
-    #
-    #     passing_input_list = src_passing
-    #     failing_input_list = src_failing
-    #     # print(list_to_circuit(passing_input_list))
-    #     changed_circuit_list = apply_edit_script(deltas, passing_input_list, failing_input_list, original_deltas)
-    #     qlength, clength = get_quantum_register(changed_circuit_list)
-    #     changed_circuit = list_to_circuit(changed_circuit_list)
-    #     print("changed_circuit")
-    #     print(changed_circuit)
-    #
-    #     for j in range(50):
-    #         rotation = random.randrange(0, 8)
-    #         x_circuit = QuantumCircuit(qlength)
-    #         bin_amt = bin(rotation)[2:]
-    #         for i in range(len(bin_amt)):
-    #             if bin_amt[i] == '1':
-    #                 x_circuit.x(len(bin_amt) - (i + 1))
-    #
-    #         inputted_circuit_to_test = x_circuit + changed_circuit
-    #
-    #         checks = []
-    #         qubits = []
-    #
-    #         for i in range(inputted_circuit_to_test.num_qubits):
-    #             checks.append(((360 / (2 ** (i + 1))) * rotation) % 360)
-    #             qubits.append(i)
-    #         pvals = assertPhase(backend, inputted_circuit_to_test, qubits, checks, 500)
-    #         p_values += pvals
-    #
-    #     p_values = sorted(p_values)
-    #
-    #     for i in range(len(p_values)):
-    #         if p_values[i] != np.NaN:
-    #             if p_values[i] < 0.01 / (len(p_values) - i):
-    #                 return Failed()
-    #     return Passed()
+        # print(exp_pairs)
+
+        # check if any assert equal failed
+        failed = holm_bonferroni_correction(exp_pairs, 0.01)
+
+        # for each failed test, check equality of final state, with initial failing circuit (on same input)
+        for failure in failed:
+            init_state = QuantumCircuit(qlength)
+            init_state.initialize(experiments[failure][0], 0)
+            inputted_circuit_to_test = init_state + list_to_circuit(failing_circ)
+            # print(inputted_circuit_to_test)
+            p_value_x, p_value_y, p_value_z, measurements_1, measurements_2 = assert_equal_state(
+                inputted_circuit_to_test, 2, experiments[failure][4], measurements=1000)
+            verification_experiments.append(
+                (init_vector, p_value_x, p_value_y, p_value_z, measurements_1, measurements_2))
+
+        verification_pairs = []
+        for idx, verification in enumerate(verification_experiments):
+            verification_pairs.append((idx, verification[1]))
+            verification_pairs.append((idx, verification[2]))
+            verification_pairs.append((idx, verification[3]))
+
+        # check if any assert equal failed with initial failing circuit
+        verification_failed = holm_bonferroni_correction(verification_pairs, 0.01)
+
+        # print(f"failed {failed}")
+        # print(f"verification_failed {verification_failed}")
+
+        # if any state not equal, inconclusive result
+        if len(verification_failed) > 0:
+            # print("return inconclusive")
+            self.test_cache[tuple(deltas)] = Inconclusive()
+            return Inconclusive()
+        elif len(failed) > 0:
+            # print("return failed")
+            self.test_cache[tuple(deltas)] = Failed()
+            return Failed()
+        else:
+            # print("return passed")
+            self.test_cache[tuple(deltas)] = Passed()
+            return Passed()
 
 
 if __name__ == "__main__":
     qpe = QPESynthetic()
-    passing = qpe.passing_circuit()
-    failing = qpe.failing_circuit()
-    diff = diff(qpe.passing_circuit(), qpe.failing_circuit())
-    print(diff)
-    qpe.test_function(diff, passing, failing)
-
-
+    # passing = qpe.passing_circuit()
+    # failing = qpe.failing_circuit()
+    # diff = diff(qpe.passing_circuit(), qpe.failing_circuit())
+    # print(diff)
+    # diff = [diff[3]]
+    # print(diff)
+    # print(qpe.test_function(diff, passing, failing))
+    qpe.analyse_results()
