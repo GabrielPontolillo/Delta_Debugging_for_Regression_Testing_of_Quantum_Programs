@@ -170,7 +170,7 @@ class CaseStudyInterface(ABC):
     #     print(f"{artifact_tally*100/filtered_deltas_len_tally}% percentage of artifacts in results")
     #     print(self.get_algorithm_name())
 
-    def analyse_results(self):
+    def analyse_results(self, chaff_length=None, inputs_to_generate=25):
         """
         -> in for loop
         -> generate random chaff and add it to the circuit
@@ -194,12 +194,12 @@ class CaseStudyInterface(ABC):
         loops = 100
         for i in range(loops):
             print(f"loop number {i}")
-            chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy())
+            chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
             # chaff_embedded_circuit_list = failing_circuit.copy()
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
             print(chaff_embedded_circuit)
 
-            deltas, passing_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function)
+            deltas, passing_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate)
 
             # print(f"passing deltas {passing_deltas}")
             print(f"failing deltas {deltas}")
@@ -212,15 +212,24 @@ class CaseStudyInterface(ABC):
             if len(deltas) > 1:
                 artifacts_found += len(deltas) - 1
                 tests_with_artifacts += 1
+
         print(f"time taken {time.time() - start}")
         print(f"tests performed {self.tests_performed}")
         print(f"tests performed no cache{self.tests_performed_no_cache}")
         print(f"deltas {expected_found}")
         print(f"out of  {loops}")
         print(f"total amount other deltas included in output {artifacts_found}")
-        print(f"tests with any amount of {tests_with_artifacts}")
+        print(f"tests with any amount of other deltas {tests_with_artifacts}")
 
-
+        f = open(f"{self.get_algorithm_name()}_chaff_length{chaff_length}_inputs_to_gen{inputs_to_generate}.txt", "w")
+        f.write(f"time taken {time.time() - start}\n")
+        f.write(f"tests performed {self.tests_performed}\n")
+        f.write(f"tests performed no cache{self.tests_performed_no_cache}\n")
+        f.write(f"deltas {expected_found}\n")
+        f.write(f"out of  {loops}\n")
+        f.write(f"total amount other deltas included in output {artifacts_found}\n")
+        f.write(f"tests with any amount of other deltas {tests_with_artifacts}\n")
+        f.close()
         # for e, exp in enumerate(expected_deltas):
         #     filtered_deltas = deltas
         #
@@ -307,3 +316,4 @@ class CaseStudyInterface(ABC):
         # print(f"{(expected_found_tally * 100) / len(expected_deltas * loops)}% expected deltas found")
         # print(f"{artifact_tally * 100 / filtered_deltas_len_tally}% percentage of artifacts in results")
         # print(self.get_algorithm_name())
+

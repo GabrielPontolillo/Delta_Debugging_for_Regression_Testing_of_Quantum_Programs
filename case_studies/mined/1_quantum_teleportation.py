@@ -2,7 +2,6 @@ import random
 import warnings
 import concurrent.futures
 
-
 import numpy as np
 from qiskit import QuantumCircuit, Aer
 from qiskit.quantum_info import random_statevector
@@ -20,34 +19,57 @@ warnings.simplefilter(action='ignore', category=DeprecationWarning)
 backend = Aer.get_backend('aer_simulator')
 
 
-class QuantumTeleportationSynthetic(CaseStudyInterface):
+class QuantumTeleportationMined(CaseStudyInterface):
+    # passing and failing circuits mined from:
+    # https://github.com/oreilly-qc/oreilly-qc.github.io/blob/2746abfe96b9f4a9a218dd049b06f4bca30c0681/samples/QCEngine/ch04_basic_teleportation.js
+
     def get_algorithm_name(self):
-        return "Quantum Teleportation Synthetic"
+        return "Quantum Teleportation Mined"
 
     # passing circuit
     @staticmethod
     def quantum_teleportation():
+        # Translation of the QCengine code assuming use_conditionals()
+        # not encoding any state to teleport, will be done in tests
+        # alice = 0
+        # ep = 1
+        # bob = 2
+        # entangle()
         qc = QuantumCircuit(3)
-        qc.x(0)  # d0 remove
-        qc.x(0)  # d1 remove
-        qc.h(1)
-        qc.cx(1, 2)
-        qc.cx(0, 1)  # d2 remove
-        qc.h(0)
-        qc.cx(1, 2)
-        qc.cz(0, 2)
+        qc.h(1)  # ep.had()
+        qc.cx(1, 2)  # bob.cnot(ep)
+        # alice_send()
+        qc.cx(0, 1)  # ep.cnot(alice);
+        qc.h(0)  # alice.had();
+        # bob_receive() (option 3, but translating ifs into controlled gates)
+        # same semantics, but easier to implement in qiskit
+        # a1 = alice = register 0
+        # a2 = ep = register 1
+        qc.cp(np.pi, 0, 2)  # if (a1) bob.phase(180);
+        qc.cx(1, 2)  # if (a2) bob.not();
         return qc
 
     # failing circuit
     @staticmethod
     def quantum_teleportation_update():
+        # Translation of the QCengine code assuming use_conditionals()
+        # not encoding any state to teleport, will be done in tests
+        # alice = 0
+        # ep = 1
+        # bob = 2
+        # entangle()
         qc = QuantumCircuit(3)
-        qc.h(1)
-        qc.cx(1, 2)
-        qc.cx(1, 0)  # d3 insert
-        qc.h(0)
-        qc.cx(1, 2)
-        qc.cz(0, 2)
+        qc.h(1)  # ep.had()
+        qc.cx(1, 2)  # bob.cnot(ep)
+        # alice_send()
+        qc.cx(0, 1)  # ep.cnot(alice);
+        qc.h(0)  # alice.had();
+        # bob_receive() (option 3, but translating ifs into controlled gates)
+        # same semantics, but easier to implement in qiskit
+        # a1 = alice = register 0
+        # a2 = ep = register 1
+        qc.cx(0, 2)  # if (a1) bob.not();
+        qc.cp(np.pi, 1, 2)  # if (a2) bob.phase(180);
         return qc
 
     def expected_deltas_to_isolate(self):
@@ -94,7 +116,8 @@ class QuantumTeleportationSynthetic(CaseStudyInterface):
 
             # get pvalue of test
             p_value_x, p_value_y, p_value_z, measurements_1, measurements_2 = assert_equal(inputted_circuit_to_test, 2,
-                                                                                           qc, 0, measurements=measurements)
+                                                                                           qc, 0,
+                                                                                           measurements=measurements)
 
             # store p_value and input state to get the p_value
             experiments.append((init_vector, p_value_x, p_value_y, p_value_z, measurements_1, measurements_2))
@@ -151,7 +174,7 @@ class QuantumTeleportationSynthetic(CaseStudyInterface):
 if __name__ == "__main__":
     chaff_lengths = [0, 1]
     inputs_to_generate = [1, 2]
-    qpe_objs = [QuantumTeleportationSynthetic() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
+    qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
     print(inputs_for_func)

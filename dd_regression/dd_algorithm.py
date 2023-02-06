@@ -10,7 +10,7 @@ from dd_regression.diff_algorithm_r import diff, apply_diffs
 import itertools
 
 
-def dd(c_pass, c_fail, test, source_pass, source_fail):
+def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25):
     """Return a pair (C_PASS’, C_FAIL’) such that
         * C_PASS subseteq C_PASS’ subset C_FAIL’ subseteq C_FAIL holds
         * C_FAIL’ - C_PASS’ is a minimal difference relevant for TEST."""
@@ -18,16 +18,14 @@ def dd(c_pass, c_fail, test, source_pass, source_fail):
 
     while 1:
         # try:
-        print("test pass")
-        assert isinstance(test(c_pass, source_pass, source_fail), Passed)
+        assert isinstance(test(c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed)
         # except AssertionError as e:
         #     print("one failure for passing circumstances, retrying")
         #     assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
 
         # print_edit_sequence(c_fail, source_pass, source_fail)
         # try:
-        print("test fail")
-        assert isinstance(test(c_fail, source_pass, source_fail), Failed)
+        assert isinstance(test(c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed)
         # except AssertionError as e:
         #     print("one failure for failing circumstances, retrying")
         #     assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
@@ -50,31 +48,31 @@ def dd(c_pass, c_fail, test, source_pass, source_fail):
             next_c_pass = listunion(c_pass, deltas[i])
             next_c_fail = listminus(c_fail, deltas[i])
 
-            if isinstance(test(next_c_fail, source_pass, source_fail), Failed) and n == 2:  # (1)
+            if isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed) and n == 2:  # (1)
                 print("fail test failed 1")
                 c_fail = next_c_fail
                 n = 2
                 offset = 0
                 break
-            elif isinstance(test(next_c_fail, source_pass, source_fail), Passed):  # (2)
+            elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed):  # (2)
                 print("fail test passed 2")
                 c_pass = next_c_fail
                 n = 2
                 offset = 0
                 break
-            elif isinstance(test(next_c_pass, source_pass, source_fail), Failed):  # (3)
+            elif isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed):  # (3)
                 print("pass test failed 3")
                 c_fail = next_c_pass
                 n = 2
                 offset = 0
                 break
-            elif isinstance(test(next_c_fail, source_pass, source_fail), Failed):  # (4)
+            elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed):  # (4)
                 print("fail test failed 4")
                 c_fail = next_c_fail
                 n = max(n - - 1, 2)
                 offset = i
                 break
-            elif isinstance(test(next_c_pass, source_pass, source_fail), Passed):  # (5)
+            elif isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed):  # (5)
                 print("pass test passed 5")
                 c_pass = next_c_pass
                 n = max(n - - 1, 2)
@@ -90,7 +88,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail):
                 n = min(n * 2, len(delta))  # Increase granularity
 
 
-def dd_repeat(passing_circuit, failing_circuit, test):
+def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate=25):
     """
     Will repeatedly execute the delta debugging algorithm until the passing deltas cease to pass and fail deltas cease
     to fail, allowing multiple isolated deltas to be retrieved
@@ -111,22 +109,22 @@ def dd_repeat(passing_circuit, failing_circuit, test):
     for i in range(loops):
         print(f"Delta Debugging loop {i}")
         try:
-            pass_diff, fail_diff = dd(pass_deltas, fail_deltas, test, passing_input_list, failing_input_list)
+            pass_diff, fail_diff = dd(pass_deltas, fail_deltas, test, passing_input_list, failing_input_list, inputs_to_generate=inputs_to_generate)
 
             min_change = listminus(fail_diff, pass_diff)
 
-            print(f"removed {min_change}")
+            # print(f"removed {min_change}")
             fail_deltas = listminus(fail_deltas, min_change)
-            print(f"added {fail_deltas}")
+            # print(f"added {fail_deltas}")
             pass_deltas = pass_diff
             delta_store = listunion(delta_store, min_change)
         except AssertionError as e:
-            print("assertion error")
+            # print("assertion error")
             print(repr(e))
-            print("failing_circuit")
-            print(failing_circuit)
-            print("passing_circuit")
-            print(passing_circuit)
+            # print("failing_circuit")
+            # print(failing_circuit)
+            # print("passing_circuit")
+            # print(passing_circuit)
             break
     print(delta_store)
     return delta_store, pass_deltas

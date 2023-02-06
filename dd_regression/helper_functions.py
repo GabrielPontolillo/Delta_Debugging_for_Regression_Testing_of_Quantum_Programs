@@ -41,30 +41,28 @@ def list_to_circuit(instruction_arr: list[any]):
         return None
 
 
-def add_random_chaff(circuit: QuantumCircuit):
-    # print(circuit)
+def add_random_chaff(circuit: QuantumCircuit, chaff_length=None):
+    #interested in decomposing gates and replacing
     qarg, carg = get_quantum_register(circuit)
     circ_list = circuit_to_list(circuit)
     # print(circ_list)
     # print(qarg.size)
     qubit_size = qarg.size
     # choose how many to append
-    # for i in range(random.randint(1, 2)):
-    for i in range(16):
+    if chaff_length is None:
+        chaff_length = range(random.randint(1, 8))
+    for i in range(chaff_length):
         # choose what identities to append
-        j = random.randint(0, 4)
+        j = random.randint(0, 3)
         target_qubit = random.randint(0, qubit_size - 1)
-        # target_qubit = 1
-        # print(target_qubit)
         if j == 0:
             qc = QuantumCircuit(qubit_size)
             qc.x(target_qubit)
             qc.x(target_qubit)
         elif j == 1:
             qc = QuantumCircuit(qubit_size)
-            # qc.i(target_qubit)
-            qc.x(target_qubit)
-            qc.x(target_qubit)
+            qc.h(target_qubit)
+            qc.h(target_qubit)
         elif j == 2:
             qc = QuantumCircuit(qubit_size)
             qc.y(target_qubit)
@@ -75,61 +73,7 @@ def add_random_chaff(circuit: QuantumCircuit):
             qc.z(target_qubit)
         elif j == 4:
             qc = QuantumCircuit(qubit_size)
-            qc.h(target_qubit)
-            qc.h(target_qubit)
-        elif j == 5:
-            qc = QuantumCircuit(qubit_size)
-            qc.s(target_qubit)
-            qc.s(target_qubit)
-            qc.s(target_qubit)
-            qc.s(target_qubit)
-        qc_list = circuit_to_list(qc)
-        # choose where to append the chaff
-        insert_location = random.randint(0, len(circ_list))
-        # insert_location = 5
-        # print(f"insert location {insert_location}")
-        circ_list[insert_location:insert_location] = qc_list
-        # print(circ_list)
-    # print(list_to_circuit(circ_list))
-    return circ_list
-
-
-def add_fixed_len_chaff(circuit: QuantumCircuit, fixed_len_chaff: int):
-    # print(circuit)
-    qarg, carg = get_quantum_register(circuit)
-    circ_list = circuit_to_list(circuit)
-    # print(circ_list)
-    # print(qarg.size)
-    qubit_size = qarg.size
-    # choose how many to append
-    # for i in range(random.randint(1, 2)):
-    for i in range(fixed_len_chaff):
-        # choose what identities to append
-        j = random.randint(0, 4)
-        target_qubit = random.randint(0, qubit_size - 1)
-        # target_qubit = 1
-        # print(target_qubit)
-        if j == 0:
-            qc = QuantumCircuit(qubit_size)
-            qc.x(target_qubit)
-            qc.x(target_qubit)
-        elif j == 1:
-            qc = QuantumCircuit(qubit_size)
-            # qc.i(target_qubit)
-            qc.x(target_qubit)
-            qc.x(target_qubit)
-        elif j == 2:
-            qc = QuantumCircuit(qubit_size)
-            qc.y(target_qubit)
-            qc.y(target_qubit)
-        elif j == 3:
-            qc = QuantumCircuit(qubit_size)
-            qc.z(target_qubit)
-            qc.z(target_qubit)
-        elif j == 4:
-            qc = QuantumCircuit(qubit_size)
-            qc.h(target_qubit)
-            qc.h(target_qubit)
+            qc.i(target_qubit)
         elif j == 5:
             qc = QuantumCircuit(qubit_size)
             qc.s(target_qubit)
