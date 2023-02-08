@@ -1,6 +1,7 @@
 import random
 import warnings
 import concurrent.futures
+import multiprocessing
 
 import numpy as np
 from qiskit import QuantumCircuit, Aer
@@ -188,8 +189,24 @@ if __name__ == "__main__":
     # deltas, passing_deltas = dd_repeat(qt.passing_circuit(), fail, qt.test_function,
     #                                    inputs_to_generate=2)
     # print(deltas)
-    chaff_lengths = [1]
-    inputs_to_generate = [5]
+
+    # chaff_lengths = [1]
+    # inputs_to_generate = [5]
+    # qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
+    # print(qpe_objs)
+    # inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
+    # print(inputs_for_func)
+    # results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
+    # print(results)
+    # # qpe.analyse_results(chaff_length=8, inputs_to_generate=50)
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+    #     results = [executor.submit(qpe_objs[i].analyse_results, chaff_length=inputs_for_func[i][0],
+    #                                inputs_to_generate=inputs_for_func[i][1]) for i in range(len(qpe_objs))]
+    #     for f in concurrent.futures.as_completed(results):
+    #         f.result()
+
+    chaff_lengths = [0]
+    inputs_to_generate = [1, 2, 3, 4]
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
@@ -197,8 +214,9 @@ if __name__ == "__main__":
     results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
     print(results)
     # qpe.analyse_results(chaff_length=8, inputs_to_generate=50)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-        results = [executor.submit(qpe_objs[i].analyse_results, chaff_length=inputs_for_func[i][0],
-                                   inputs_to_generate=inputs_for_func[i][1]) for i in range(len(qpe_objs))]
-        for f in concurrent.futures.as_completed(results):
-            f.result()
+    with multiprocessing.Pool(processes=4) as pool:
+        results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
+                                                                       'inputs_to_generate': inputs_for_func[i][1]}) for
+                   i in range(len(qpe_objs))]
+        for r in results:
+            r.get()
