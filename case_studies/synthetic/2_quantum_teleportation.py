@@ -149,8 +149,8 @@ class QuantumTeleportationSynthetic(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    chaff_lengths = [0, 1]
-    inputs_to_generate = [1, 2]
+    chaff_lengths = [0]
+    inputs_to_generate = [1]
     qpe_objs = [QuantumTeleportationSynthetic() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]

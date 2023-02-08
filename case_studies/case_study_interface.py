@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod, abstractproperty
 from dd_regression.dd_algorithm import dd_repeat
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit, \
     determine_delta_application_valid, list_contains_list_in_same_order
-from dd_regression.diff_algorithm_r import apply_diffs, diff, Removal, Addition
+from dd_regression.diff_algorithm_r import apply_diffs, diff, Removal, Addition, print_deltas
 
 
 class CaseStudyInterface(ABC):
@@ -191,7 +191,8 @@ class CaseStudyInterface(ABC):
         print(expected_deltas)
         print(failing_circuit_list)
         print(failing_circuit)
-        loops = 100
+        loops = 10
+        amount_to_find = len(expected_deltas) * loops
         for i in range(loops):
             print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
@@ -200,24 +201,46 @@ class CaseStudyInterface(ABC):
             print(chaff_embedded_circuit)
 
             deltas, passing_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate)
-
             # print(f"passing deltas {passing_deltas}")
             print(f"failing deltas {deltas}")
             # print(list_to_circuit(apply_diffs(circuit_to_list(self.passing_circuit()), chaff_embedded_circuit_list, deltas)))
             self.test_cache = {}
 
-            if Removal(location_index=4) in deltas:
-                expected_found += 1
+            deltas_found = 0
+            indexes_found = []
+            # need to check deltas to make sure they are the same after diffing with chaff
+            for exp in expected_deltas:
+                # removal deltas unaffected
+                if isinstance(exp, Removal):
+                    if exp in deltas:
+                        deltas_found += 1
+                # addition, we need to modify
+                elif isinstance(exp, Addition):
+                    # care about gate added and location
+                    for idx, delta in enumerate(deltas):
+                        # old location unaffected
+                        if exp.location_index == delta.location_index:
+                            # add gate index affected, compare actual gate in list, if it's the same
+                            if chaff_embedded_circuit_list[delta.add_gate_index] == failing_circuit_list[exp.add_gate_index]:
+                                # index not already added, we say that it has been found
+                                if idx not in indexes_found:
+                                    deltas_found += 1
+                                    indexes_found.append(idx)
 
-            if len(deltas) > 1:
-                artifacts_found += len(deltas) - 1
+            print(f"expected deltas {expected_deltas}")
+            print(f"deltas {deltas}")
+            print_deltas(circuit_to_list(self.passing_circuit()), chaff_embedded_circuit_list, deltas)
+            print(f"deltas_found {deltas_found}")
+            expected_found += deltas_found
+            if len(deltas) - deltas_found > 0:
+                artifacts_found += len(deltas) - deltas_found
                 tests_with_artifacts += 1
 
         print(f"time taken {time.time() - start}")
         print(f"tests performed {self.tests_performed}")
         print(f"tests performed no cache{self.tests_performed_no_cache}")
         print(f"deltas {expected_found}")
-        print(f"out of  {loops}")
+        print(f"out of  {amount_to_find}")
         print(f"total amount other deltas included in output {artifacts_found}")
         print(f"tests with any amount of other deltas {tests_with_artifacts}")
 
@@ -226,7 +249,7 @@ class CaseStudyInterface(ABC):
         f.write(f"tests performed {self.tests_performed}\n")
         f.write(f"tests performed no cache{self.tests_performed_no_cache}\n")
         f.write(f"deltas {expected_found}\n")
-        f.write(f"out of  {loops}\n")
+        f.write(f"out of  {amount_to_find}\n")
         f.write(f"total amount other deltas included in output {artifacts_found}\n")
         f.write(f"tests with any amount of other deltas {tests_with_artifacts}\n")
         f.close()

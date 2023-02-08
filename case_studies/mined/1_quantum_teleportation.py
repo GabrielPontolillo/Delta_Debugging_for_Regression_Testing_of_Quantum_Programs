@@ -8,9 +8,10 @@ from qiskit.quantum_info import random_statevector
 
 from case_studies.case_study_interface import CaseStudyInterface
 from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, holm_bonferroni_correction
-from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register
+from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register, add_random_chaff
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs, Experiment
+from dd_regression.dd_algorithm import dd_repeat
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -73,7 +74,8 @@ class QuantumTeleportationMined(CaseStudyInterface):
         return qc
 
     def expected_deltas_to_isolate(self):
-        return [Removal(location_index=4)]
+        return [Removal(location_index=4), Removal(location_index=5), Addition(add_gate_index=4, location_index=6),
+                Addition(add_gate_index=5, location_index=6)]
 
     def passing_circuit(self):
         return self.quantum_teleportation()
@@ -172,8 +174,22 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    chaff_lengths = [0, 1]
-    inputs_to_generate = [1, 2]
+    # qt = QuantumTeleportationMined()
+    # fail = list_to_circuit(add_random_chaff(qt.failing_circuit(), chaff_length=1))
+    # print(qt.passing_circuit())
+    # print(fail)
+    # dd = diff(qt.passing_circuit(), fail)
+    # print(diff(qt.passing_circuit(), qt.failing_circuit()))
+    # print(dd)
+    # print(qt.test_function([dd[0], dd[1]], passing_circ=qt.passing_circuit(), failing_circ=qt.failing_circuit(), inputs_to_generate=5))
+    # print(list_to_circuit(apply_diffs(qt.passing_circuit(), qt.failing_circuit(), [])))
+    # print(list_to_circuit(apply_diffs(qt.passing_circuit(), qt.failing_circuit(), dd)))
+    # print(list_to_circuit(apply_diffs(qt.passing_circuit(), qt.failing_circuit(), [dd[0], dd[2]])))
+    # deltas, passing_deltas = dd_repeat(qt.passing_circuit(), fail, qt.test_function,
+    #                                    inputs_to_generate=2)
+    # print(deltas)
+    chaff_lengths = [1]
+    inputs_to_generate = [5]
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]

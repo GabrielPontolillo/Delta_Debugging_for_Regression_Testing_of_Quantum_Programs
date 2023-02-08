@@ -183,6 +183,13 @@ def apply_diffs(li1, li2, diffs, diagnostic=False, timeit=False):
     return res
 
 
+def print_deltas(li1, li2, diffs):
+    for i in range(len(diffs)):
+        if isinstance(diffs[i], Removal):
+            print(f"remove {li1[diffs[i].location_index]} at {diffs[i].location_index}")
+        elif isinstance(diffs[i], Addition):
+            print(f"add {li2[diffs[i].add_gate_index]} at {diffs[i].location_index}")
+
 def convert_deltas_to_replacement(diffs):
     paired_indexes = {}
     for idx, delta in enumerate(diffs):

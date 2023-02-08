@@ -38,6 +38,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25):
             return c_pass, c_fail  # No further minimizing
 
         deltas = split(delta, n)
+        # print(deltas)
 
         assert len(deltas) == n
 
@@ -47,6 +48,8 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25):
             i = (j + offset) % n
             next_c_pass = listunion(c_pass, deltas[i])
             next_c_fail = listminus(c_fail, deltas[i])
+            # print(next_c_pass)
+            # print(next_c_fail)
 
             if isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed) and n == 2:  # (1)
                 print("fail test failed 1")
@@ -79,12 +82,15 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25):
                 offset = i
                 break
             else:
+                # print("all inconclusive")
                 j = j + 1  # Try next subset
 
         if j >= n:  # All tests unresolved
             if n >= len(delta):
+                # print(f"granularity longer than length of deltas {n}, so returning base")
                 return c_pass, c_fail
             else:
+                # print("increasing granularity")
                 n = min(n * 2, len(delta))  # Increase granularity
 
 

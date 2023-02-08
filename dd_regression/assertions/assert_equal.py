@@ -53,9 +53,9 @@ def assert_equal(circuit_1, qubit_register_1, circuit_2, qubit_register_2, measu
 
     contingency_table_z = [[merged_counts_1.get(x, 0), merged_counts_2.get(x, 0)] for x in ["z0", "z1"]]
 
-    print("--------------")
-    print(merged_counts_1)
-    print(merged_counts_2)
+    # print("--------------")
+    # print(merged_counts_1)
+    # print(merged_counts_2)
 
     # print(contingency_table_x)
     # print(contingency_table_y)
