@@ -2,6 +2,7 @@ import random
 import warnings
 import concurrent.futures
 import multiprocessing
+import csv
 
 import numpy as np
 from qiskit import QuantumCircuit, Aer
@@ -205,8 +206,8 @@ if __name__ == "__main__":
     #     for f in concurrent.futures.as_completed(results):
     #         f.result()
 
-    chaff_lengths = [0]
-    inputs_to_generate = [1, 2, 3, 4]
+    chaff_lengths = [0, 4]
+    inputs_to_generate = [1]
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
@@ -220,3 +221,17 @@ if __name__ == "__main__":
                    i in range(len(qpe_objs))]
         for r in results:
             r.get()
+
+    pool.join()
+
+    rows = []
+    for i in range(len(inputs_to_generate)):
+        row = []
+        for j in range(len(chaff_lengths)):
+            f = open(f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt", "r")
+            row.append(f.read())
+        rows.append(row)
+
+    with open("test_results.csv", 'w', newline='') as file:
+        writer = csv.writer(file, dialect='excel')
+        writer.writerows(rows)
