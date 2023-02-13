@@ -76,7 +76,7 @@ class CaseStudyInterface(ABC):
         print(expected_deltas)
         print(failing_circuit_list)
         print(failing_circuit)
-        loops = 10
+        loops = 100
         amount_to_find = len(expected_deltas) * loops
         for i in range(loops):
             print(f"loop number {i}")

@@ -24,7 +24,11 @@ backend = Aer.get_backend('aer_simulator')
 
 class QuantumTeleportationMined(CaseStudyInterface):
     # passing and failing circuits mined from:
-    # https://github.com/oreilly-qc/oreilly-qc.github.io/blob/2746abfe96b9f4a9a218dd049b06f4bca30c0681/samples/QCEngine/ch04_basic_teleportation.js
+    # https://arxiv.org/pdf/quant-ph/0402196.pdf
+    # https://github.com/quantumlib/Cirq/blob/9b70853ac4dc36e3369b55e16edb7b755f11070d/examples/quantum_fourier_transform.py
+    # https://github.com/quantumlib/Cirq/blob/362cc31a25feb6904793e4f99151299d6cd2b4eb/examples/quantum_fourier_transform.py
+    # https://github.com/quantumlib/Cirq/blob/10a83c62b1f0f6ed38ca26b06af284df26b9ad0a/examples/quantum_fourier_transform.py
+    # https://github.com/quantumlib/Cirq/blob/master/examples/quantum_fourier_transform.py
 
     def get_algorithm_name(self):
         return "Quantum Teleportation Mined"
@@ -32,47 +36,13 @@ class QuantumTeleportationMined(CaseStudyInterface):
     # passing circuit
     @staticmethod
     def quantum_teleportation():
-        # Translation of the QCengine code assuming use_conditionals()
-        # not encoding any state to teleport, will be done in tests
-        # alice = 0
-        # ep = 1
-        # bob = 2
-        # entangle()
-        qc = QuantumCircuit(3)
-        qc.h(1)  # ep.had()
-        qc.cx(1, 2)  # bob.cnot(ep)
-        # alice_send()
-        qc.cx(0, 1)  # ep.cnot(alice);
-        qc.h(0)  # alice.had();
-        # bob_receive() (option 3, but translating ifs into controlled gates)
-        # same semantics, but easier to implement in qiskit
-        # a1 = alice = register 0
-        # a2 = ep = register 1
-        qc.cp(np.pi, 0, 2)  # if (a1) bob.phase(180);
-        qc.cx(1, 2)  # if (a2) bob.not();
+
         return qc
 
     # failing circuit
     @staticmethod
     def quantum_teleportation_update():
-        # Translation of the QCengine code assuming use_conditionals()
-        # not encoding any state to teleport, will be done in tests
-        # alice = 0
-        # ep = 1
-        # bob = 2
-        # entangle()
-        qc = QuantumCircuit(3)
-        qc.h(1)  # ep.had()
-        qc.cx(1, 2)  # bob.cnot(ep)
-        # alice_send()
-        qc.cx(0, 1)  # ep.cnot(alice);
-        qc.h(0)  # alice.had();
-        # bob_receive() (option 3, but translating ifs into controlled gates)
-        # same semantics, but easier to implement in qiskit
-        # a1 = alice = register 0
-        # a2 = ep = register 1
-        qc.cx(0, 2)  # if (a1) bob.not();
-        qc.cp(np.pi, 1, 2)  # if (a2) bob.phase(180);
+
         return qc
 
     def expected_deltas_to_isolate(self):
