@@ -1,6 +1,7 @@
 import random
 import warnings
-import concurrent.futures
+import multiprocessing
+import csv
 
 
 import numpy as np
@@ -149,8 +150,8 @@ class QuantumTeleportationSynthetic(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    chaff_lengths = [0]
-    inputs_to_generate = [1]
+    chaff_lengths = [8, 4, 2, 1, 0]
+    inputs_to_generate = [20, 10, 5, 1]
     qpe_objs = [QuantumTeleportationSynthetic() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
@@ -158,8 +159,25 @@ if __name__ == "__main__":
     results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
     print(results)
     # qpe.analyse_results(chaff_length=8, inputs_to_generate=50)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-        results = [executor.submit(qpe_objs[i].analyse_results, chaff_length=inputs_for_func[i][0],
-                                   inputs_to_generate=inputs_for_func[i][1]) for i in range(len(qpe_objs))]
-        for f in concurrent.futures.as_completed(results):
-            f.result()
+    with multiprocessing.Pool() as pool:
+        results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
+                                                                       'inputs_to_generate': inputs_for_func[i][1]}) for
+                   i in range(len(qpe_objs))]
+        for r in results:
+            r.get()
+
+    pool.join()
+
+    rows = []
+    for i in range(len(inputs_to_generate)):
+        row = []
+        for j in range(len(chaff_lengths)):
+            f = open(
+                f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt",
+                "r")
+            row.append(f.read())
+        rows.append(row)
+
+    with open("test_results.csv", 'w', newline='') as file:
+        writer = csv.writer(file, dialect='excel')
+        writer.writerows(rows)

@@ -1,6 +1,5 @@
 import random
 import warnings
-import concurrent.futures
 import multiprocessing
 import csv
 
@@ -13,8 +12,7 @@ from dd_regression.assertions.assert_equal import assert_equal, assert_equal_sta
     measure_qubits, assert_equal_distributions
 from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register, add_random_chaff
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs, Experiment
-from dd_regression.dd_algorithm import dd_repeat
+from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs, Experiment, print_deltas
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -90,46 +88,6 @@ class QFTSynthetic(CaseStudyInterface):
                     assert False
         assert True
 
-    # def test_function(self, deltas, src_passing, src_failing, original_deltas):
-    #     """"""
-    #     p_values = []
-    #
-    #     passing_input_list = src_passing
-    #     failing_input_list = src_failing
-    #     # print(list_to_circuit(passing_input_list))
-    #     changed_circuit_list = apply_edit_script(deltas, passing_input_list, failing_input_list, original_deltas)
-    #     qlength, clength = get_quantum_register(changed_circuit_list)
-    #     changed_circuit = list_to_circuit(changed_circuit_list)
-    #     print("changed_circuit")
-    #     print(changed_circuit)
-    #
-    #     for j in range(8):
-    #         rotation = j
-    #         x_circuit = QuantumCircuit(qlength)
-    #         bin_amt = bin(rotation)[2:]
-    #         for i in range(len(bin_amt)):
-    #             if bin_amt[i] == '1':
-    #                 x_circuit.x(len(bin_amt) - (i + 1))
-    #
-    #         inputted_circuit_to_test = x_circuit + changed_circuit
-    #
-    #         checks = []
-    #         qubits = []
-    #
-    #         for i in range(inputted_circuit_to_test.num_qubits):
-    #             checks.append(((360 / (2 ** (i + 1))) * rotation) % 360)
-    #             qubits.append(i)
-    #         pvals = assertPhase(backend, inputted_circuit_to_test, qubits, checks, 20000)
-    #         p_values += pvals
-    #
-    #     p_values = sorted(p_values)
-    #
-    #     for i in range(len(p_values)):
-    #         if p_values[i] != np.NaN:
-    #             if p_values[i] < 0.01 / (len(p_values) - i):
-    #                 return Failed()
-    #     return Passed()
-
     # generate circuit, and return if pass or fail
     def test_function(self, deltas, passing_circ, failing_circ, inputs_to_generate=25, measurements=1000):
         self.tests_performed += 1
@@ -145,7 +103,13 @@ class QFTSynthetic(CaseStudyInterface):
         init_qubit_regs = [0, 1]
         self.tests_performed_no_cache += 1
 
-        changed_circuit_list = apply_diffs(passing_circ, failing_circ, deltas)
+        changed_circuit_list = apply_diffs(passing_circ, failing_circ, deltas, diagnostic=True)
+
+        add = len([x for x in deltas if isinstance(x, Addition)])
+        rem = len([x for x in deltas if isinstance(x, Removal)])
+        if len(passing_circ) + add - rem != len(changed_circuit_list):
+            raise AssertionError(f"apply_diffs has gone wrong pass len {len(passing_circ)}, add {add}, rem {rem}")
+
         qlength, clength = get_quantum_register(changed_circuit_list)
         changed_circuit = list_to_circuit(changed_circuit_list)
         # generate random input state vector and apply statistical test to expected output
@@ -180,9 +144,6 @@ class QFTSynthetic(CaseStudyInterface):
                  'x0': base_measurements[1].get('y0'), 'x1': base_measurements[1].get('y1'),
                  'y0': base_measurements[1].get('x1'), 'y1': base_measurements[1].get('x0')}
             ]
-            print(base_measurements)
-            print(shifted_measurements)
-            print(modified_measurements)
             p_list = assert_equal_distributions(modified_measurements, shifted_measurements)
 
             # store p_value and input state to get the p_value
@@ -231,15 +192,15 @@ class QFTSynthetic(CaseStudyInterface):
 
         # if any state not equal, inconclusive result
         if len(verification_failed) > 0:
-            # print("return inconclusive")
+            print("return inconclusive")
             self.test_cache[tuple(deltas)] = Inconclusive()
             return Inconclusive()
         elif len(failed) > 0:
-            # print("return failed")
+            print("return failed")
             self.test_cache[tuple(deltas)] = Failed()
             return Failed()
         else:
-            # print("return passed")
+            print("return passed")
             self.test_cache[tuple(deltas)] = Passed()
             return Passed()
 
@@ -248,23 +209,24 @@ if __name__ == "__main__":
     # qft = QFTSynthetic()
     # diffs = diff(qft.passing_circuit(), qft.failing_circuit())
     # print(diffs)
-    # print(qft.test_function([diffs[1]], qft.passing_circuit(), qft.failing_circuit(), inputs_to_generate=5))
+    # print(qft.test_function([diffs[1]], qft.passing_circuit(), qft.failing_circuit(), inputs_to_generate=1))
     # dd_repeat(qft.passing_circuit(), qft.failing_circuit(), qft.test_function, inputs_to_generate=5)
     # diffs = diff(qft.passing_circuit(), qft.failing_circuit())
     #
     # apply_edit_script([diffs[1]], qft.passing_circuit(), qft.failing_circuit(), diffs)
 
-    # qft.analyse_results()
-    chaff_lengths = [0, 4]
-    inputs_to_generate = [1]
+    # qft.analyse_results(chaff_length=1, inputs_to_generate=3)
+
+    chaff_lengths = [8, 4, 2, 1, 0]
+    inputs_to_generate = [20, 10, 5, 1]
     qpe_objs = [QFTSynthetic() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
     print(inputs_for_func)
     results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
     print(results)
-    # qpe.analyse_results(chaff_length=8, inputs_to_generate=50)
-    with multiprocessing.Pool(processes=4) as pool:
+
+    with multiprocessing.Pool() as pool:
         results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
                                                                        'inputs_to_generate': inputs_for_func[i][1]}) for
                    i in range(len(qpe_objs))]

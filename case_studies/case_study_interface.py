@@ -69,23 +69,26 @@ class CaseStudyInterface(ABC):
         expected_deltas = self.expected_deltas_to_isolate()
         expected_found = 0
         artifacts_found = 0
+        artifacts_added = 0
         tests_with_artifacts = 0
         tests_with_all_deltas_found = 0
         perfect_result = 0
         start = time.time()
         print(expected_deltas)
-        print(failing_circuit_list)
+        print(self.passing_circuit())
         print(failing_circuit)
-        loops = 100
+        loops = 3
         amount_to_find = len(expected_deltas) * loops
         for i in range(loops):
             print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
+
             # chaff_embedded_circuit_list = failing_circuit.copy()
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
+            artifacts_added += len(chaff_embedded_circuit_list) - len(failing_circuit_list)
             print(chaff_embedded_circuit)
 
-            deltas, passing_deltas = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate)
+            deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate)
             # print(f"passing deltas {passing_deltas}")
             print(f"failing deltas {deltas}")
             # print(list_to_circuit(apply_diffs(circuit_to_list(self.passing_circuit()), chaff_embedded_circuit_list, deltas)))
@@ -129,16 +132,18 @@ class CaseStudyInterface(ABC):
                 artifacts_found += len(deltas) - deltas_found
                 tests_with_artifacts += 1
 
-        print(f"deltas: {expected_found}/{amount_to_find} ({tests_with_all_deltas_found}) perfect: {perfect_result}")
-        print(f"other deltas: {artifacts_found} ({tests_with_artifacts})")
-        print(f"tests: {self.tests_performed} ({self.tests_performed_no_cache})")
-        print(f"time taken {round(time.time() - start, 2)}")
+        print(f"Total expected deltas found: {expected_found}/{amount_to_find}")
+        print(f"Tests with ALL expected deltas found: {tests_with_all_deltas_found}/{loops}, AND no unexpected: {perfect_result}/{loops}")
+        print(f"Unexpected deltas: {artifacts_found}/{artifacts_added}, from ({tests_with_artifacts}) tests")
+        print(f"Tests called: {self.tests_performed}, tests executed (due to caching): {self.tests_performed_no_cache}")
+        print(f"Time taken (minutes): {round(time.time() - start, 2)/60}")
 
         f = open(f"{self.get_algorithm_name()}_chaff_length{chaff_length}_inputs_to_gen{inputs_to_generate}.txt", "w")
-        f.write(f"deltas: {expected_found}/{amount_to_find} ({tests_with_all_deltas_found}) | perfect:{perfect_result}\n")
-        f.write(f"other deltas: {artifacts_found} ({tests_with_artifacts})\n")
-        f.write(f"tests: {self.tests_performed} ({self.tests_performed_no_cache})\n")
-        f.write(f"time taken {round(time.time() - start, 2)}\n")
+        f.write(f"Total expected deltas found: {expected_found}/{amount_to_find}\n")
+        f.write(f"Tests with ALL expected deltas found: {tests_with_all_deltas_found}/{loops}, AND no unexpected: {perfect_result}/{loops}\n")
+        f.write(f"Unexpected deltas: {artifacts_found}/{artifacts_added}, from ({tests_with_artifacts}) tests\n")
+        f.write(f"Tests called: {self.tests_performed}, tests executed (due to caching): {self.tests_performed_no_cache}\n")
+        f.write(f"Time taken (minutes): {round(time.time() - start, 2)/60}")
         f.close()
 
 

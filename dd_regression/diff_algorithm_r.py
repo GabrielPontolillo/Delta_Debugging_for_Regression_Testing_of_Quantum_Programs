@@ -1,6 +1,7 @@
 # This code is from https://blog.robertelder.org/diff-algorithm/
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
 from dataclasses import dataclass
+from dd_regression.helper_functions import list_to_circuit
 import time
 
 
@@ -99,6 +100,9 @@ def diff(li1, li2, diagnostic=False, timeit=False):
   The result is a list where all elements are Removals, Additions or
   Unchanged elements.
   """
+    if diagnostic:
+        print(f"input 1: {li1}")
+        print(f"input 2: {li2}")
     lcs = compute_lcs_len(li1, li2)
     results = []
     t1 = time.time()
@@ -144,42 +148,59 @@ def diff(li1, li2, diagnostic=False, timeit=False):
 
 
 def apply_diffs(li1, li2, diffs, diagnostic=False, timeit=False):
+    if diagnostic:
+        print(f"input 1:")
+        print(list_to_circuit(li1))
+        print(f"input 2:")
+        print(list_to_circuit(li2))
+        print(f"diffs:")
+        print_deltas(li1, li2, diffs)
+
     t1 = time.time()
     res = []
     li1_idx = 0
     for d in diffs:
         if diagnostic:
-            print(f"index {li1_idx}")
+            pass
+            # print(f"index {li1_idx}")
         # if current index before first diff's target, add current value in list 1
         while d.location_index > li1_idx:
             if diagnostic:
-                print(f"while loop first {li1_idx}, location {d.location_index}")
+                pass
+                # print(f"while loop first {li1_idx}, location {d.location_index}")
             res.append(li1[li1_idx])
             li1_idx += 1
         # if current index in diff target, apply diff accordingly
         if d.location_index == li1_idx:
             if isinstance(d, Addition):
                 if diagnostic:
-                    print(f"adding gate {d.add_gate_index} at {d.location_index}")
+                    pass
+                    # print(f"adding gate {d.add_gate_index} at {d.location_index}")
                 res.append(li2[d.add_gate_index])
             elif isinstance(d, Removal):
                 if diagnostic:
-                    print(f"removing gate at {d.location_index}")
+                    pass
+                    # print(f"removing gate at {d.location_index}")
                 li1_idx += 1
             elif isinstance(d, Replace):
                 res.append(li2[d.add_gate_index])
                 li1_idx += 1
             else:
                 raise ValueError("Unrecognized type in diffs")
+
     # add all values in original list after we went through all diffs
     while li1_idx < len(li1):
         if diagnostic:
-            print(f"final while {li1_idx} < {len(li1)}")
+            pass
+            # print(f"final while {li1_idx} < {len(li1)}")
         res.append(li1[li1_idx])
         li1_idx += 1
     t2 = time.time()
     if timeit:
         print(f"time_taken for apply diffs= {t2 - t1}")
+    if diagnostic:
+        print("output circuit")
+        print(list_to_circuit(res))
     return res
 
 
@@ -189,6 +210,7 @@ def print_deltas(li1, li2, diffs):
             print(f"remove {li1[diffs[i].location_index]} at {diffs[i].location_index}")
         elif isinstance(diffs[i], Addition):
             print(f"add {li2[diffs[i].add_gate_index]} at {diffs[i].location_index}")
+
 
 def convert_deltas_to_replacement(diffs):
     paired_indexes = {}

@@ -16,7 +16,7 @@ warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
 # circuit 1 = tested circuit
 # circuit 2 = expected value
-def assert_equal(circuit_1, qubit_register_1, circuit_2, qubit_register_2, measurements=10000):
+def assert_equal(circuit_1, qubit_register_1, circuit_2, qubit_register_2, measurements=1000):
     circuit_1.add_register(ClassicalRegister(1))
     c1z = measure_z(circuit_1.copy(), [qubit_register_1])
     c1x = measure_x(circuit_1.copy(), [qubit_register_1])
@@ -76,7 +76,7 @@ def assert_equal(circuit_1, qubit_register_1, circuit_2, qubit_register_2, measu
 
 # circuit 1 = tested circuit
 # circuit 2 = expected value
-def assert_equal_state(circuit_1, qubit_register_1, merged_counts_2, measurements=10000):
+def assert_equal_state(circuit_1, qubit_register_1, merged_counts_2, measurements=1000):
     circuit_1.add_register(ClassicalRegister(1))
     c1z = measure_z(circuit_1.copy(), [qubit_register_1])
     c1x = measure_x(circuit_1.copy(), [qubit_register_1])
@@ -117,28 +117,54 @@ def assert_equal_state(circuit_1, qubit_register_1, merged_counts_2, measurement
 
 # circuit 1 = tested circuit
 # circuit 2 = expected value
-def measure_qubits(circuit_1, register, measurements=10000):
+def measure_qubits(circuit_1, register, measurements=1000):
     # receives a circuit to measure, and a list of qubit registers to measure
     # returns a list of measurements for respective qubits
     results = []
-    for i in register:
-        circuit_1.add_register(ClassicalRegister(1))
-        c1z = measure_z(circuit_1.copy(), [i])
-        c1x = measure_x(circuit_1.copy(), [i])
-        c1y = measure_y(circuit_1.copy(), [i])
-        z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
-        x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
-        y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
-        z_cleaned_counts_1 = {"z" + k[-1]: v for (k, v) in z_counts_1.items()}
-        x_cleaned_counts_1 = {"x" + k[-1]: v for (k, v) in x_counts_1.items()}
-        y_cleaned_counts_1 = {"y" + k[-1]: v for (k, v) in y_counts_1.items()}
-        merged_counts_1 = z_cleaned_counts_1 | x_cleaned_counts_1 | y_cleaned_counts_1
-        for missing in [x for x in ["x0", "x1", "y0", "y1", "z0", "z1"] if x not in merged_counts_1.keys()]:
-            merged_counts_1[missing] = 0
-        merged_counts_1 = {i: merged_counts_1[i] for i in ["x0", "x1", "y0", "y1", "z0", "z1"]}
-        results.append(merged_counts_1)
+    circuit_1.add_register(ClassicalRegister(len(register)))
+    c1z = measure_z(circuit_1.copy(), register)
+    c1x = measure_x(circuit_1.copy(), register)
+    c1y = measure_y(circuit_1, register)
+    z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
+    x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
+    y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
+    for i in range(len(register)):
+        z1 = sum([v for (k, v) in z_counts_1.items() if k[-(i + 1)] == '1'])
+        z0 = measurements - z1
+        x1 = sum([v for (k, v) in x_counts_1.items() if k[-(i + 1)] == '1'])
+        x0 = measurements - x1
+        y1 = sum([v for (k, v) in y_counts_1.items() if k[-(i + 1)] == '1'])
+        y0 = measurements - y1
+        results.append({"x0": x0, "x1": x1, "y0": y0, "y1": y1, "z0": z0, "z1": z1})
 
     return results
+
+
+# # circuit 1 = tested circuit
+# # circuit 2 = expected value
+# def measure_qubits(circuit_1, register, measurements=1000):
+#     # receives a circuit to measure, and a list of qubit registers to measure
+#     # returns a list of measurements for respective qubits
+#     results = []
+#     # can make this more efficient probably
+#     for i in register:
+#         circuit_1.add_register(ClassicalRegister(1))
+#         c1z = measure_z(circuit_1.copy(), [i])
+#         c1x = measure_x(circuit_1.copy(), [i])
+#         c1y = measure_y(circuit_1.copy(), [i])
+#         z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
+#         x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
+#         y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
+#         z_cleaned_counts_1 = {"z" + k[-1]: v for (k, v) in z_counts_1.items()}
+#         x_cleaned_counts_1 = {"x" + k[-1]: v for (k, v) in x_counts_1.items()}
+#         y_cleaned_counts_1 = {"y" + k[-1]: v for (k, v) in y_counts_1.items()}
+#         merged_counts_1 = z_cleaned_counts_1 | x_cleaned_counts_1 | y_cleaned_counts_1
+#         for missing in [x for x in ["x0", "x1", "y0", "y1", "z0", "z1"] if x not in merged_counts_1.keys()]:
+#             merged_counts_1[missing] = 0
+#         merged_counts_1 = {i: merged_counts_1[i] for i in ["x0", "x1", "y0", "y1", "z0", "z1"]}
+#         results.append(merged_counts_1)
+#
+#     return results
 
 
 def assert_equal_distributions(distribution_list_1, distribution_list_2):

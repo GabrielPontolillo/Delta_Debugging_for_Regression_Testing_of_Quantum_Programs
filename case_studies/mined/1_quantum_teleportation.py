@@ -1,6 +1,4 @@
-import random
 import warnings
-import concurrent.futures
 import multiprocessing
 import csv
 
@@ -13,7 +11,6 @@ from dd_regression.assertions.assert_equal import assert_equal, assert_equal_sta
 from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register, add_random_chaff
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs, Experiment
-from dd_regression.dd_algorithm import dd_repeat
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -176,16 +173,15 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    chaff_lengths = [0, 4]
-    inputs_to_generate = [1]
+    chaff_lengths = [8, 4, 2, 1, 0]
+    inputs_to_generate = [20, 10, 5, 1]
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
     print(inputs_for_func)
     results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
     print(results)
-    # qpe.analyse_results(chaff_length=8, inputs_to_generate=50)
-    with multiprocessing.Pool(processes=4) as pool:
+    with multiprocessing.Pool() as pool:
         results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
                                                                        'inputs_to_generate': inputs_for_func[i][1]}) for
                    i in range(len(qpe_objs))]
@@ -198,7 +194,9 @@ if __name__ == "__main__":
     for i in range(len(inputs_to_generate)):
         row = []
         for j in range(len(chaff_lengths)):
-            f = open(f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt", "r")
+            f = open(
+                f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt",
+                "r")
             row.append(f.read())
         rows.append(row)
 

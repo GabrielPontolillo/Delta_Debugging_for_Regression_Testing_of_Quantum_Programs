@@ -61,8 +61,8 @@ def add_random_chaff(circuit: QuantumCircuit, chaff_length=None):
             qc.x(target_qubit)
         elif j == 1:
             qc = QuantumCircuit(qubit_size)
-            qc.h(target_qubit)
-            qc.h(target_qubit)
+            qc.x(target_qubit)
+            qc.x(target_qubit)
         elif j == 2:
             qc = QuantumCircuit(qubit_size)
             qc.y(target_qubit)
@@ -130,3 +130,20 @@ def list_contains_list_in_same_order(larger_list, smaller_list):
             s.pop(0)
     return len(s) == 0
 
+
+def order_list_by_another_list(sublist, superlist, logging=False):
+    if logging:
+        print("sublist:")
+        print(sublist)
+        print("superlist:")
+        print(superlist)
+    sublist_modifiable_copy = sublist.copy()
+    result = []
+    for element in superlist:
+        if element in sublist_modifiable_copy:
+            result.append(element)
+            sublist_modifiable_copy.remove(element)
+    if logging:
+        print("re-ordered list:")
+        print(result)
+    return result
