@@ -128,6 +128,9 @@ def measure_qubits(circuit_1, register, measurements=1000):
     z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
     x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
     y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
+    print(z_counts_1.items())
+    print(x_counts_1.items())
+    print(y_counts_1.items())
     for i in range(len(register)):
         z1 = sum([v for (k, v) in z_counts_1.items() if k[-(i + 1)] == '1'])
         z0 = measurements - z1
@@ -140,34 +143,12 @@ def measure_qubits(circuit_1, register, measurements=1000):
     return results
 
 
-# # circuit 1 = tested circuit
-# # circuit 2 = expected value
-# def measure_qubits(circuit_1, register, measurements=1000):
-#     # receives a circuit to measure, and a list of qubit registers to measure
-#     # returns a list of measurements for respective qubits
-#     results = []
-#     # can make this more efficient probably
-#     for i in register:
-#         circuit_1.add_register(ClassicalRegister(1))
-#         c1z = measure_z(circuit_1.copy(), [i])
-#         c1x = measure_x(circuit_1.copy(), [i])
-#         c1y = measure_y(circuit_1.copy(), [i])
-#         z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
-#         x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
-#         y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
-#         z_cleaned_counts_1 = {"z" + k[-1]: v for (k, v) in z_counts_1.items()}
-#         x_cleaned_counts_1 = {"x" + k[-1]: v for (k, v) in x_counts_1.items()}
-#         y_cleaned_counts_1 = {"y" + k[-1]: v for (k, v) in y_counts_1.items()}
-#         merged_counts_1 = z_cleaned_counts_1 | x_cleaned_counts_1 | y_cleaned_counts_1
-#         for missing in [x for x in ["x0", "x1", "y0", "y1", "z0", "z1"] if x not in merged_counts_1.keys()]:
-#             merged_counts_1[missing] = 0
-#         merged_counts_1 = {i: merged_counts_1[i] for i in ["x0", "x1", "y0", "y1", "z0", "z1"]}
-#         results.append(merged_counts_1)
-#
-#     return results
-
-
+# compare 2 sets of output distributions, the order of the list of distributions must be the same for both
+# i.e. [dist_q1, dist_q2] and [dist2_q1, dist2_q2]
 def assert_equal_distributions(distribution_list_1, distribution_list_2):
+    """inputs:
+            distribution_list_1: list containing
+       outputs:"""
     assert len(distribution_list_1) == len(distribution_list_2)
     p_vals = []
     for i, dist_1 in enumerate(distribution_list_1):
@@ -220,4 +201,3 @@ def holm_bonferroni_correction(exp_pairs, family_wise_alpha):
         if exp_pairs[i][1] <= (family_wise_alpha / (len(exp_pairs) - i)):
             failing_indexes.add(exp_pairs[i][0])
     return failing_indexes
-

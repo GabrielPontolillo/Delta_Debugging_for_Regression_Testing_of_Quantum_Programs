@@ -52,7 +52,6 @@ class CaseStudyInterface(ABC):
         """
         pass
 
-
     def analyse_results(self, chaff_length=None, inputs_to_generate=25):
         """
         -> in for loop
@@ -77,7 +76,7 @@ class CaseStudyInterface(ABC):
         print(expected_deltas)
         print(self.passing_circuit())
         print(failing_circuit)
-        loops = 3
+        loops = 1
         amount_to_find = len(expected_deltas) * loops
         for i in range(loops):
             print(f"loop number {i}")

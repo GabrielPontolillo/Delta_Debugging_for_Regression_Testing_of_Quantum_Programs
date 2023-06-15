@@ -222,7 +222,7 @@ def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate=25):
             # print_deltas(min_change, passing_input_list, failing_input_list)
 
             fail_deltas = listminus(fail_deltas, min_change)
-            pass_deltas = pass_diff # can try have this reset
+            pass_deltas = pass_diff # can try have this reset, maybe union
 
             delta_store = listunion(delta_store, min_change)
         except AssertionError as e:

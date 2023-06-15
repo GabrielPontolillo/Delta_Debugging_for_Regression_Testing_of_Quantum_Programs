@@ -206,7 +206,7 @@ class QFTSynthetic(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    # qft = QFTSynthetic()
+    qft = QFTSynthetic()
     # diffs = diff(qft.passing_circuit(), qft.failing_circuit())
     # print(diffs)
     # print(qft.test_function([diffs[1]], qft.passing_circuit(), qft.failing_circuit(), inputs_to_generate=1))
@@ -217,34 +217,37 @@ if __name__ == "__main__":
 
     # qft.analyse_results(chaff_length=1, inputs_to_generate=3)
 
-    chaff_lengths = [8, 4, 2, 1, 0]
-    inputs_to_generate = [20, 10, 5, 1]
-    qpe_objs = [QFTSynthetic() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
-    print(qpe_objs)
-    inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
-    print(inputs_for_func)
-    results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
-    print(results)
+    print(qft.passing_circuit())
+    print(qft.failing_circuit())
 
-    with multiprocessing.Pool() as pool:
-        results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
-                                                                       'inputs_to_generate': inputs_for_func[i][1]}) for
-                   i in range(len(qpe_objs))]
-        for r in results:
-            r.get()
-
-    pool.join()
-
-    rows = []
-    for i in range(len(inputs_to_generate)):
-        row = []
-        for j in range(len(chaff_lengths)):
-            f = open(
-                f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt",
-                "r")
-            row.append(f.read())
-        rows.append(row)
-
-    with open("test_results.csv", 'w', newline='') as file:
-        writer = csv.writer(file, dialect='excel')
-        writer.writerows(rows)
+    # chaff_lengths = [8, 4, 2, 1, 0]
+    # inputs_to_generate = [20, 10, 5, 1]
+    # qpe_objs = [QFTSynthetic() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
+    # print(qpe_objs)
+    # inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
+    # print(inputs_for_func)
+    # results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
+    # print(results)
+    #
+    # with multiprocessing.Pool() as pool:
+    #     results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
+    #                                                                    'inputs_to_generate': inputs_for_func[i][1]}) for
+    #                i in range(len(qpe_objs))]
+    #     for r in results:
+    #         r.get()
+    #
+    # pool.join()
+    #
+    # rows = []
+    # for i in range(len(inputs_to_generate)):
+    #     row = []
+    #     for j in range(len(chaff_lengths)):
+    #         f = open(
+    #             f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt",
+    #             "r")
+    #         row.append(f.read())
+    #     rows.append(row)
+    #
+    # with open("test_results.csv", 'w', newline='') as file:
+    #     writer = csv.writer(file, dialect='excel')
+    #     writer.writerows(rows)
