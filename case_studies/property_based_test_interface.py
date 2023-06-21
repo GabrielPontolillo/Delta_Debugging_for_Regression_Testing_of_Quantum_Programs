@@ -22,8 +22,8 @@ class PropertyBasedTestInterface(ABC):
     # original failing circuit
     @staticmethod
     @abstractmethod
-    def verification_heuristic(self, original_failing_circuit, output_distribution, input_state_list,
-                               measurements=1000):
+    def verification_heuristic(property_index, experiment_index, original_failing_circuit, output_distribution,
+                               input_state_list, extra_info=None, measurements=1000):
         """
         inputs:
             original_failing_circuit: The original circuit that we have identified as failure-causing

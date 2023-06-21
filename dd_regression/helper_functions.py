@@ -14,6 +14,7 @@ def circuit_to_list(circuit: QuantumCircuit):
 def get_quantum_register(instruction_arr: list[any]):
     """Infers size of a quantum circuit from the instructions"""
     # print(instruction_arr)
+    assert len(instruction_arr) > 0
     qarg_ret = None
     carg_ret = None
     for instruction, qargs, cargs in instruction_arr:

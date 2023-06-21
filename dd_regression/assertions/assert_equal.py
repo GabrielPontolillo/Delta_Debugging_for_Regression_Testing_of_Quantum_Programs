@@ -117,51 +117,105 @@ def assert_equal_state(circuit_1, qubit_register_1, merged_counts_2, measurement
 
 # circuit 1 = tested circuit
 # circuit 2 = expected value
-def measure_qubits(circuit_1, register, measurements=1000):
+# def measure_qubits(circuit_1, register, measurements=1000):
+#     # receives a circuit to measure, and a list of qubit registers to measure
+#     # returns a list of measurements for respective qubits
+#     results = []
+#     circuit_1.add_register(ClassicalRegister(len(register)))
+#     c1z = measure_z(circuit_1.copy(), register)
+#     c1x = measure_x(circuit_1.copy(), register)
+#     c1y = measure_y(circuit_1, register)
+#     z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
+#     x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
+#     y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
+#     print(z_counts_1.items())
+#     print(x_counts_1.items())
+#     print(y_counts_1.items())
+#     for i in range(len(register)):
+#         z1 = sum([v for (k, v) in z_counts_1.items() if k[-(i + 1)] == '1'])
+#         z0 = measurements - z1
+#         x1 = sum([v for (k, v) in x_counts_1.items() if k[-(i + 1)] == '1'])
+#         x0 = measurements - x1
+#         y1 = sum([v for (k, v) in y_counts_1.items() if k[-(i + 1)] == '1'])
+#         y0 = measurements - y1
+#         results.append({"x0": x0, "x1": x1, "y0": y0, "y1": y1, "z0": z0, "z1": z1})
+#
+#     return results
+
+def measure_qubits(circuit_1, register, measurements=1000, basis=None):
     # receives a circuit to measure, and a list of qubit registers to measure
     # returns a list of measurements for respective qubits
+    if basis is None:
+        basis = ['x', 'y', 'z']
+
     results = []
     circuit_1.add_register(ClassicalRegister(len(register)))
-    c1z = measure_z(circuit_1.copy(), register)
-    c1x = measure_x(circuit_1.copy(), register)
-    c1y = measure_y(circuit_1, register)
-    z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
-    x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
-    y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
-    print(z_counts_1.items())
-    print(x_counts_1.items())
-    print(y_counts_1.items())
-    for i in range(len(register)):
-        z1 = sum([v for (k, v) in z_counts_1.items() if k[-(i + 1)] == '1'])
-        z0 = measurements - z1
-        x1 = sum([v for (k, v) in x_counts_1.items() if k[-(i + 1)] == '1'])
-        x0 = measurements - x1
-        y1 = sum([v for (k, v) in y_counts_1.items() if k[-(i + 1)] == '1'])
-        y0 = measurements - y1
-        results.append({"x0": x0, "x1": x1, "y0": y0, "y1": y1, "z0": z0, "z1": z1})
 
+    if 'z' in basis:
+        c1z = measure_z(circuit_1.copy(), register)
+        z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
+
+    if 'x' in basis:
+        c1x = measure_x(circuit_1.copy(), register)
+        x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
+
+    if 'y' in basis:
+        c1y = measure_y(circuit_1, register)
+        y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
+
+    for i in range(len(register)):
+        res_dict = {}
+
+        if 'x' in basis:
+            x1 = sum([v for (k, v) in x_counts_1.items() if k[-(i + 1)] == '1'])
+            x0 = measurements - x1
+            res_dict["x0"] = x0
+            res_dict["x1"] = x1
+
+        if 'y' in basis:
+            y1 = sum([v for (k, v) in y_counts_1.items() if k[-(i + 1)] == '1'])
+            y0 = measurements - y1
+            res_dict["y0"] = y0
+            res_dict["y1"] = y1
+
+        if 'z' in basis:
+            z1 = sum([v for (k, v) in z_counts_1.items() if k[-(i + 1)] == '1'])
+            z0 = measurements - z1
+            res_dict["z0"] = z0
+            res_dict["z1"] = z1
+
+        results.append(res_dict)
     return results
 
 
 # compare 2 sets of output distributions, the order of the list of distributions must be the same for both
 # i.e. [dist_q1, dist_q2] and [dist2_q1, dist2_q2]
-def assert_equal_distributions(distribution_list_1, distribution_list_2):
+def assert_equal_distributions(distribution_list_1, distribution_list_2, basis=None):
     """inputs:
             distribution_list_1: list containing
        outputs:"""
-    assert len(distribution_list_1) == len(distribution_list_2)
-    p_vals = []
-    for i, dist_1 in enumerate(distribution_list_1):
-        contingency_table_x = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["x0", "x1"]]
-        contingency_table_y = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["y0", "y1"]]
-        contingency_table_z = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["z0", "z1"]]
+    if basis is None:
+        basis = ['x', 'y', 'z']
 
-        _, p_value_x = sci.fisher_exact(contingency_table_x)
-        _, p_value_y = sci.fisher_exact(contingency_table_y)
-        _, p_value_z = sci.fisher_exact(contingency_table_z)
-        p_vals.append(p_value_x)
-        p_vals.append(p_value_y)
-        p_vals.append(p_value_z)
+    assert len(distribution_list_1) == len(distribution_list_2)
+
+    p_vals = []
+
+    for i, dist_1 in enumerate(distribution_list_1):
+        if 'x' in basis:
+            contingency_table_x = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["x0", "x1"]]
+            _, p_value_x = sci.fisher_exact(contingency_table_x)
+            p_vals.append(p_value_x)
+
+        if 'y' in basis:
+            contingency_table_y = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["y0", "y1"]]
+            _, p_value_y = sci.fisher_exact(contingency_table_y)
+            p_vals.append(p_value_y)
+
+        if 'z' in basis:
+            contingency_table_z = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["z0", "z1"]]
+            _, p_value_z = sci.fisher_exact(contingency_table_z)
+            p_vals.append(p_value_z)
     return p_vals
 
 
@@ -194,10 +248,29 @@ def measure_x(circuit, qubit_indexes):
 
 # make this return a list of failures p_value, index pairs
 def holm_bonferroni_correction(exp_pairs, family_wise_alpha):
+    print(exp_pairs)
+
+    failing_indexes = set()
+    exp_pairs.sort(key=lambda x: x[2])
+    for i in range(len(exp_pairs)):
+        if exp_pairs[i][2] <= (family_wise_alpha / (len(exp_pairs) - i)):
+            failing_indexes.add((exp_pairs[i][0], exp_pairs[i][1]))
+
+    print("failing indexes")
+    print(failing_indexes)
+    return failing_indexes
+
+
+# make this return a list of failures p_value, index pairs
+def holm_bonferroni_correction_old(exp_pairs, family_wise_alpha):
+    print(exp_pairs)
+
     failing_indexes = set()
     exp_pairs.sort(key=lambda x: x[1])
-    # print(exp_pairs)
     for i in range(len(exp_pairs)):
         if exp_pairs[i][1] <= (family_wise_alpha / (len(exp_pairs) - i)):
             failing_indexes.add(exp_pairs[i][0])
+
+    print("failing indexes")
+    print(failing_indexes)
     return failing_indexes

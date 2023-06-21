@@ -90,7 +90,6 @@ class CaseStudyInterface(ABC):
             deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate)
             # print(f"passing deltas {passing_deltas}")
             print(f"failing deltas {deltas}")
-            # print(list_to_circuit(apply_diffs(circuit_to_list(self.passing_circuit()), chaff_embedded_circuit_list, deltas)))
             self.test_cache = {}
 
             deltas_found = 0
@@ -117,9 +116,6 @@ class CaseStudyInterface(ABC):
 
             print(f"expected deltas {expected_deltas}")
             print(f"deltas {deltas}")
-            print_deltas(circuit_to_list(self.passing_circuit()), chaff_embedded_circuit_list, deltas)
-            print(f"deltas_found {deltas_found}")
-            print(f"len_deltas_returned {len(deltas)}")
 
             expected_found += deltas_found
             assert deltas_found <= len(expected_deltas)
