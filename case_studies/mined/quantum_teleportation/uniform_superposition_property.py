@@ -38,12 +38,12 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
             measurements_1 = measure_qubits(inputted_circuit_to_test, [0, 1], basis=['z'])
             measurements_2 = measure_qubits(qc, [0, 1], basis=['z'])
 
-            print(measurements_1)
-            print(measurements_2)
+            # print(measurements_1)
+            # print(measurements_2)
             # compare the output of the merged circuit to test, with an empty circuit initialised to expected state
             p_list = assert_equal_distributions(measurements_1, measurements_2, basis=['z'])
 
-            print(p_list)
+            # print(p_list)
 
             # add a tuple of 3 elements index, initialised vector, p values, measurements
             experiments.append([i, init_vector, (p_list[0], p_list[1]), (measurements_1, measurements_2)])
@@ -63,8 +63,8 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
 
         measurements_1 = measure_qubits(inputted_circuit_to_test, [0, 1], basis=['z'])
 
-        print(measurements_1)
-        print(output_distribution)
+        # print(measurements_1)
+        # print(output_distribution)
 
         # not quite perfect here, should be checking all basis for the qubits, but only checking z
         p_value_0, p_value_1 = assert_equal_distributions(measurements_1, output_distribution, basis=['z'])

@@ -8,7 +8,7 @@ class PropertyBasedTestOracleInterface(ABC):
     # executes them, and returns a result from the composition (with statistical correction)
     @staticmethod
     @abstractmethod
-    def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, inputs_to_generate=25, measurements=1000):
+    def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, measurements, inputs_to_generate=25):
         """
         inputs:
             passing_circuit: The passing circuit

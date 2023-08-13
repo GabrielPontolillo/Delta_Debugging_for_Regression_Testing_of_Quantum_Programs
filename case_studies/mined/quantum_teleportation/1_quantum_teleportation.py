@@ -1,3 +1,4 @@
+import random
 import warnings
 import multiprocessing
 import csv
@@ -29,7 +30,6 @@ backend = Aer.get_backend('aer_simulator')
 class QuantumTeleportationMined(CaseStudyInterface):
     # passing and failing circuits mined from:
     # https://github.com/oreilly-qc/oreilly-qc.github.io/blob/2746abfe96b9f4a9a218dd049b06f4bca30c0681/samples/QCEngine/ch04_basic_teleportation.js
-
     def get_algorithm_name(self):
         return "Quantum Teleportation Mined"
 
@@ -184,14 +184,16 @@ class QuantumTeleportationMined(CaseStudyInterface):
     #         self.test_cache[tuple(deltas)] = Passed()
     #         return Passed()
 
-    def test_function(self, deltas, src_passing, src_failing, inputs_to_generate=3, measurements=1000):
+    def test_function(self, deltas, src_passing, src_failing, inputs_to_generate=3, measurements=2400):
         self.tests_performed += 1
         if self.test_cache.get(tuple(deltas), None) is not None:
             return self.test_cache.get(tuple(deltas), None)
         self.tests_performed_no_cache += 1
 
+        print(f"chosen properties {self.properties}")
+
         oracle_result = TeleportationOracle.test_oracle(src_passing, src_failing, deltas,
-                                                        [DifferentPathsSameOutcomeProperty, EqualOutputProperty, UniformSuperpositionProperty],
+                                                        self.properties,
                                                         inputs_to_generate=inputs_to_generate,
                                                         measurements=measurements)
         if isinstance(oracle_result, Passed):
@@ -233,8 +235,8 @@ if __name__ == "__main__":
     # chaff_lengths = [8, 4, 2, 1, 0]
     # inputs_to_generate = [20, 10, 5, 1]
 
-    chaff_lengths = [0, 1, 2]
-    inputs_to_generate = [1, 3, 5]
+    chaff_lengths = [8, 4, 2, 1, 0]
+    inputs_to_generate = [4, 2, 1]
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
     inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
@@ -251,8 +253,14 @@ if __name__ == "__main__":
     pool.join()
 
     rows = []
+    row = []
+    row.append("X")
+    for i in range(len(chaff_lengths)):
+        row.append(f"inserted deltas {chaff_lengths[i]*2}")
+    rows.append(row)
     for i in range(len(inputs_to_generate)):
         row = []
+        row.append(f"inputs/test {inputs_to_generate[i]}")
         for j in range(len(chaff_lengths)):
             f = open(
                 f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt",

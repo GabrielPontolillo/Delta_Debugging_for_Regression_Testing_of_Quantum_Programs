@@ -244,11 +244,7 @@ def convert_deltas_to_replacement(diffs):
 # replace deltas out should be equal to non replaced version
 
 if __name__ == "__main__":
-    t1 = "a"
-    t2 = "aaa"
+    t1 = "ABCDE"
+    t2 = "ABZZE"
     d = diff(t1, t2)
     print(d)
-    print(convert_deltas_to_replacement(d))
-    d2 = convert_deltas_to_replacement(d)
-    print(apply_diffs(t1, t2, d))
-    print(apply_diffs(t1, t2, d2))

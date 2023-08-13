@@ -6,6 +6,7 @@ import heapq
 from qiskit import execute, Aer
 
 backend = Aer.get_backend('aer_simulator')
+# backend.set_options(device='GPU')
 
 from qiskit.circuit import ClassicalRegister
 from dd_regression.diff_algorithm_r import Experiment
@@ -248,7 +249,7 @@ def measure_x(circuit, qubit_indexes):
 
 # make this return a list of failures p_value, index pairs
 def holm_bonferroni_correction(exp_pairs, family_wise_alpha):
-    print(exp_pairs)
+    # print(exp_pairs)
 
     failing_indexes = set()
     exp_pairs.sort(key=lambda x: x[2])
@@ -256,14 +257,14 @@ def holm_bonferroni_correction(exp_pairs, family_wise_alpha):
         if exp_pairs[i][2] <= (family_wise_alpha / (len(exp_pairs) - i)):
             failing_indexes.add((exp_pairs[i][0], exp_pairs[i][1]))
 
-    print("failing indexes")
-    print(failing_indexes)
+    # print("failing indexes")
+    # print(failing_indexes)
     return failing_indexes
 
 
 # make this return a list of failures p_value, index pairs
 def holm_bonferroni_correction_old(exp_pairs, family_wise_alpha):
-    print(exp_pairs)
+    # print(exp_pairs)
 
     failing_indexes = set()
     exp_pairs.sort(key=lambda x: x[1])
@@ -271,6 +272,6 @@ def holm_bonferroni_correction_old(exp_pairs, family_wise_alpha):
         if exp_pairs[i][1] <= (family_wise_alpha / (len(exp_pairs) - i)):
             failing_indexes.add(exp_pairs[i][0])
 
-    print("failing indexes")
-    print(failing_indexes)
+    # print("failing indexes")
+    # print(failing_indexes)
     return failing_indexes

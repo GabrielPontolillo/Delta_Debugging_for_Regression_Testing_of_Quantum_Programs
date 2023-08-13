@@ -17,7 +17,7 @@ backend = Aer.get_backend('aer_simulator')
 class EqualOutputProperty(PropertyBasedTestInterface):
     @staticmethod
     def property_based_test(circuit, inputs_to_generate=25, measurements=1000):
-        print("inside equal output property based test call")
+        # print("inside equal output property based test call")
         experiments = []
 
         for i in range(inputs_to_generate):

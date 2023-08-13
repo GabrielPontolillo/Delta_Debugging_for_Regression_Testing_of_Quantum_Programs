@@ -1,6 +1,11 @@
 import time
+import random
 
 from abc import ABC, abstractmethod, abstractproperty
+
+from case_studies.mined.quantum_teleportation.different_paths_same_outcome import DifferentPathsSameOutcomeProperty
+from case_studies.mined.quantum_teleportation.equal_output_property import EqualOutputProperty
+from case_studies.mined.quantum_teleportation.uniform_superposition_property import UniformSuperpositionProperty
 from dd_regression.dd_algorithm import dd_repeat
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit, \
     determine_delta_application_valid, list_contains_list_in_same_order
@@ -11,6 +16,9 @@ class CaseStudyInterface(ABC):
     test_cache = {}
     tests_performed = 0
     tests_performed_no_cache = 0
+
+    def __init__(self):
+        self.properties = random.sample([EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty], 1)
 
     @abstractmethod
     def get_algorithm_name(self):
@@ -76,9 +84,10 @@ class CaseStudyInterface(ABC):
         print(expected_deltas)
         print(self.passing_circuit())
         print(failing_circuit)
-        loops = 1
+        loops = 50
         amount_to_find = len(expected_deltas) * loops
         for i in range(loops):
+            self.properties = random.sample([EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty], 1)
             print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
 
@@ -134,11 +143,12 @@ class CaseStudyInterface(ABC):
         print(f"Time taken (minutes): {round(time.time() - start, 2)/60}")
 
         f = open(f"{self.get_algorithm_name()}_chaff_length{chaff_length}_inputs_to_gen{inputs_to_generate}.txt", "w")
-        f.write(f"Total expected deltas found: {expected_found}/{amount_to_find}\n")
-        f.write(f"Tests with ALL expected deltas found: {tests_with_all_deltas_found}/{loops}, AND no unexpected: {perfect_result}/{loops}\n")
-        f.write(f"Unexpected deltas: {artifacts_found}/{artifacts_added}, from ({tests_with_artifacts}) tests\n")
-        f.write(f"Tests called: {self.tests_performed}, tests executed (due to caching): {self.tests_performed_no_cache}\n")
-        f.write(f"Time taken (minutes): {round(time.time() - start, 2)/60}")
+        f.write(f"Expected deltas found: {expected_found}/{amount_to_find}\n")
+        # f.write(f"Tests with ALL expected deltas found: {tests_with_all_deltas_found}/{loops}, AND no unexpected: {perfect_result}/{loops}\n")
+        # f.write(f"Unexpected deltas: {artifacts_found}/{artifacts_added}, from ({tests_with_artifacts}) tests\n")
+        f.write(f"Unexpected deltas: {artifacts_found}/{artifacts_added}\n")
+        # f.write(f"Tests called: {self.tests_performed}, tests executed (due to caching): {self.tests_performed_no_cache}\n")
+        f.write(f"Time taken (minutes): {round((time.time() - start)/60, 2)}")
         f.close()
 
 

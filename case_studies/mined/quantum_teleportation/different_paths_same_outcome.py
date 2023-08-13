@@ -17,13 +17,13 @@ backend = Aer.get_backend('aer_simulator')
 class DifferentPathsSameOutcomeProperty(PropertyBasedTestInterface):
     @staticmethod
     def property_based_test(circuit, inputs_to_generate=25, measurements=1000):
-        print("inside equal output property based test call")
+        # print("inside equal output property based test call")
         experiments = []
 
         for i in range(inputs_to_generate):
             # initialize to random state and append the applied delta modified circuit
             operator = random_unitary(2)
-            print(operator)
+            # print(operator)
 
             qlength, clength = get_quantum_register(circuit)
             init_state = QuantumCircuit(qlength)
@@ -58,7 +58,7 @@ class DifferentPathsSameOutcomeProperty(PropertyBasedTestInterface):
     @staticmethod
     def verification_heuristic(property_idx, exp_idx, original_failing_circuit, output_distribution, input_state_list,
                                extra_info=None, measurements=1000):
-        print(extra_info)
+        # print(extra_info)
 
         qlength, clength = get_quantum_register(original_failing_circuit)
         init_state = QuantumCircuit(qlength)
