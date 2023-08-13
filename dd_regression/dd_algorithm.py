@@ -7,8 +7,6 @@ from dd_regression.helper_functions import circuit_to_list, list_to_circuit, ord
 # from dd_regression.diff_algorithm import diff, print_edit_sequence
 from dd_regression.diff_algorithm_r import diff, apply_diffs, print_deltas
 
-import itertools
-
 
 # def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25):
 #     """Return a pair (C_PASS’, C_FAIL’) such that
@@ -139,6 +137,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25, lo
             next_c_pass = order_list_by_another_list(listunion(c_pass, deltas[i]), c_fail, logging=False)
             next_c_fail = order_list_by_another_list(listminus(c_fail, deltas[i]), c_fail, logging=False)
 
+            # should be storing the result of test
             if isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed) and n == 2:
                 if logging:
                     print("Reduce to subset")

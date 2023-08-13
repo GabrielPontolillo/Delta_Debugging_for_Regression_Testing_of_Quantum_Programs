@@ -1,7 +1,8 @@
 # This code is from https://blog.robertelder.org/diff-algorithm/
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
 from dataclasses import dataclass
-from dd_regression.helper_functions import list_to_circuit
+from dd_regression.helper_functions import list_to_circuit, circuit_to_list
+from qiskit import QuantumCircuit
 import time
 
 
@@ -244,7 +245,28 @@ def convert_deltas_to_replacement(diffs):
 # replace deltas out should be equal to non replaced version
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     t1 = "ABCDE"
     t2 = "ABZZE"
     d = diff(t1, t2)
     print(d)
+=======
+    t1 = "ABAB"
+    t2 = "ABBBB"
+    d = diff(t1, t2)
+    print(d)
+    print(d[1])
+    print(apply_diffs(t1, t2, [d[1]]))
+    # print(compute_lcs_len(t1, t2, True))
+    # print(diff(t1, t2))
+    # qc = QuantumCircuit(2, 2)
+    # qc.x(0)
+    # qc.x(1)
+    # qc2 = QuantumCircuit(2, 2)
+    # qc2.x(1)
+    # qc2.x(0)
+    # print(diff(qc.data, qc2.data))
+
+
+    # d = diff(t1, t2)
+>>>>>>> 81c6a8b68d50492871489bdd5d2ae31c16235719
