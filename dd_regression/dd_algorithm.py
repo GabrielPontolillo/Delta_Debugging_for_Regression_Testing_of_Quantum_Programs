@@ -97,7 +97,8 @@ from dd_regression.diff_algorithm_r import diff, apply_diffs, print_deltas
 #                 n = min(n * 2, len(delta))  # Increase granularity
 
 
-def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25, logging=False):
+def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selected_properties, number_of_measurements,
+                                                                                    significance_level, logging=False):
     """Return a pair (C_PASS’, C_FAIL’) such that
         * C_PASS subseteq C_PASS’ subset C_FAIL’ subseteq C_FAIL holds
         * C_FAIL’ - C_PASS’ is a minimal difference relevant for TEST."""
@@ -106,7 +107,8 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25, lo
     # try:
     if logging:
         print("test pass")
-    if not isinstance(test(c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed): raise AssertionError("Pass test failed")
+    if not isinstance(test(c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Passed): raise AssertionError("Pass test failed")
     # except AssertionError as e:
     #     print("one failure for passing circumstances, retrying")
     #     assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
@@ -115,7 +117,8 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25, lo
     # try:
     if logging:
         print("test fail")
-    if not isinstance(test(c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed): raise AssertionError("Fail test passed")
+    if not isinstance(test(c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Failed): raise AssertionError("Fail test passed")
     # except AssertionError as e:
     #     print("one failure for failing circumstances, retrying")
     #     assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
@@ -138,21 +141,24 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25, lo
             next_c_fail = order_list_by_another_list(listminus(c_fail, deltas[i]), c_fail, logging=False)
 
             # should be storing the result of test
-            if isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed) and n == 2:
+            if isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Failed) and n == 2:
                 if logging:
                     print("Reduce to subset")
                 c_fail = next_c_pass
                 offset = i
                 reduction_found = True
                 break
-            elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed) and n == 2:
+            elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Passed) and n == 2:
                 if logging:
                     print("Increase to subset")
                 c_pass = next_c_fail
                 offset = i  # was offset = 0 in original dd()
                 reduction_found = True
                 break
-            elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed):
+            elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Failed):
                 if logging:
                     print("Reduce to complement")
                 c_fail = next_c_fail
@@ -160,7 +166,8 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25, lo
                 offset = i
                 reduction_found = True
                 break
-            elif isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed):
+            elif isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Passed):
                 if logging:
                     print("Increase to complement")
                 c_pass = next_c_pass
@@ -185,7 +192,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25, lo
             n = min(n * 2, len(delta))
 
 
-def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate=25):
+def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate, selected_properties, number_of_measurements, significance_level):
     """
     Will repeatedly execute the delta debugging algorithm until the passing deltas cease to pass and fail deltas cease
     to fail, allowing multiple isolated deltas to be retrieved
@@ -206,7 +213,9 @@ def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate=25):
     for i in range(loops):
         print(f"Delta Debugging loop {i}")
         try:
-            pass_diff, fail_diff = dd(pass_deltas, fail_deltas, test, passing_input_list, failing_input_list, inputs_to_generate=inputs_to_generate)
+            pass_diff, fail_diff = dd(pass_deltas, fail_deltas, test, passing_input_list, failing_input_list,
+                                      inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                                      number_of_measurements=number_of_measurements, significance_level=significance_level)
 
             # print("pass diff")
             # print(pass_diff)

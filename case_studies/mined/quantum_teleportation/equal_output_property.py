@@ -43,7 +43,7 @@ class EqualOutputProperty(PropertyBasedTestInterface):
 
     @staticmethod
     def verification_heuristic(property_idx, exp_idx, original_failing_circuit, output_distribution, input_state_list,
-                               measurements=1000):
+                               extra_info=None, measurements=1000):
         qlength, clength = get_quantum_register(original_failing_circuit)
         init_state = QuantumCircuit(qlength)
 

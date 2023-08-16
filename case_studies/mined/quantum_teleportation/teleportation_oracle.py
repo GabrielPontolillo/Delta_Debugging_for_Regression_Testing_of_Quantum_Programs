@@ -20,12 +20,12 @@ warnings.simplefilter(action='ignore', category=RuntimeWarning)
 warnings.simplefilter(action='ignore', category=DeprecationWarning)
 
 backend = Aer.get_backend('aer_simulator')
-backend.set_options(device='GPU')
 
 
 class TeleportationOracle(PropertyBasedTestOracleInterface):
     @staticmethod
-    def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, measurements, inputs_to_generate=25):
+    def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, measurements, significance_level,
+                    inputs_to_generate=25):
         # create quantum circuit by applying diffs to the passing circuit
         changed_circuit_list = apply_diffs(passing_circuit, failing_circuit, deltas)
         changed_circuit = list_to_circuit(changed_circuit_list)
@@ -51,7 +51,7 @@ class TeleportationOracle(PropertyBasedTestOracleInterface):
         # print(p_value_index_pairs)
 
         # using the list of pvalues, and indexes, apply holm bonferroni correction
-        failed_indexes = holm_bonferroni_correction(p_value_index_pairs, 0.003)
+        failed_indexes = holm_bonferroni_correction(p_value_index_pairs, significance_level)
 
         # print("failed_indexes")
         # print(failed_indexes)
@@ -103,7 +103,7 @@ class TeleportationOracle(PropertyBasedTestOracleInterface):
         # print(verification_p_value_index_pairs)
 
         # using the list of pvalues, and indexes, apply holm bonferroni correction
-        verification_failed_indexes = holm_bonferroni_correction(verification_p_value_index_pairs, 0.003)
+        verification_failed_indexes = holm_bonferroni_correction(verification_p_value_index_pairs, significance_level)
 
         # print(f"verif time new {pc() - t0}")
         # print("verification failed indexes")

@@ -17,9 +17,6 @@ class CaseStudyInterface(ABC):
     tests_performed = 0
     tests_performed_no_cache = 0
 
-    def __init__(self):
-        self.properties = random.sample([EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty], 1)
-
     @abstractmethod
     def get_algorithm_name(self):
         pass
@@ -54,13 +51,14 @@ class CaseStudyInterface(ABC):
         pass
 
     @abstractmethod
-    def test_function(self, deltas, src_passing, src_failing, original_deltas):
+    def test_function(self, deltas, src_passing, src_failing, inputs_to_generate, selected_properties,
+                      number_of_measurements, significance_level):
         """
         Return a test function, similar to regression test that receives a subset of Deltas,
         """
         pass
 
-    def analyse_results(self, chaff_length=None, inputs_to_generate=25):
+    def analyse_results(self, chaff_length, inputs_to_generate, number_of_properties, number_of_measurements, significance_level):
         """
         -> in for loop
         -> generate random chaff and add it to the circuit
@@ -87,7 +85,7 @@ class CaseStudyInterface(ABC):
         loops = 50
         amount_to_find = len(expected_deltas) * loops
         for i in range(loops):
-            self.properties = random.sample([EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty], 1)
+            selected_properties = random.sample(self.properties, number_of_properties)
             print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
 
@@ -96,7 +94,8 @@ class CaseStudyInterface(ABC):
             artifacts_added += len(chaff_embedded_circuit_list) - len(failing_circuit_list)
             print(chaff_embedded_circuit)
 
-            deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate)
+            deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate,
+                                  selected_properties=selected_properties, number_of_measurements=number_of_measurements, significance_level=significance_level)
             # print(f"passing deltas {passing_deltas}")
             print(f"failing deltas {deltas}")
             self.test_cache = {}
