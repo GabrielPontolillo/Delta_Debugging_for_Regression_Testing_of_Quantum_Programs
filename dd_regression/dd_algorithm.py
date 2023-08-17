@@ -8,95 +8,6 @@ from dd_regression.helper_functions import circuit_to_list, list_to_circuit, ord
 from dd_regression.diff_algorithm_r import diff, apply_diffs, print_deltas
 
 
-# def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate=25):
-#     """Return a pair (C_PASS’, C_FAIL’) such that
-#         * C_PASS subseteq C_PASS’ subset C_FAIL’ subseteq C_FAIL holds
-#         * C_FAIL’ - C_PASS’ is a minimal difference relevant for TEST."""
-#     n = 2  # Initial granularity
-#     offset = 0
-#     while 1:
-#         # try:
-#         assert isinstance(test(c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed)
-#         # except AssertionError as e:
-#         #     print("one failure for passing circumstances, retrying")
-#         #     assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
-#
-#         # print_edit_sequence(c_fail, source_pass, source_fail)
-#         # try:
-#         assert isinstance(test(c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed)
-#         # except AssertionError as e:
-#         #     print("one failure for failing circumstances, retrying")
-#         #     assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
-#
-#         delta = listminus(c_fail, c_pass)
-#
-#         print(f"n = {n}")
-#         print(f"delta = {len(delta)}")
-#         if n > len(delta):
-#             return c_pass, c_fail  # No further minimizing
-#
-#         deltas = split(delta, n)
-#         # print(deltas)
-#
-#         assert len(deltas) == n
-#
-#         j = 0
-#         # offset = 0
-#         while j < n:
-#             print(f"offset {offset} {type(offset)}")
-#             print(f"j {j} {type(j)}")
-#             print(f"n {n} {type(j)}")
-#             i = (j + offset) % n
-#             next_c_pass = listunion(c_pass, deltas[i])
-#             next_c_fail = listminus(c_fail, deltas[i])
-#             # print(next_c_pass)
-#             # print(next_c_fail)
-#
-#             if isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed) and n == 2:  # (1)
-#                 print("fail test failed 1")
-#                 c_fail = next_c_fail
-#                 n = 2
-#                 offset = i
-#                 break
-#             elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed):  # (2)
-#                 print("fail test passed 2")
-#                 c_pass = next_c_fail
-#                 n = 2
-#                 offset = i
-#                 break
-#             elif isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed):  # (3)
-#                 print("pass test failed 3")
-#                 c_fail = next_c_pass
-#                 n = 2
-#                 offset = i
-#                 break
-#             elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Failed):  # (4)
-#                 print("fail test failed 4")
-#                 c_fail = next_c_fail
-#                 n = max(n - - 1, 2)
-#                 offset = i
-#                 print(f"offset should be {i}")
-#                 break
-#             elif isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate), Passed):  # (5)
-#                 print("pass test passed 5")
-#                 c_pass = next_c_pass
-#                 n = max(n - - 1, 2)
-#                 offset = i
-#                 print(f"offset should be {i}")
-#                 break
-#             else:
-#                 print(f"all inconclusive j {j}, n {n}")
-#                 j = j + 1  # Try next subset
-#
-#         if j >= n:  # All tests unresolved
-#             if n >= len(delta):
-#                 print(f"granularity longer than length of deltas {n}, so returning base")
-#                 return c_pass, c_fail
-#             else:
-#                 print("increasing granularity")
-#                 n = min(n * 2, len(delta))  # Increase granularity
-
-
 def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selected_properties, number_of_measurements,
                                                                                     significance_level, logging=False):
     """Return a pair (C_PASS’, C_FAIL’) such that
@@ -109,19 +20,10 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
         print("test pass")
     if not isinstance(test(c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
                            number_of_measurements=number_of_measurements, significance_level=significance_level), Passed): raise AssertionError("Pass test failed")
-    # except AssertionError as e:
-    #     print("one failure for passing circumstances, retrying")
-    #     assert isinstance(test(c_pass, source_pass, source_fail, orig_deltas), Passed)
-
-    # print_edit_sequence(c_fail, source_pass, source_fail)
-    # try:
     if logging:
         print("test fail")
     if not isinstance(test(c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
                            number_of_measurements=number_of_measurements, significance_level=significance_level), Failed): raise AssertionError("Fail test passed")
-    # except AssertionError as e:
-    #     print("one failure for failing circumstances, retrying")
-    #     assert isinstance(test(c_fail, source_pass, source_fail, orig_deltas), Failed)
 
     while True:
         delta = listminus(c_fail, c_pass)
@@ -233,6 +135,7 @@ def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate, select
             pass_deltas = pass_diff # can try have this reset, maybe union
 
             delta_store = listunion(delta_store, min_change)
+            print(f"deltas after loop {delta_store}")
         except AssertionError as e:
             print(repr(e))
             break

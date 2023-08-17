@@ -58,7 +58,7 @@ class CaseStudyInterface(ABC):
         """
         pass
 
-    def analyse_results(self, chaff_length, inputs_to_generate, number_of_properties, number_of_measurements, significance_level):
+    def analyse_results(self, chaff_length, inputs_to_generate, number_of_properties, number_of_measurements, significance_level, test_amount):
         """
         -> in for loop
         -> generate random chaff and add it to the circuit
@@ -82,9 +82,8 @@ class CaseStudyInterface(ABC):
         print(expected_deltas)
         print(self.passing_circuit())
         print(failing_circuit)
-        loops = 50
-        amount_to_find = len(expected_deltas) * loops
-        for i in range(loops):
+        amount_to_find = len(expected_deltas) * test_amount
+        for i in range(test_amount):
             selected_properties = random.sample(self.properties, number_of_properties)
             print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
@@ -136,7 +135,7 @@ class CaseStudyInterface(ABC):
                 tests_with_artifacts += 1
 
         print(f"Total expected deltas found: {expected_found}/{amount_to_find}")
-        print(f"Tests with ALL expected deltas found: {tests_with_all_deltas_found}/{loops}, AND no unexpected: {perfect_result}/{loops}")
+        print(f"Tests with ALL expected deltas found: {tests_with_all_deltas_found}/{test_amount}, AND no unexpected: {perfect_result}/{test_amount}")
         print(f"Unexpected deltas: {artifacts_found}/{artifacts_added}, from ({tests_with_artifacts}) tests")
         print(f"Tests called: {self.tests_performed}, tests executed (due to caching): {self.tests_performed_no_cache}")
         print(f"Time taken (minutes): {round(time.time() - start, 2)/60}")

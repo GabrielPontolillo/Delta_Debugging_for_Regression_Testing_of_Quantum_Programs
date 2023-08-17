@@ -98,7 +98,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
             return self.test_cache.get(tuple(deltas), None)
         self.tests_performed_no_cache += 1
 
-        print(f"chosen properties {selected_properties}")
+        # print(f"chosen properties {selected_properties}")
 
         oracle_result = TeleportationOracle.test_oracle(src_passing, src_failing, deltas,
                                                         selected_properties,
@@ -145,11 +145,12 @@ if __name__ == "__main__":
     # chaff_lengths = [8, 4, 2, 1, 0]
     # inputs_to_generate = [20, 10, 5, 1]
 
-    chaff_lengths = [8]
-    inputs_to_generate = [2]
-    number_of_properties = 1
-    number_of_measurements = 300
-    significance_level = 0.01
+    chaff_lengths = [4]
+    inputs_to_generate = [3]
+    number_of_properties = 3
+    number_of_measurements = 1000
+    significance_level = 0.03
+    test_amount = 1
 
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
@@ -162,7 +163,8 @@ if __name__ == "__main__":
                                                                        'inputs_to_generate': inputs_for_func[i][1],
                                                                        'number_of_properties': number_of_properties,
                                                                        'number_of_measurements': number_of_measurements,
-                                                                       'significance_level': significance_level}) for
+                                                                       'significance_level': significance_level,
+                                                                       'test_amount': test_amount}) for
                    i in range(len(qpe_objs))]
         for r in results:
             r.get()

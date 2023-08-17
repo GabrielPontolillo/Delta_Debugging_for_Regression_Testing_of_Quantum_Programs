@@ -1,0 +1,3 @@
+Expected deltas found: 4/4
+Unexpected deltas: 0/8
+Time taken (minutes): 2.13
