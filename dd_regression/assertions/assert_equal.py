@@ -9,7 +9,7 @@ backend = Aer.get_backend('aer_simulator')
 # backend.set_options(device='GPU')
 
 from qiskit.circuit import ClassicalRegister
-from dd_regression.diff_algorithm_r import Experiment
+from dd_regression.diff_algorithm import Experiment
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)

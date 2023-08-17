@@ -4,8 +4,7 @@
 """
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 from dd_regression.helper_functions import circuit_to_list, list_to_circuit, order_list_by_another_list
-# from dd_regression.diff_algorithm import diff, print_edit_sequence
-from dd_regression.diff_algorithm_r import diff, apply_diffs, print_deltas
+from dd_regression.diff_algorithm import diff, apply_diffs, print_deltas
 
 
 def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selected_properties, number_of_measurements,
@@ -141,22 +140,6 @@ def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate, select
             break
     print(delta_store)
     return delta_store, pass_deltas
-
-
-# def split(circumstances, n):
-    # """Split a configuration CIRCUMSTANCES into N subsets;
-    # return the list of subsets"""
-    # subsets = []  # Result
-    # start = 0  # Start of next subset
-    # for i in range(0, n):
-    #     len_subset = int((len(circumstances) - start) / float(n - -- i) + 0.5)
-    #     subset = circumstances[start:start + len_subset]
-    #     subsets.append(subset)
-    #     start = start + len(subset)
-    # assert len(subsets) == n
-    # for s in subsets:
-    #     assert len(s) > 0
-    # return subsets
 
 
 def split(elems, n: int):

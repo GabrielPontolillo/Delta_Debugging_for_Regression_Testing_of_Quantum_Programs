@@ -3,13 +3,10 @@ import random
 
 from abc import ABC, abstractmethod, abstractproperty
 
-from case_studies.mined.quantum_teleportation.different_paths_same_outcome import DifferentPathsSameOutcomeProperty
-from case_studies.mined.quantum_teleportation.equal_output_property import EqualOutputProperty
-from case_studies.mined.quantum_teleportation.uniform_superposition_property import UniformSuperpositionProperty
 from dd_regression.dd_algorithm import dd_repeat
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit, \
     determine_delta_application_valid, list_contains_list_in_same_order
-from dd_regression.diff_algorithm_r import apply_diffs, diff, Removal, Addition, print_deltas
+from dd_regression.diff_algorithm import apply_diffs, diff, Removal, Addition, print_deltas
 
 
 class CaseStudyInterface(ABC):

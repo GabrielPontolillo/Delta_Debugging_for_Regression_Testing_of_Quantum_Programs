@@ -1,4 +1,0 @@
-# make interface/class for case study
-# define what deltas should be isolated by the end
-# identify what chaff has been incorrectly isolated
-# automaticaly collect data

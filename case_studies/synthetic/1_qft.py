@@ -12,7 +12,7 @@ from dd_regression.assertions.assert_equal import assert_equal, assert_equal_sta
     measure_qubits, assert_equal_distributions
 from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register, add_random_chaff
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs, Experiment, print_deltas
+from dd_regression.diff_algorithm import Addition, Removal, diff, apply_diffs, Experiment, print_deltas
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)

@@ -15,7 +15,7 @@ from case_studies.mined.quantum_teleportation.uniform_superposition_property imp
 from case_studies.mined.quantum_teleportation.different_paths_same_outcome import DifferentPathsSameOutcomeProperty
 from case_studies.mined.quantum_teleportation.teleportation_oracle import TeleportationOracle
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.diff_algorithm_r import Addition, Removal, diff, apply_diffs, Experiment
+from dd_regression.diff_algorithm import Addition, Removal, diff, apply_diffs, Experiment
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)

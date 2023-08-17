@@ -5,7 +5,7 @@ from hypothesis import given, settings, assume
 from hypothesis.strategies import composite, integers, text, lists, characters
 from qiskit import QuantumCircuit
 from qiskit.circuit.random import random_circuit
-from dd_regression.diff_algorithm_r import diff, apply_diffs, Addition, Removal
+from dd_regression.diff_algorithm import diff, apply_diffs, Addition, Removal
 from dd_regression.helper_functions import circuit_to_list, list_to_circuit, listminus, list_contains_list_in_same_order
 
 
