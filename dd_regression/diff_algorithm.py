@@ -1,30 +1,22 @@
 # This code is from https://blog.robertelder.org/diff-algorithm/
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
-from dataclasses import dataclass
-from dd_regression.helper_functions import list_to_circuit, circuit_to_list
-from qiskit import QuantumCircuit
 import time
+from dataclasses import dataclass
+from case_studies.mined.quantum_teleportation.quantum_teleportation import QuantumTeleportationMined
+from dd_regression.helper_functions import list_to_circuit
 
 
 @dataclass(eq=True, frozen=True)
 class Addition:
-    # location of gate to insert (from list 2)
-    add_gate_index: any
     # location of gate to insert before (from list 1)
     location_index: int
+    # location of gate to insert (from list 2)
+    add_gate: any
 
 
 @dataclass(eq=True, frozen=True)
 class Removal:
     # location of gate to remove (from list 1)
-    location_index: int
-
-
-@dataclass(eq=True, frozen=True)
-class Replace:
-    # location of gate to insert (from list 2)
-    add_gate_index: any
-    # location of gate to replace (from list 1)
     location_index: int
 
 
@@ -119,7 +111,7 @@ def diff(li1, li2, diagnostic=False, timeit=False):
                 print("-")
                 print(f"gate add {j - 1}")
                 print(f"index add {i}")
-            results.append(Addition(j - 1, i))
+            results.append(Addition(i, li2[j - 1]))
             j -= 1
         elif j == 0:
             results.append(Removal(i - 1))
@@ -128,13 +120,12 @@ def diff(li1, li2, diagnostic=False, timeit=False):
         # currently considered parts are equal, then we found an unchanged
         # part which belongs to the longest common subsequence.
         elif li1[i - 1] == li2[j - 1]:
-            # results.append(Unchanged(li1[i - 1]))
             i -= 1
             j -= 1
         # In any other case, we go in the direction of the longest common
         # subsequence.
         elif lcs[i - 1][j] <= lcs[i][j - 1]:
-            results.append(Addition(j - 1, i))
+            results.append(Addition(i, li2[j - 1]))
             j -= 1
         else:
             results.append(Removal(i - 1))
@@ -148,14 +139,12 @@ def diff(li1, li2, diagnostic=False, timeit=False):
     return list(reversed(results))
 
 
-def apply_diffs(li1, li2, diffs, diagnostic=False, timeit=False):
+def apply_diffs(li1, diffs, diagnostic=False, timeit=False):
     if diagnostic:
         print(f"input 1:")
         print(list_to_circuit(li1))
-        print(f"input 2:")
-        print(list_to_circuit(li2))
         print(f"diffs:")
-        print_deltas(li1, li2, diffs)
+        print_deltas(li1, diffs)
 
     t1 = time.time()
     res = []
@@ -177,14 +166,11 @@ def apply_diffs(li1, li2, diffs, diagnostic=False, timeit=False):
                 if diagnostic:
                     pass
                     # print(f"adding gate {d.add_gate_index} at {d.location_index}")
-                res.append(li2[d.add_gate_index])
+                res.append(d.add_gate)
             elif isinstance(d, Removal):
                 if diagnostic:
                     pass
                     # print(f"removing gate at {d.location_index}")
-                li1_idx += 1
-            elif isinstance(d, Replace):
-                res.append(li2[d.add_gate_index])
                 li1_idx += 1
             else:
                 raise ValueError("Unrecognized type in diffs")
@@ -205,50 +191,19 @@ def apply_diffs(li1, li2, diffs, diagnostic=False, timeit=False):
     return res
 
 
-def print_deltas(li1, li2, diffs):
+def print_deltas(li1, diffs):
     for i in range(len(diffs)):
         if isinstance(diffs[i], Removal):
             print(f"remove {li1[diffs[i].location_index]} at {diffs[i].location_index}")
         elif isinstance(diffs[i], Addition):
-            print(f"add {li2[diffs[i].add_gate_index]} at {diffs[i].location_index}")
-
-
-def convert_deltas_to_replacement(diffs):
-    paired_indexes = {}
-    for idx, delta in enumerate(diffs):
-        # if removal delta, check index of removal + 1 for a matching addition
-        if isinstance(delta, Removal):
-            for idx2, delta2 in enumerate(diffs[idx:]):
-                if isinstance(delta2, Addition):
-                    if delta2.location_index == delta.location_index + 1:
-                        # if matching addition found, add it to a dictionary
-                        paired_indexes[idx] = idx2 + idx
-                elif delta2.location_index > delta.location_index + 1:
-                    break
-    # all items in paired indexes should be unique
-    print(paired_indexes)
-    new_diffs = []
-    for idx, delta in enumerate(diffs):
-        # if index is a key in the matched pairs of removal/additions, instead of adding removal, we add a replacement
-        if idx in paired_indexes:
-            new_diffs.append(Replace(diffs[paired_indexes[idx]].add_gate_index, delta.location_index))
-        # if index is in a matched pair (its an addition) and it does not need to be added, as it already is present
-        # in the replacement
-        elif idx in paired_indexes.values():
-            pass
-        # if index not matched with any pair, add it
-        else:
-            new_diffs.append(delta)
-    return new_diffs
+            print(f"add {diffs[i].add_gate} at {diffs[i].location_index}")
 
 
 # replace deltas out should be equal to non replaced version
-
 if __name__ == "__main__":
-
     t1 = "ABAB"
     t2 = "ABBBB"
     d = diff(t1, t2)
     print(d)
     print(d[1])
-    print(apply_diffs(t1, t2, [d[1]]))
+    print(apply_diffs(t1, d))

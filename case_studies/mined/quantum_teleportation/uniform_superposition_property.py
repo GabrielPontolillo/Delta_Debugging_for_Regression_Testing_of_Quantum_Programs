@@ -1,11 +1,11 @@
 import warnings
-import numpy as np
 
+import numpy as np
 from qiskit import QuantumCircuit, Aer
 from qiskit.quantum_info import random_statevector
 
 from case_studies.property_based_test_interface import PropertyBasedTestInterface
-from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, assert_equal_distributions, \
+from dd_regression.assertions.assert_equal import assert_equal_distributions, \
     measure_qubits
 from dd_regression.helper_functions import get_quantum_register, list_to_circuit
 

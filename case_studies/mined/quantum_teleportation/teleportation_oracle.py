@@ -1,19 +1,13 @@
 import warnings
-from abc import abstractmethod
-
-import numpy as np
 from time import perf_counter as pc
-from qiskit import QuantumCircuit, Aer, execute
-from qiskit.quantum_info import random_statevector
+
+from qiskit import Aer
 
 from case_studies.property_based_test_oracle_interface import PropertyBasedTestOracleInterface
-from case_studies.mined.quantum_teleportation.equal_output_property import EqualOutputProperty
-
-from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, holm_bonferroni_correction, \
-    measure_qubits
-from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register, add_random_chaff
+from dd_regression.assertions.assert_equal import holm_bonferroni_correction
+from dd_regression.diff_algorithm import apply_diffs
+from dd_regression.helper_functions import list_to_circuit
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.diff_algorithm import Addition, Removal, diff, apply_diffs, Experiment
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
