@@ -4,7 +4,7 @@
 """
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 from dd_regression.helper_functions import circuit_to_list, list_to_circuit, order_list_by_another_list
-from dd_regression.diff_algorithm import diff, apply_diffs, print_deltas
+from dd_regression.diff_algorithm import diff, print_deltas
 
 
 def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selected_properties, number_of_measurements,

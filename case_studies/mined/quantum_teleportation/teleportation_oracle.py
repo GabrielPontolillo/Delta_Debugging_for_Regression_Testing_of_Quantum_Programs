@@ -21,7 +21,7 @@ class TeleportationOracle(PropertyBasedTestOracleInterface):
     def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, measurements, significance_level,
                     inputs_to_generate=25):
         # create quantum circuit by applying diffs to the passing circuit
-        changed_circuit_list = apply_diffs(passing_circuit, failing_circuit, deltas)
+        changed_circuit_list = apply_diffs(passing_circuit, deltas)
         changed_circuit = list_to_circuit(changed_circuit_list)
 
         composed_results = []

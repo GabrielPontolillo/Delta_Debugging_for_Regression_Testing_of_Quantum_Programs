@@ -10,7 +10,7 @@ from case_studies.mined.quantum_teleportation.different_paths_same_outcome impor
 from case_studies.mined.quantum_teleportation.equal_output_property import EqualOutputProperty
 from case_studies.mined.quantum_teleportation.teleportation_oracle import TeleportationOracle
 from case_studies.mined.quantum_teleportation.uniform_superposition_property import UniformSuperpositionProperty
-from dd_regression.diff_algorithm import Addition, Removal, diff, apply_diffs
+from dd_regression.diff_algorithm import Addition, Removal, diff
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -76,8 +76,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
         return qc
 
     def expected_deltas_to_isolate(self):
-        return [Removal(location_index=4), Removal(location_index=5), Addition(add_gate_index=4, location_index=6),
-                Addition(add_gate_index=5, location_index=6)]
+        return diff(self.passing_circuit(), self.failing_circuit())
 
     def passing_circuit(self):
         return self.quantum_teleportation()
@@ -112,58 +111,48 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    qt = QuantumTeleportationMined()
-    print(qt.passing_circuit())
-    print(qt.failing_circuit())
-    print(diff(qt.passing_circuit(), qt.failing_circuit()))
+    chaff_lengths = [4]
+    inputs_to_generate = [3]
+    number_of_properties = 3
+    number_of_measurements = 1000
+    significance_level = 0.003
+    test_amount = 1
 
+    qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
+    print(qpe_objs)
+    inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
+    print(inputs_for_func)
+    results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
+    print(results)
+    with multiprocessing.Pool() as pool:
+        results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
+                                                                       'inputs_to_generate': inputs_for_func[i][1],
+                                                                       'number_of_properties': number_of_properties,
+                                                                       'number_of_measurements': number_of_measurements,
+                                                                       'significance_level': significance_level,
+                                                                       'test_amount': test_amount}) for
+                   i in range(len(qpe_objs))]
+        for r in results:
+            r.get()
 
+    pool.join()
 
-    # chaff_lengths = [4]
-    # inputs_to_generate = [3]
-    # number_of_properties = 3
-    # number_of_measurements = 1000
-    # significance_level = 0.03
-    # test_amount = 1
-    #
-    # qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
-    # print(qpe_objs)
-    # inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
-    # print(inputs_for_func)
-    # results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
-    # print(results)
-    # with multiprocessing.Pool() as pool:
-    #     results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
-    #                                                                    'inputs_to_generate': inputs_for_func[i][1],
-    #                                                                    'number_of_properties': number_of_properties,
-    #                                                                    'number_of_measurements': number_of_measurements,
-    #                                                                    'significance_level': significance_level,
-    #                                                                    'test_amount': test_amount}) for
-    #                i in range(len(qpe_objs))]
-    #     for r in results:
-    #         r.get()
-    #
-    # pool.join()
-    #
-    # rows = []
-    # row = []
-    # row.append("X")
-    # for i in range(len(chaff_lengths)):
-    #     row.append(f"inserted deltas {chaff_lengths[i]*2}")
-    # rows.append(row)
-    # for i in range(len(inputs_to_generate)):
-    #     row = []
-    #     row.append(f"inputs/test {inputs_to_generate[i]}")
-    #     for j in range(len(chaff_lengths)):
-    #         f = open(
-    #             f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt",
-    #             "r")
-    #         row.append(f.read())
-    #     rows.append(row)
-    #
-    # with open("test_results.csv", 'w', newline='') as file:
-    #     writer = csv.writer(file, dialect='excel')
-    #     writer.writerows(rows)
+    rows = []
+    row = []
+    row.append("X")
+    for i in range(len(chaff_lengths)):
+        row.append(f"inserted deltas {chaff_lengths[i]*2}")
+    rows.append(row)
+    for i in range(len(inputs_to_generate)):
+        row = []
+        row.append(f"inputs/test {inputs_to_generate[i]}")
+        for j in range(len(chaff_lengths)):
+            f = open(
+                f"{qpe_objs[0].get_algorithm_name()}_chaff_length{chaff_lengths[j]}_inputs_to_gen{inputs_to_generate[i]}.txt",
+                "r")
+            row.append(f.read())
+        rows.append(row)
 
-    # qt = QuantumTeleportationMined()
-    # qt.analyse_results(8, 5)
+    with open("test_results.csv", 'w', newline='') as file:
+        writer = csv.writer(file, dialect='excel')
+        writer.writerows(rows)

@@ -3,13 +3,10 @@ import warnings
 import scipy.stats as sci
 import heapq
 
+from qiskit.circuit import ClassicalRegister
 from qiskit import execute, Aer
 
 backend = Aer.get_backend('aer_simulator')
-# backend.set_options(device='GPU')
-
-from qiskit.circuit import ClassicalRegister
-from dd_regression.diff_algorithm import Experiment
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)

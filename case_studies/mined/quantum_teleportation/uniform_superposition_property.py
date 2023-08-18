@@ -27,7 +27,7 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
             init_state = QuantumCircuit(qlength)
             init_vector = random_statevector(2)
             init_state.initialize(init_vector, 0)
-            inputted_circuit_to_test = init_state + circuit
+            inputted_circuit_to_test = init_state.compose(circuit)
 
             # create a new circuit with just state initialization to compare with
             qc = QuantumCircuit(2, 2)

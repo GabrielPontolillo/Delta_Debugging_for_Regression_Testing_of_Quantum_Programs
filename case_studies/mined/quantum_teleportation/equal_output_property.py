@@ -26,7 +26,7 @@ class EqualOutputProperty(PropertyBasedTestInterface):
             init_state = QuantumCircuit(qlength)
             init_vector = random_statevector(2)
             init_state.initialize(init_vector, 0)
-            inputted_circuit_to_test = init_state + circuit
+            inputted_circuit_to_test = init_state.compose(circuit)
 
             # create a new circuit with just state initialization to compare with
             qc = QuantumCircuit(1)
@@ -48,7 +48,7 @@ class EqualOutputProperty(PropertyBasedTestInterface):
         init_state = QuantumCircuit(qlength)
 
         init_state.initialize(input_state_list, 0)
-        inputted_circuit_to_test = init_state + list_to_circuit(original_failing_circuit)
+        inputted_circuit_to_test = init_state.compose(list_to_circuit(original_failing_circuit))
 
         p_value_x, p_value_y, p_value_z, _, _ = assert_equal_state(inputted_circuit_to_test, 2, output_distribution,
                                                                    measurements=measurements)

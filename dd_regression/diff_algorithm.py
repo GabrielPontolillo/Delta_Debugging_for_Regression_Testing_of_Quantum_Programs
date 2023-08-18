@@ -2,7 +2,7 @@
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
 import time
 from dataclasses import dataclass
-from case_studies.mined.quantum_teleportation.quantum_teleportation import QuantumTeleportationMined
+from qiskit.circuit import CircuitInstruction
 from dd_regression.helper_functions import list_to_circuit
 
 
@@ -11,7 +11,22 @@ class Addition:
     # location of gate to insert before (from list 1)
     location_index: int
     # location of gate to insert (from list 2)
-    add_gate: any
+    add_gate: CircuitInstruction
+    # index of element from list 2
+    add_gate_index: int
+
+    def __hash__(self):
+        return hash((self.location_index, self.add_gate_index))
+
+    def __repr__(self):
+        if isinstance(self.add_gate, CircuitInstruction):
+            ret_str = ""
+            for i in range(self.add_gate[0].num_qubits):
+                ret_str += str(self.add_gate[1][i].index) + ", "
+            ret_str = ret_str[:-2]
+            return f"Add({self.location_index}, {self.add_gate[0].name}({ret_str}))"
+        else:
+            return f"Add({self.location_index}, {self.add_gate})"
 
 
 @dataclass(eq=True, frozen=True)
@@ -19,12 +34,8 @@ class Removal:
     # location of gate to remove (from list 1)
     location_index: int
 
-
-@dataclass
-class Experiment:
-    p_value: float
-    input_state: []
-
+    def __repr__(self):
+        return f"Rem({self.location_index})"
 
 def compute_lcs_len(li1, li2, diagnostic=False, timeit=False):
     """Computes a table of f(i, j) results."""
@@ -111,7 +122,7 @@ def diff(li1, li2, diagnostic=False, timeit=False):
                 print("-")
                 print(f"gate add {j - 1}")
                 print(f"index add {i}")
-            results.append(Addition(i, li2[j - 1]))
+            results.append(Addition(i, li2[j - 1], j - 1))
             j -= 1
         elif j == 0:
             results.append(Removal(i - 1))
@@ -125,7 +136,7 @@ def diff(li1, li2, diagnostic=False, timeit=False):
         # In any other case, we go in the direction of the longest common
         # subsequence.
         elif lcs[i - 1][j] <= lcs[i][j - 1]:
-            results.append(Addition(i, li2[j - 1]))
+            results.append(Addition(i, li2[j - 1], j - 1))
             j -= 1
         else:
             results.append(Removal(i - 1))
@@ -134,6 +145,7 @@ def diff(li1, li2, diagnostic=False, timeit=False):
     # Reverse results because we iterated over the texts from the end but
     # want the results to be in forward order.
     t2 = time.time()
+    # could check that list 2 indexes are not the same
     if timeit:
         print(f"time_taken for diffing = {t2 - t1}")
     return list(reversed(results))

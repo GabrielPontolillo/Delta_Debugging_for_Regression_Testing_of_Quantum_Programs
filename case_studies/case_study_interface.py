@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod, abstractproperty
 from dd_regression.dd_algorithm import dd_repeat
 from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit, \
     determine_delta_application_valid, list_contains_list_in_same_order
-from dd_regression.diff_algorithm import apply_diffs, diff, Removal, Addition, print_deltas
+from dd_regression.diff_algorithm import diff, Removal, Addition, print_deltas
 
 
 class CaseStudyInterface(ABC):
@@ -111,7 +111,7 @@ class CaseStudyInterface(ABC):
                         # old location unaffected
                         if exp.location_index == delta.location_index:
                             # add gate index affected, compare actual gate in list, if it's the same
-                            if chaff_embedded_circuit_list[delta.add_gate_index] == failing_circuit_list[exp.add_gate_index]:
+                            if delta.add_gate == exp.add_gate:
                                 # index not already added, we say that it has been found
                                 if idx not in indexes_found:
                                     deltas_found += 1

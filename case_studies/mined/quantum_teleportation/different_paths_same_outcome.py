@@ -30,13 +30,13 @@ class DifferentPathsSameOutcomeProperty(PropertyBasedTestInterface):
             init_vector = random_statevector(2)
             init_state.initialize(init_vector, 0)
             init_state.unitary(operator, 0)
-            inputted_circuit_to_test = init_state + circuit
+            inputted_circuit_to_test = init_state.compose(circuit)
 
             # create a new circuit with just state initialization to compare with
             qlength, clength = get_quantum_register(circuit)
             qc = QuantumCircuit(qlength)
             qc.initialize(init_vector, 0)
-            qc = qc + circuit
+            qc = qc.compose(circuit)
             qc.unitary(operator, 2)
 
             # print(inputted_circuit_to_test)
@@ -65,7 +65,7 @@ class DifferentPathsSameOutcomeProperty(PropertyBasedTestInterface):
 
         init_state.initialize(input_state_list, 0)
         init_state.unitary(extra_info[0], 0)
-        inputted_circuit_to_test = init_state + list_to_circuit(original_failing_circuit)
+        inputted_circuit_to_test = init_state.compose(list_to_circuit(original_failing_circuit))
 
         p_value_x, p_value_y, p_value_z, _, _ = assert_equal_state(inputted_circuit_to_test, 2, output_distribution,
                                                                    measurements=measurements)
