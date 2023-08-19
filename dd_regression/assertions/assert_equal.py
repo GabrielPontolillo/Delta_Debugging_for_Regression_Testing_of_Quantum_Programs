@@ -1,10 +1,9 @@
 # This code is modified from previous work at https://github.com/GabrielPontolillo/Quantum_Algorithm_Implementations
 import warnings
-import scipy.stats as sci
-import heapq
 
-from qiskit.circuit import ClassicalRegister
+import scipy.stats as sci
 from qiskit import execute, Aer
+from qiskit.circuit import ClassicalRegister
 
 backend = Aer.get_backend('aer_simulator')
 

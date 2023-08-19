@@ -2,7 +2,9 @@
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
 import time
 from dataclasses import dataclass
+
 from qiskit.circuit import CircuitInstruction
+
 from dd_regression.helper_functions import list_to_circuit
 
 
@@ -36,6 +38,7 @@ class Removal:
 
     def __repr__(self):
         return f"Rem({self.location_index})"
+
 
 def compute_lcs_len(li1, li2, diagnostic=False, timeit=False):
     """Computes a table of f(i, j) results."""
@@ -156,7 +159,7 @@ def apply_diffs(li1, diffs, diagnostic=False, timeit=False):
         print(f"input 1:")
         print(list_to_circuit(li1))
         print(f"diffs:")
-        print_deltas(li1, diffs)
+        print(diffs)
 
     t1 = time.time()
     res = []

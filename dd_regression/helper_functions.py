@@ -6,7 +6,7 @@ from qiskit import QuantumCircuit
 def circuit_to_list(circuit: QuantumCircuit):
     """Converts a circuit into a list of instructions"""
     circuit_instructions = []
-    for data in circuit.data:
+    for data in [circuitIns for circuitIns in circuit.data]:
         circuit_instructions.append((data[0], data[1], data[2]))
     return circuit_instructions
 
@@ -45,7 +45,7 @@ def list_to_circuit(instruction_arr: list[any]):
 def add_random_chaff(circuit: QuantumCircuit, chaff_length=None):
     #interested in decomposing gates and replacing
     qarg, carg = get_quantum_register(circuit)
-    circ_list = circuit_to_list(circuit)
+    circ_list = [circuitIns for circuitIns in circuit.data]
     # print(circ_list)
     # print(qarg.size)
     qubit_size = qarg.size
@@ -81,7 +81,7 @@ def add_random_chaff(circuit: QuantumCircuit, chaff_length=None):
             qc.s(target_qubit)
             qc.s(target_qubit)
             qc.s(target_qubit)
-        qc_list = circuit_to_list(qc)
+        qc_list = [circuitIns for circuitIns in qc.data]
         # choose where to append the chaff
         insert_location = random.randint(0, len(circ_list))
         # insert_location = 5

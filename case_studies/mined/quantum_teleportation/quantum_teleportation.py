@@ -10,7 +10,7 @@ from case_studies.mined.quantum_teleportation.different_paths_same_outcome impor
 from case_studies.mined.quantum_teleportation.equal_output_property import EqualOutputProperty
 from case_studies.mined.quantum_teleportation.teleportation_oracle import TeleportationOracle
 from case_studies.mined.quantum_teleportation.uniform_superposition_property import UniformSuperpositionProperty
-from dd_regression.diff_algorithm import Addition, Removal, diff
+from dd_regression.diff_algorithm import diff
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     number_of_properties = 3
     number_of_measurements = 1000
     significance_level = 0.003
-    test_amount = 1
+    test_amount = 10
 
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)

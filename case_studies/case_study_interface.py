@@ -1,12 +1,10 @@
-import time
 import random
-
-from abc import ABC, abstractmethod, abstractproperty
+import time
+from abc import ABC, abstractmethod
 
 from dd_regression.dd_algorithm import dd_repeat
-from dd_regression.helper_functions import circuit_to_list, add_random_chaff, list_to_circuit, \
-    determine_delta_application_valid, list_contains_list_in_same_order
-from dd_regression.diff_algorithm import diff, Removal, Addition, print_deltas
+from dd_regression.diff_algorithm import Removal, Addition
+from dd_regression.helper_functions import add_random_chaff, list_to_circuit
 
 
 class CaseStudyInterface(ABC):
@@ -67,7 +65,7 @@ class CaseStudyInterface(ABC):
          and postchaff circuit
         """
         failing_circuit = self.failing_circuit()
-        failing_circuit_list = circuit_to_list(self.failing_circuit())
+        failing_circuit_list = [circuitIns for circuitIns in self.failing_circuit().data]
         expected_deltas = self.expected_deltas_to_isolate()
         expected_found = 0
         artifacts_found = 0

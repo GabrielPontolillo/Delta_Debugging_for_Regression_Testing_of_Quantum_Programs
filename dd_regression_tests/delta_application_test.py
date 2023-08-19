@@ -1,12 +1,13 @@
-import unittest
 import random
-import time
+import unittest
+
 from hypothesis import given, settings, assume
-from hypothesis.strategies import composite, integers, text, lists, characters
+from hypothesis.strategies import composite, integers, lists, characters
 from qiskit import QuantumCircuit
 from qiskit.circuit.random import random_circuit
+
 from dd_regression.diff_algorithm import diff, apply_diffs, Addition, Removal
-from dd_regression.helper_functions import circuit_to_list, list_to_circuit, listminus, list_contains_list_in_same_order
+from dd_regression.helper_functions import list_to_circuit
 
 
 @composite
@@ -122,8 +123,8 @@ class TestDeltaApplication(unittest.TestCase):
     @given(circuit(), circuit())
     @settings(deadline=30000)
     def test_apply_edit_script_apply_all_deltas(self, circuit_1, circuit_2):
-        c1 = circuit_to_list(circuit_1)
-        c2 = circuit_to_list(circuit_2)
+        c1 = circuit_1.data
+        c2 = circuit_2.data
         diffs = diff(c1, c2)
         print(list_to_circuit(c1))
         print(list_to_circuit(c2))

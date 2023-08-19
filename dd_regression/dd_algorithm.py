@@ -2,9 +2,9 @@
    A lot of this code is from the 'Why Programs Fail' book from Andreas Zeller
    *Some modifications made
 """
-from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.helper_functions import circuit_to_list, list_to_circuit, order_list_by_another_list
-from dd_regression.diff_algorithm import diff, print_deltas
+from dd_regression.diff_algorithm import diff
+from dd_regression.helper_functions import order_list_by_another_list
+from dd_regression.result_classes import Passed, Failed
 
 
 def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selected_properties, number_of_measurements,
@@ -102,9 +102,9 @@ def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate, select
     :param test: the test funtion to use
     :return: all isolated failing deltas (will contain artifacts), original calculated deltas
     """
-    failing_input_list = circuit_to_list(failing_circuit)
+    failing_input_list = [circuitIns for circuitIns in failing_circuit.data]
 
-    passing_input_list = circuit_to_list(passing_circuit)
+    passing_input_list = [circuitIns for circuitIns in passing_circuit.data]
 
     fail_deltas = diff(passing_input_list, failing_input_list)
     pass_deltas = []

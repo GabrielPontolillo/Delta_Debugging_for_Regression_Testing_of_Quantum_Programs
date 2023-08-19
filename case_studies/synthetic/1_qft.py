@@ -1,18 +1,16 @@
 import random
 import warnings
-import multiprocessing
-import csv
 
 import numpy as np
 from qiskit import QuantumCircuit, Aer
 from qiskit.quantum_info import random_statevector, Statevector
 
 from case_studies.case_study_interface import CaseStudyInterface
-from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, holm_bonferroni_correction, \
+from dd_regression.assertions.assert_equal import holm_bonferroni_correction, \
     measure_qubits, assert_equal_distributions
-from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register, add_random_chaff
+from dd_regression.diff_algorithm import Addition, Removal, apply_diffs
+from dd_regression.helper_functions import list_to_circuit, get_quantum_register
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.diff_algorithm import Addition, Removal, diff, apply_diffs, Experiment, print_deltas
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -60,7 +58,7 @@ class QFTSynthetic(CaseStudyInterface):
 
     def regression_test(self, circuit_to_test):
         p_values = []
-        q_length, c_length = get_quantum_register(circuit_to_list(circuit_to_test))
+        q_length, c_length = get_quantum_register(circuit_to_test.data)
         for j in range(50):
             rotation = random.randrange(0, 8)
             x_circuit = QuantumCircuit(q_length)
@@ -69,7 +67,7 @@ class QFTSynthetic(CaseStudyInterface):
                 if bin_amt[i] == '1':
                     x_circuit.x(len(bin_amt) - (i + 1))
 
-            inputted_circuit_to_test = x_circuit + circuit_to_test
+            inputted_circuit_to_test = x_circuit.compose(circuit_to_test)
 
             checks = []
             qubits = []

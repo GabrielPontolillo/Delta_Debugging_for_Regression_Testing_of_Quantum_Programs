@@ -1,16 +1,15 @@
 # This code is from previous work at https://github.com/GabrielPontolillo/Quantum_Algorithm_Implementations
-import warnings
-import pandas as pd
 import math
-from math import pi, sqrt, sin, cos
-import numpy as np
-import scipy.stats as sci
+import warnings
 from collections.abc import Callable
+from math import pi, sqrt, sin, cos
 
-from statsmodels.stats.proportion import proportions_ztest
-
+import numpy as np
+import pandas as pd
+import scipy.stats as sci
 from qiskit import execute
 from qiskit.circuit import ClassicalRegister
+from statsmodels.stats.proportion import proportions_ztest
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)

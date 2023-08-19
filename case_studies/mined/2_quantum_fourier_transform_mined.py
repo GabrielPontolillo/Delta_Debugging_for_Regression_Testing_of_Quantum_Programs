@@ -1,19 +1,15 @@
-import random
-import warnings
-import concurrent.futures
-import multiprocessing
 import csv
+import multiprocessing
+import warnings
 
-import numpy as np
 from qiskit import QuantumCircuit, Aer
 from qiskit.quantum_info import random_statevector
 
 from case_studies.case_study_interface import CaseStudyInterface
 from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, holm_bonferroni_correction
-from dd_regression.helper_functions import circuit_to_list, list_to_circuit, get_quantum_register, add_random_chaff
+from dd_regression.diff_algorithm import Addition, Removal, apply_diffs
+from dd_regression.helper_functions import list_to_circuit, get_quantum_register
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.diff_algorithm import Addition, Removal, diff, apply_diffs, Experiment
-from dd_regression.dd_algorithm import dd_repeat
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
