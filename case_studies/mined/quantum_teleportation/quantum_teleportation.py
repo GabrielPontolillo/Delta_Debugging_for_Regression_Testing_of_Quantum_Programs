@@ -112,33 +112,33 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    chaff_lengths = [8, 4, 2, 1, 0]
-    inputs_to_generate = [16, 8, 4, 2, 1]
-    number_of_properties = 3
-    number_of_measurements = 4000
+    chaff_lengths = [1, 0]
+    inputs_to_generate = [2, 1]
+    numbers_of_properties = [3, 1]
+    number_of_measurements = 100
     significance_level = 0.003
     test_amount = 1
 
-    qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
-    print(qpe_objs)
-    inputs_for_func = [(i1, i2) for i1 in chaff_lengths for i2 in inputs_to_generate]
+    qt_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate) * len(numbers_of_properties))]
+    print(qt_objs)
+    inputs_for_func = [(i1, i2, i3) for i1 in chaff_lengths for i2 in inputs_to_generate for i3 in numbers_of_properties]
     print(inputs_for_func)
-    results = [(qpe_objs[i], inputs_for_func[i][0], inputs_for_func[i][1]) for i in range(len(qpe_objs))]
+    results = [(qt_objs[i], inputs_for_func[i][0], inputs_for_func[i][1], inputs_for_func[i][2]) for i in range(len(qt_objs))]
     print(results)
     with multiprocessing.Pool() as pool:
-        results = [pool.apply_async(qpe_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
+        results = [pool.apply_async(qt_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
                                                                        'inputs_to_generate': inputs_for_func[i][1],
-                                                                       'number_of_properties': number_of_properties,
+                                                                       'number_of_properties': inputs_for_func[i][2],
                                                                        'number_of_measurements': number_of_measurements,
                                                                        'significance_level': significance_level,
                                                                        'test_amount': test_amount}) for
-                   i in range(len(qpe_objs))]
+                   i in range(len(qt_objs))]
         for r in results:
             r.get()
 
     pool.join()
 
     files_to_spreadsheet(
-        qpe_objs[0].get_algorithm_name(), chaff_lengths, inputs_to_generate, number_of_properties, number_of_measurements,
-        significance_level, test_amount
+        qt_objs[0].get_algorithm_name(), chaff_lengths, inputs_to_generate, numbers_of_properties,
+        number_of_measurements, significance_level, test_amount
     )
