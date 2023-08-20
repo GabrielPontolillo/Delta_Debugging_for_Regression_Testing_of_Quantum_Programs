@@ -59,7 +59,7 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
         # print(input_state_list)
 
         init_state.initialize(input_state_list, 0)
-        inputted_circuit_to_test = init_state + list_to_circuit(original_failing_circuit)
+        inputted_circuit_to_test = init_state.compose(list_to_circuit(original_failing_circuit))
 
         measurements_1 = measure_qubits(inputted_circuit_to_test, [0, 1], basis=['z'])
 
