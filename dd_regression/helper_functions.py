@@ -1,4 +1,6 @@
 import random
+import csv
+
 
 from qiskit import QuantumCircuit
 
@@ -148,3 +150,58 @@ def order_list_by_another_list(sublist, superlist, logging=False):
         print("re-ordered list:")
         print(result)
     return result
+
+
+def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, number_of_properties, number_of_measurements,
+                         significance_level, test_amount):
+    output_dict = dict()
+    for chaff_length in chaff_lengths:
+        for inputs_per_property in inputs_per_properties:
+            try:
+                f = open(f"{algorithm_name}_cl{chaff_length}_in{inputs_per_property}_prop{number_of_properties}_meas{number_of_measurements}_sig{significance_level}_tests{test_amount}.txt","r")
+                output = f.read().split('\n')
+                print(output)
+                output_dict[(chaff_length, inputs_per_property, "correctly found")] = output[1]
+                output_dict[(chaff_length, inputs_per_property, "expected to find")] = output[2]
+                output_dict[(chaff_length, inputs_per_property, "artifacts in output")] = output[4]
+                output_dict[(chaff_length, inputs_per_property, "artifacts added")] = output[5]
+                output_dict[(chaff_length, inputs_per_property, "time")] = output[7]
+                f.close()
+            except OSError as err:
+                output_dict[(chaff_length, inputs_per_property, "correctly found")] = ""
+                output_dict[(chaff_length, inputs_per_property, "expected to find")] = ""
+                output_dict[(chaff_length, inputs_per_property, "artifacts in output")] = ""
+                output_dict[(chaff_length, inputs_per_property, "artifacts added")] = ""
+                output_dict[(chaff_length, inputs_per_property, "time")] = ""
+
+    print(output_dict)
+    rows = []
+    row1 = ["X", ""]
+    for i in range(len(chaff_lengths)):
+        row1.append(f"{chaff_lengths[i] * 2} inserted deltas")
+    rows.append(row1)
+
+    for inputs_per_property in inputs_per_properties:
+        for outputs in ["correctly found", "expected to find", "percentage found", "artifacts in output", "artifacts added", "ratio correct/artifact", "time"]:
+            row = [""]
+            if outputs == "correctly found":
+                row[0] = f"{inputs_per_property} inputs/test "
+            row.append(outputs)
+            for chaff_length in chaff_lengths:
+                if outputs == "percentage found":
+                    correctly_found = output_dict.get((chaff_length, inputs_per_property, "correctly found"))
+                    expected_to_find = output_dict.get((chaff_length, inputs_per_property, "expected to find"))
+                    row.append(f"{(int(correctly_found)/int(expected_to_find))*100:.2f}%")
+                elif outputs == "ratio correct/artifact":
+                    correctly_found = output_dict.get((chaff_length, inputs_per_property, "correctly found"))
+                    artifacts_in_output = output_dict.get((chaff_length, inputs_per_property, "artifacts in output"))
+                    row.append(f"{(int(correctly_found)/(int(artifacts_in_output)+int(correctly_found)))*100:.2f}%")
+                else:
+                    print("got")
+                    print(output_dict.get((chaff_length, inputs_per_property, outputs)))
+                    row.append(output_dict.get((chaff_length, inputs_per_property, outputs)))
+            rows.append(row)
+
+    with open("test_results.csv", 'w', newline='') as file:
+        writer = csv.writer(file, dialect='excel')
+        writer.writerows(rows)

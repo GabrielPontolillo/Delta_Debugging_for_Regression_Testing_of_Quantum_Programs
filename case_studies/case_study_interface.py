@@ -135,13 +135,17 @@ class CaseStudyInterface(ABC):
         print(f"Tests called: {self.tests_performed}, tests executed (due to caching): {self.tests_performed_no_cache}")
         print(f"Time taken (minutes): {round(time.time() - start, 2)/60}")
 
-        f = open(f"{self.get_algorithm_name()}_chaff_length{chaff_length}_inputs_to_gen{inputs_to_generate}.txt", "w")
-        f.write(f"Expected deltas found: {expected_found}/{amount_to_find}\n")
-        # f.write(f"Tests with ALL expected deltas found: {tests_with_all_deltas_found}/{loops}, AND no unexpected: {perfect_result}/{loops}\n")
-        # f.write(f"Unexpected deltas: {artifacts_found}/{artifacts_added}, from ({tests_with_artifacts}) tests\n")
-        f.write(f"Unexpected deltas: {artifacts_found}/{artifacts_added}\n")
-        # f.write(f"Tests called: {self.tests_performed}, tests executed (due to caching): {self.tests_performed_no_cache}\n")
-        f.write(f"Time taken (minutes): {round((time.time() - start)/60, 2)}")
+        f = open(
+            f"{self.get_algorithm_name()}_cl{chaff_length}_in{inputs_to_generate}_prop{number_of_properties}_meas{number_of_measurements}_sig{significance_level}_tests{test_amount}.txt",
+            "w")
+        f.write(f"Expected deltas found:\n")
+        f.write(f"{expected_found}\n")
+        f.write(f"{amount_to_find}\n")
+        f.write(f"Unexpected deltas:\n")
+        f.write(f"{artifacts_found}\n")
+        f.write(f"{artifacts_added}\n")
+        f.write(f"Time taken (minutes):\n")
+        f.write(f"{round((time.time() - start) / 60, 2)}")
         f.close()
 
 
