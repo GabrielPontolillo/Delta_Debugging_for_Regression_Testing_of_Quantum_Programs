@@ -78,7 +78,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
             init_state = QuantumCircuit(qlength)
             init_vector = random_statevector(2)
             init_state.initialize(init_vector, 0)
-            inputted_circuit_to_test = init_state + changed_circuit
+            inputted_circuit_to_test = init_state.compose(changed_circuit)
 
             # create a new circuit with just state initialization to compare with
             qc = QuantumCircuit(1)
@@ -107,7 +107,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
         for failure in failed:
             init_state = QuantumCircuit(qlength)
             init_state.initialize(experiments[failure][0], 0)
-            inputted_circuit_to_test = init_state + list_to_circuit(failing_circ)
+            inputted_circuit_to_test = init_state.compose(list_to_circuit(failing_circ))
             # print(inputted_circuit_to_test)
             p_value_x, p_value_y, p_value_z, measurements_1, measurements_2 = assert_equal_state(
                 inputted_circuit_to_test, 2, experiments[failure][4], measurements=measurements)

@@ -124,10 +124,10 @@ class QFTSynthetic(CaseStudyInterface):
                                           vector_dict.get('11', 0), vector_dict.get('00', 0)])
 
             init_state.initialize(init_vector, init_qubit_regs)
-            inputted_circuit_to_test = init_state + changed_circuit
+            inputted_circuit_to_test = init_state.compose(changed_circuit)
 
             shifted_init_state.initialize(shifted_vector, init_qubit_regs)
-            shifted_circuit_to_test = shifted_init_state + changed_circuit
+            shifted_circuit_to_test = shifted_init_state.compose(changed_circuit)
 
             base_measurements = measure_qubits(inputted_circuit_to_test, init_qubit_regs)
             shifted_measurements = measure_qubits(shifted_circuit_to_test, init_qubit_regs)
@@ -166,7 +166,7 @@ class QFTSynthetic(CaseStudyInterface):
         for failure in failed:
             init_state = QuantumCircuit(qlength)
             init_state.initialize(experiments[failure][0], init_qubit_regs)
-            inputted_circuit_to_test = init_state + list_to_circuit(failing_circ)
+            inputted_circuit_to_test = init_state.compose(list_to_circuit(failing_circ))
             new_measurements = measure_qubits(inputted_circuit_to_test, init_qubit_regs)
             p_list = assert_equal_distributions(new_measurements, experiments[failure][7])
             verification_experiments.append(

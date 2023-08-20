@@ -111,12 +111,12 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    chaff_lengths = [4]
-    inputs_to_generate = [3]
+    chaff_lengths = [4, 2, 1, 0]
+    inputs_to_generate = [4, 2, 1]
     number_of_properties = 3
-    number_of_measurements = 1000
+    number_of_measurements = 4000
     significance_level = 0.003
-    test_amount = 10
+    test_amount = 100
 
     qpe_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate))]
     print(qpe_objs)
