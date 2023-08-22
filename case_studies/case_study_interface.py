@@ -2,8 +2,8 @@ import random
 import time
 from abc import ABC, abstractmethod
 
-from dd_regression.dd_algorithm import dd_repeat
-from dd_regression.diff_algorithm import Removal, Addition
+from dd_regression.dd_algorithm import dd_repeat, listminus, dd
+from dd_regression.diff_algorithm import Removal, Addition, diff
 from dd_regression.helper_functions import add_random_chaff, list_to_circuit
 
 
@@ -66,6 +66,7 @@ class CaseStudyInterface(ABC):
         """
         failing_circuit = self.failing_circuit()
         failing_circuit_list = [circuitIns for circuitIns in self.failing_circuit().data]
+        passing_instructions = [circuitIns for circuitIns in self.passing_circuit().data]
         expected_deltas = self.expected_deltas_to_isolate()
         expected_found = 0
         artifacts_found = 0
@@ -74,23 +75,36 @@ class CaseStudyInterface(ABC):
         tests_with_all_deltas_found = 0
         perfect_result = 0
         start = time.time()
-        print(expected_deltas)
-        print(self.passing_circuit())
-        print(failing_circuit)
+        # print(expected_deltas)
+        # print(self.passing_circuit())
+        # print(failing_circuit)
         amount_to_find = len(expected_deltas) * test_amount
         for i in range(test_amount):
             selected_properties = random.sample(self.properties, number_of_properties)
             print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
 
-            # chaff_embedded_circuit_list = failing_circuit.copy()
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
             artifacts_added += len(chaff_embedded_circuit_list) - len(failing_circuit_list)
             print(chaff_embedded_circuit)
 
-            deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate,
-                                  selected_properties=selected_properties, number_of_measurements=number_of_measurements, significance_level=significance_level)
+            fail_deltas = diff(passing_instructions, chaff_embedded_circuit_list)
+            pass_deltas = []
+            print(passing_instructions)
+            print(chaff_embedded_circuit_list)
+            print(fail_deltas)
+
+            pass_diff, fail_diff = dd(pass_deltas, fail_deltas, self.test_function, passing_instructions, chaff_embedded_circuit_list,
+                                      inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
+                                      number_of_measurements=number_of_measurements,
+                                      significance_level=significance_level)
+
+            deltas = listminus(fail_diff, pass_diff)
+
+            # deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate,
+            #                       selected_properties=selected_properties, number_of_measurements=number_of_measurements, significance_level=significance_level)
             # print(f"passing deltas {passing_deltas}")
+
             print(f"failing deltas {deltas}")
             self.test_cache = {}
 

@@ -177,6 +177,11 @@ def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, n
 
     print(output_dict)
     rows = []
+    rows.append([f"{number_of_measurements} measurements"])
+    rows.append([f"{significance_level} alpha"])
+    rows.append([f"{test_amount} repetitions"])
+    rows.append([])
+    rows.append([])
 
     for number_of_properties in numbers_of_properties:
 
@@ -214,6 +219,6 @@ def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, n
                 rows.append(row)
         rows.append([])
 
-    with open("test_results.csv", 'w', newline='') as file:
+    with open(f"test_results_{algorithm_name}_meas{number_of_measurements}_sig{significance_level}_tests{test_amount}.csv", 'w', newline='') as file:
         writer = csv.writer(file, dialect='excel')
         writer.writerows(rows)

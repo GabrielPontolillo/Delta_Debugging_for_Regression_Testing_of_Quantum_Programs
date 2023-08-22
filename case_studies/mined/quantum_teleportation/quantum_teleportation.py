@@ -23,12 +23,13 @@ backend = Aer.get_backend('aer_simulator')
 
 class QuantumTeleportationMined(CaseStudyInterface):
     def __init__(self):
-        self.properties = [EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty]
+        # self.properties = [EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty]
+        self.properties = [EqualOutputProperty]
 
     # passing and failing circuits mined from:
     # https://github.com/oreilly-qc/oreilly-qc.github.io/blob/2746abfe96b9f4a9a218dd049b06f4bca30c0681/samples/QCEngine/ch04_basic_teleportation.js
     def get_algorithm_name(self):
-        return "Quantum Teleportation Mined"
+        return "Quantum_Teleportation_Mined"
 
     # passing circuit
     @staticmethod
@@ -112,12 +113,12 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    chaff_lengths = [1, 0]
-    inputs_to_generate = [2, 1]
-    numbers_of_properties = [3, 1]
-    number_of_measurements = 100
+    chaff_lengths = [8]
+    inputs_to_generate = [2]
+    numbers_of_properties = [1]
+    number_of_measurements = 4000
     significance_level = 0.003
-    test_amount = 1
+    test_amount = 10
 
     qt_objs = [QuantumTeleportationMined() for _ in range(len(chaff_lengths) * len(inputs_to_generate) * len(numbers_of_properties))]
     print(qt_objs)

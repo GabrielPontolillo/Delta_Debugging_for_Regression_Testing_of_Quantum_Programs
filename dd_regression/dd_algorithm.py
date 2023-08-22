@@ -18,11 +18,12 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
     if logging:
         print("test pass")
     if not isinstance(test(c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
-                           number_of_measurements=number_of_measurements, significance_level=significance_level), Passed): raise AssertionError("Pass test failed")
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Passed): return [], []
+
     if logging:
         print("test fail")
     if not isinstance(test(c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
-                           number_of_measurements=number_of_measurements, significance_level=significance_level), Failed): raise AssertionError("Fail test passed")
+                           number_of_measurements=number_of_measurements, significance_level=significance_level), Failed): return [], []
 
     while True:
         delta = listminus(c_fail, c_pass)
@@ -138,7 +139,6 @@ def dd_repeat(passing_circuit, failing_circuit, test, inputs_to_generate, select
         except AssertionError as e:
             print(repr(e))
             break
-    print(delta_store)
     return delta_store, pass_deltas
 
 
