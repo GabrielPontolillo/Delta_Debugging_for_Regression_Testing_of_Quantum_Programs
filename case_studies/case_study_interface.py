@@ -78,21 +78,23 @@ class CaseStudyInterface(ABC):
         # print(expected_deltas)
         # print(self.passing_circuit())
         # print(failing_circuit)
+        print(len(expected_deltas))
+        print(test_amount)
         amount_to_find = len(expected_deltas) * test_amount
         for i in range(test_amount):
             selected_properties = random.sample(self.properties, number_of_properties)
-            print(f"loop number {i}")
+            # print(f"loop number {i}")
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
 
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
             artifacts_added += len(chaff_embedded_circuit_list) - len(failing_circuit_list)
-            print(chaff_embedded_circuit)
+            # print(chaff_embedded_circuit)
 
             fail_deltas = diff(passing_instructions, chaff_embedded_circuit_list)
             pass_deltas = []
-            print(passing_instructions)
-            print(chaff_embedded_circuit_list)
-            print(fail_deltas)
+            # print(passing_instructions)
+            # print(chaff_embedded_circuit_list)
+            # print(fail_deltas)
 
             pass_diff, fail_diff = dd(pass_deltas, fail_deltas, self.test_function, passing_instructions, chaff_embedded_circuit_list,
                                       inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
@@ -105,7 +107,7 @@ class CaseStudyInterface(ABC):
             #                       selected_properties=selected_properties, number_of_measurements=number_of_measurements, significance_level=significance_level)
             # print(f"passing deltas {passing_deltas}")
 
-            print(f"failing deltas {deltas}")
+            # print(f"failing deltas {deltas}")
             self.test_cache = {}
 
             deltas_found = 0
@@ -130,8 +132,8 @@ class CaseStudyInterface(ABC):
                                     indexes_found.append(idx)
                                     break
 
-            print(f"expected deltas {expected_deltas}")
-            print(f"deltas {deltas}")
+            # print(f"expected deltas {expected_deltas}")
+            # print(f"deltas {deltas}")
 
             expected_found += deltas_found
             assert deltas_found <= len(expected_deltas)
