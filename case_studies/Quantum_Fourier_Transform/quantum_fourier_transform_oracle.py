@@ -1,5 +1,4 @@
 import warnings
-from time import perf_counter as pc
 
 from qiskit import Aer
 
@@ -16,7 +15,7 @@ warnings.simplefilter(action='ignore', category=DeprecationWarning)
 backend = Aer.get_backend('aer_simulator')
 
 
-class TeleportationOracle(PropertyBasedTestOracleInterface):
+class QuantumFourierTransformOracle(PropertyBasedTestOracleInterface):
     @staticmethod
     def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, measurements, significance_level,
                     inputs_to_generate=25):
@@ -27,7 +26,6 @@ class TeleportationOracle(PropertyBasedTestOracleInterface):
         composed_results = []
         p_value_index_pairs = []
 
-        t0 = pc()
         # call the property_based_test method on each property class using the new circuit
         for i, property_class in enumerate(property_classes):
             # calling each property based test
@@ -53,7 +51,6 @@ class TeleportationOracle(PropertyBasedTestOracleInterface):
         # print(composed_results)
 
         # print(f"original check {pc() - t0}")
-        t0 = pc()
 
         verification_p_value_index_pairs = []
 
@@ -108,8 +105,11 @@ class TeleportationOracle(PropertyBasedTestOracleInterface):
 
         # if any state not equal, inconclusive result
         if len(verification_failed_indexes) > 0:
+            print("test inconclusive")
             return Inconclusive()
         elif len(failed_indexes) > 0:
+            print("test fail")
             return Failed()
         else:
+            print("test pass")
             return Passed()

@@ -6,7 +6,7 @@ from qiskit.quantum_info import random_statevector
 from case_studies.case_study_interface import CaseStudyInterface
 from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, holm_bonferroni_correction
 from dd_regression.diff_algorithm import Removal, apply_diffs
-from dd_regression.helper_functions import list_to_circuit, get_quantum_register
+from dd_regression.helper_functions import list_to_circuit, get_circuit_register
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -73,7 +73,7 @@ class QuantumTeleportationSynthetic(CaseStudyInterface):
         self.tests_performed_no_cache += 1
 
         changed_circuit_list = apply_diffs(passing_circ, failing_circ, deltas)
-        qlength, clength = get_quantum_register(changed_circuit_list)
+        qlength, clength = get_circuit_register(changed_circuit_list)
         changed_circuit = list_to_circuit(changed_circuit_list)
         # print(changed_circuit)
         # generate random input state vector and apply statistical test to expected output

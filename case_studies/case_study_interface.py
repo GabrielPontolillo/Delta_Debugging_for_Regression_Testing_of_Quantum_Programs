@@ -2,7 +2,7 @@ import random
 import time
 from abc import ABC, abstractmethod
 
-from dd_regression.dd_algorithm import dd_repeat, listminus, dd
+from dd_regression.dd_algorithm import list_minus, dd
 from dd_regression.diff_algorithm import Removal, Addition, diff
 from dd_regression.helper_functions import add_random_chaff, list_to_circuit
 
@@ -75,11 +75,13 @@ class CaseStudyInterface(ABC):
         tests_with_all_deltas_found = 0
         perfect_result = 0
         start = time.time()
-        # print(expected_deltas)
-        # print(self.passing_circuit())
+        print("expected deltas")
+        print(expected_deltas)
+        print("passing circuit")
+        print(self.passing_circuit())
         # print(failing_circuit)
-        print(len(expected_deltas))
-        print(test_amount)
+        # print(len(expected_deltas))
+        # print(test_amount)
         amount_to_find = len(expected_deltas) * test_amount
         for i in range(test_amount):
             selected_properties = random.sample(self.properties, number_of_properties)
@@ -88,7 +90,9 @@ class CaseStudyInterface(ABC):
 
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
             artifacts_added += len(chaff_embedded_circuit_list) - len(failing_circuit_list)
-            # print(chaff_embedded_circuit)
+
+            print("chaff_embedded_circuit")
+            print(chaff_embedded_circuit)
 
             fail_deltas = diff(passing_instructions, chaff_embedded_circuit_list)
             pass_deltas = []
@@ -101,7 +105,7 @@ class CaseStudyInterface(ABC):
                                       number_of_measurements=number_of_measurements,
                                       significance_level=significance_level)
 
-            deltas = listminus(fail_diff, pass_diff)
+            deltas = list_minus(fail_diff, pass_diff)
 
             # deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate,
             #                       selected_properties=selected_properties, number_of_measurements=number_of_measurements, significance_level=significance_level)

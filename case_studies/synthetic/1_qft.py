@@ -9,7 +9,7 @@ from case_studies.case_study_interface import CaseStudyInterface
 from dd_regression.assertions.assert_equal import holm_bonferroni_correction, \
     measure_qubits, assert_equal_distributions
 from dd_regression.diff_algorithm import Addition, Removal, apply_diffs
-from dd_regression.helper_functions import list_to_circuit, get_quantum_register
+from dd_regression.helper_functions import list_to_circuit, get_circuit_register
 from dd_regression.result_classes import Passed, Failed, Inconclusive
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -58,7 +58,7 @@ class QFTSynthetic(CaseStudyInterface):
 
     def regression_test(self, circuit_to_test):
         p_values = []
-        q_length, c_length = get_quantum_register(circuit_to_test.data)
+        q_length, c_length = get_circuit_register(circuit_to_test.data)
         for j in range(50):
             rotation = random.randrange(0, 8)
             x_circuit = QuantumCircuit(q_length)
@@ -108,7 +108,7 @@ class QFTSynthetic(CaseStudyInterface):
         if len(passing_circ) + add - rem != len(changed_circuit_list):
             raise AssertionError(f"apply_diffs has gone wrong pass len {len(passing_circ)}, add {add}, rem {rem}")
 
-        qlength, clength = get_quantum_register(changed_circuit_list)
+        qlength, clength = get_circuit_register(changed_circuit_list)
         changed_circuit = list_to_circuit(changed_circuit_list)
         # generate random input state vector and apply statistical test to expected output
         # here we need to check that qft on an arbitrary statevector, vs upshifted statevector has a phase shift of

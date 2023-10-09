@@ -1,5 +1,7 @@
 # This code is from https://blog.robertelder.org/diff-algorithm/
 # https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
+# https://florian.github.io/diffing/
+
 import time
 from dataclasses import dataclass
 
@@ -8,8 +10,15 @@ from qiskit.circuit import CircuitInstruction
 from dd_regression.helper_functions import list_to_circuit
 
 
+
 @dataclass(eq=True, frozen=True)
 class Addition:
+    """
+    Class for the addition/insertion delta,
+
+    hashing required for storing a tuple of deltas in a dictionary (for efficient test oracle result caching)
+    which is why add gate index is also stored, as CircuitInstruction cannot be hashed.
+    """
     # location of gate to insert before (from list 1)
     location_index: int
     # location of gate to insert (from list 2)
@@ -33,6 +42,9 @@ class Addition:
 
 @dataclass(eq=True, frozen=True)
 class Removal:
+    """
+        Class for the removal delta,
+    """
     # location of gate to remove (from list 1)
     location_index: int
 
@@ -41,7 +53,10 @@ class Removal:
 
 
 def compute_lcs_len(li1, li2, diagnostic=False, timeit=False):
-    """Computes a table of f(i, j) results."""
+    """
+    We generate a matrix f(i,j) containing the lengths of the longest common “substrings” of elements between the
+    serialised circuits li1, li2
+    """
     t1 = time.time()
     n = len(li1)
     m = len(li2)
@@ -72,41 +87,12 @@ def compute_lcs_len(li1, li2, diagnostic=False, timeit=False):
     return lcs
 
 
-def find_lcs_list(li1, li2):
-    """Finds the longest common subsequence of the given texts."""
-    result = []
-    lcs = compute_lcs_len(li1, li2)
-
-    i = len(li1)
-    j = len(li2)
-
-    # We iterate until we reach the end of text1 (i == 0) or text2 (j == 0)
-    while i != 0 and j != 0:
-        # If the parts of text1 and text2 that we consider are equal, then we
-        # can record this as part of the LCS, and move to i-1, j-1 since this
-        # is also how compute_lcs_len traversed.
-        if li1[i - 1] == li2[j - 1]:
-            result.append(li1[i - 1])
-            i -= 1
-            j -= 1
-        # Otherwise, compute_lcs_len went into the max direction, which is
-        # also what we do here.
-        elif lcs[i - 1][j] <= lcs[i][j - 1]:
-            j -= 1
-        else:
-            i -= 1
-
-    # Reverse results because we iterated over the texts from the end but
-    # want the results to be in forward order.
-    return reversed(result)
-
-
 def diff(li1, li2, diagnostic=False, timeit=False):
-    """Computes the optimal diff of the two given inputs.
+    """
+    Computes the diffs of the two lists.
 
-  The result is a list where all elements are Removals, Additions or
-  Unchanged elements.
-  """
+    The result is a list of Removals, Additions that convert li1, to li2
+    """
     if diagnostic:
         print(f"input 1: {li1}")
         print(f"input 2: {li2}")
@@ -155,6 +141,17 @@ def diff(li1, li2, diagnostic=False, timeit=False):
 
 
 def apply_diffs(li1, diffs, diagnostic=False, timeit=False):
+    """
+    Applies a list of diffs onto a list of elements (typically list of circuit instructions).
+
+    Args:
+        li1: list of elements
+        diffs: list of diffs to apply to li1
+    Returns:
+        A modified list of elements, where:
+            - for each Addition diff, we inserted a gate at a location in li1
+            - for each Deletion diff, we remove an element at a location from li1
+    """
     if diagnostic:
         print(f"input 1:")
         print(list_to_circuit(li1))
@@ -204,14 +201,6 @@ def apply_diffs(li1, diffs, diagnostic=False, timeit=False):
         print("output circuit")
         print(list_to_circuit(res))
     return res
-
-
-def print_deltas(li1, diffs):
-    for i in range(len(diffs)):
-        if isinstance(diffs[i], Removal):
-            print(f"remove {li1[diffs[i].location_index]} at {diffs[i].location_index}")
-        elif isinstance(diffs[i], Addition):
-            print(f"add {diffs[i].add_gate} at {diffs[i].location_index}")
 
 
 # replace deltas out should be equal to non replaced version

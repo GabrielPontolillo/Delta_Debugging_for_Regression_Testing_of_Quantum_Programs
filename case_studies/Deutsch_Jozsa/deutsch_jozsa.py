@@ -1,18 +1,14 @@
-import csv
-import multiprocessing
-import warnings
-import qiskit.quantum_info as qi
-from qiskit.circuit.random import random_circuit
 import random
+import warnings
 
-import numpy as np
-from qiskit import QuantumCircuit, Aer, execute
+import qiskit.quantum_info as qi
+from qiskit import QuantumCircuit, Aer
+from qiskit.circuit.random import random_circuit
 
 from case_studies.case_study_interface import CaseStudyInterface
-from dd_regression.helper_functions import files_to_spreadsheet
+from dd_regression.assertions.assert_equal import measure_qubits
 from dd_regression.diff_algorithm import diff
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.assertions.assert_equal import measure_qubits
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)

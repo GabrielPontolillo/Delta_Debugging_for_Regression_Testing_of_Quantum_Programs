@@ -5,7 +5,7 @@ from qiskit.quantum_info import random_statevector, random_unitary
 
 from case_studies.property_based_test_interface import PropertyBasedTestInterface
 from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state
-from dd_regression.helper_functions import get_quantum_register, list_to_circuit
+from dd_regression.helper_functions import get_circuit_register, list_to_circuit
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -25,7 +25,7 @@ class DifferentPathsSameOutcomeProperty(PropertyBasedTestInterface):
             operator = random_unitary(2)
             # print(operator)
 
-            qlength, clength = get_quantum_register(circuit)
+            qlength, clength = get_circuit_register(circuit)
             init_state = QuantumCircuit(qlength)
             init_vector = random_statevector(2)
             init_state.initialize(init_vector, 0)
@@ -33,7 +33,7 @@ class DifferentPathsSameOutcomeProperty(PropertyBasedTestInterface):
             inputted_circuit_to_test = init_state.compose(circuit)
 
             # create a new circuit with just state initialization to compare with
-            qlength, clength = get_quantum_register(circuit)
+            qlength, clength = get_circuit_register(circuit)
             qc = QuantumCircuit(qlength)
             qc.initialize(init_vector, 0)
             qc = qc.compose(circuit)
@@ -60,7 +60,7 @@ class DifferentPathsSameOutcomeProperty(PropertyBasedTestInterface):
                                extra_info=None, measurements=1000):
         # print(extra_info)
 
-        qlength, clength = get_quantum_register(original_failing_circuit)
+        qlength, clength = get_circuit_register(original_failing_circuit)
         init_state = QuantumCircuit(qlength)
 
         init_state.initialize(input_state_list, 0)

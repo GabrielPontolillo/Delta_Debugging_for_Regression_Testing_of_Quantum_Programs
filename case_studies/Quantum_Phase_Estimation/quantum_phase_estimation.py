@@ -1,22 +1,16 @@
-import csv
 import multiprocessing
 import warnings
-import qiskit.quantum_info as qi
-from qiskit.circuit.random import random_circuit
-import random
-import numpy as np
 
-from qiskit import QuantumCircuit, Aer, execute
+import numpy as np
+from qiskit import QuantumCircuit, Aer
 from qiskit.extensions import UnitaryGate
-import qiskit.quantum_info as qi
 
 from case_studies.case_study_interface import CaseStudyInterface
-from case_studies.mined.Quantum_Phase_Estimation.phase_estimation_oracle import PhaseEstimationOracle
-from case_studies.mined.Quantum_Phase_Estimation.add_eigenvectors_same_eigenvalue import AddEigenvectorsSameEigenvalueProperty
-from dd_regression.helper_functions import files_to_spreadsheet
+from case_studies.Quantum_Phase_Estimation.estimate_phase_correctly_property import EstimateExactPhase
+from case_studies.Quantum_Phase_Estimation.quantum_phase_estimation_oracle import PhaseEstimationOracle
 from dd_regression.diff_algorithm import diff
+from dd_regression.helper_functions import files_to_spreadsheet
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from dd_regression.assertions.assert_equal import measure_qubits
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -48,9 +42,8 @@ class QuantumPhaseEstimation(CaseStudyInterface):
     unitary_gate = UnitaryGate(unitary_matrix).control()
 
     def __init__(self):
-        self.properties = [AddEigenvectorsSameEigenvalueProperty]
-        # self.properties = [EqualOutputProperty]
-        pass
+        # self.properties = [AddEigenvectorsSameEigenvalueProperty]
+        self.properties = [EstimateExactPhase]
 
     def get_algorithm_name(self):
         return "Quantum_Phase_Estimation"
@@ -74,7 +67,6 @@ class QuantumPhaseEstimation(CaseStudyInterface):
             for j in range(estimation_qubits - i - 1).__reversed__():
                 qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
             qc.h(i)
-
         # print(qc.draw(vertical_compression='high', fold=300))
         return qc
 
@@ -143,58 +135,59 @@ class QuantumPhaseEstimation(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    # eigenvector_idx = 3
-    # matrix = [
+    # eigenvector_eigenvalue_dict = dict()
+    # unitary_matrix = [
     #     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     #     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     #     [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, np.cos(5*np.pi/8)-np.sin(5*np.pi/8)*1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, np.cos(6*np.pi/8)-np.sin(6*np.pi/8)*1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, np.cos(np.pi/4)-np.sin(np.pi/4)*1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, np.cos(5 * np.pi / 8) - np.sin(5 * np.pi / 8) * 1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, np.cos(6 * np.pi / 8) - np.sin(6 * np.pi / 8) * 1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, np.cos(np.pi / 4) - np.sin(np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     #     [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, np.cos(3*np.pi/8)-np.sin(3*np.pi/8)*1j, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, np.cos(2*np.pi/8)-np.sin(2*np.pi/8)*1j, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, np.cos(3 * np.pi / 8) - np.sin(3 * np.pi / 8) * 1j, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, np.cos(2 * np.pi / 8) - np.sin(2 * np.pi / 8) * 1j, 0, 0, 0, 0, 0, 0, 0],
     #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
     #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(np.pi/8)-np.sin(np.pi/8)*1j, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(np.pi/8)+np.sin(np.pi/8)*1j, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1/np.sqrt(2)-1j/np.sqrt(2), 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(7*np.pi/8)+np.sin(7*np.pi/8)*1j]
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(np.pi / 8) - np.sin(np.pi / 8) * 1j, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(np.pi / 8) + np.sin(np.pi / 8) * 1j, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 / np.sqrt(2) - 1j / np.sqrt(2), 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(7 * np.pi / 8) + np.sin(7 * np.pi / 8) * 1j]
     # ]
     #
-    # gate = UnitaryGate(matrix)
+    # unitary_gate = UnitaryGate(unitary_matrix)
     #
-    # print("values")
-    # print(np.around(np.linalg.eig(qi.Operator(gate))[0], 2))
-    # # print(np.around(np.linalg.eig(qi.Operator(gate))[1], 2))
+    # eigenvalues, eigenvectors = np.linalg.eig(qi.Operator(unitary_gate))
     #
-    # backend = Aer.get_backend("aer_simulator")
+    # for i in range(len(eigenvalues)):
+    #     eigenvalue = eigenvalues[i]
+    #     eigenvector = eigenvectors[:, i]
+    #
+    #     # Check if the eigenvalue is already in the dictionary
+    #     if eigenvalue in eigenvector_eigenvalue_dict:
+    #         eigenvector_eigenvalue_dict[eigenvalue].append(eigenvector)
+    #     else:
+    #         eigenvector_eigenvalue_dict[eigenvalue] = [eigenvector]
+    #
     # estimation_qubits = 4
     # unitary_qubits = 4
-    #
     # circ = QuantumCircuit(estimation_qubits + unitary_qubits)
-    #
-    # print("chosen vector")
-    # print(np.around(np.linalg.eig(qi.Operator(gate))[1][eigenvector_idx], 2))
-    # state = qi.Statevector(np.linalg.eig(qi.Operator(gate))[1][eigenvector_idx])
-    #
-    # print("multiplied")
-    # print(np.around(np.matmul(matrix, np.linalg.eig(qi.Operator(gate))[1][eigenvector_idx]), 2))
-    #
-    # np.matmul(matrix, np.linalg.eig(qi.Operator(gate))[1][eigenvector_idx])
-    #
-    # circ.initialize(state, [i+estimation_qubits for i in range(unitary_qubits)])
+
+    # eigenvalue = list(eigenvector_eigenvalue_dict)[5]
+    # eigenvector = (eigenvector_eigenvalue_dict[eigenvalue][0])
+    # print(f"eigenvalue {eigenvalue}")
+    # print(f"eigenvector {eigenvector}")
+
+    # circ.initialize(qi.Statevector(eigenvector), [i + estimation_qubits for i in range(unitary_qubits)])
+    # circ.initialize(qi.Statevector(eigenvector_eigenvalue_dict.items()), [i + estimation_qubits for i in range(unitary_qubits)])
     #
     # circ = circ.compose(QuantumPhaseEstimation.qpe(), [i for i in range(estimation_qubits+unitary_qubits)])
     #
     # circ.measure([i for i in range(estimation_qubits)], [i for i in range(estimation_qubits)].__reversed__())
     #
     # exec = execute(circ, backend, shots=1000).result()
+    #
     # print(exec.get_counts())
-
-    qp = QuantumPhaseEstimation()
-    print(qp.expected_deltas_to_isolate())
 
     # qp = QuantumPhaseEstimation()
     # print(qp.unitary_gate.control().definition)
@@ -227,9 +220,9 @@ if __name__ == "__main__":
     # print(passing[3].operation.definition == failing[3].operation.definition)
 
     chaff_lengths = [0]
-    inputs_to_generate = [1]
+    inputs_to_generate = [4]
     numbers_of_properties = [1]
-    number_of_measurements = 4000
+    number_of_measurements = 100
     significance_level = 0.003
     test_amount = 1
 

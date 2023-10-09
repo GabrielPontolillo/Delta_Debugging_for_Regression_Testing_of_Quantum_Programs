@@ -16,17 +16,20 @@ warnings.simplefilter(action='ignore', category=DeprecationWarning)
 backend = Aer.get_backend('aer_simulator')
 
 
-class PhaseEstimationOracle(PropertyBasedTestOracleInterface):
+class TeleportationOracle(PropertyBasedTestOracleInterface):
     @staticmethod
     def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, measurements, significance_level,
                     inputs_to_generate=25):
         # create quantum circuit by applying diffs to the passing circuit
         changed_circuit_list = apply_diffs(passing_circuit, deltas)
         changed_circuit = list_to_circuit(changed_circuit_list)
+        # print("delta applied circuit")
+        # print(changed_circuit.draw(vertical_compression='high', fold=300))
 
         composed_results = []
         p_value_index_pairs = []
 
+        t0 = pc()
         # call the property_based_test method on each property class using the new circuit
         for i, property_class in enumerate(property_classes):
             # calling each property based test
@@ -52,6 +55,7 @@ class PhaseEstimationOracle(PropertyBasedTestOracleInterface):
         # print(composed_results)
 
         # print(f"original check {pc() - t0}")
+        t0 = pc()
 
         verification_p_value_index_pairs = []
 

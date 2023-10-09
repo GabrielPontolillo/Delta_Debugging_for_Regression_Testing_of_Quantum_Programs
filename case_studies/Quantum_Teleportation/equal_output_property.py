@@ -5,7 +5,7 @@ from qiskit.quantum_info import random_statevector
 
 from case_studies.property_based_test_interface import PropertyBasedTestInterface
 from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state
-from dd_regression.helper_functions import get_quantum_register, list_to_circuit
+from dd_regression.helper_functions import get_circuit_register, list_to_circuit
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -22,7 +22,7 @@ class EqualOutputProperty(PropertyBasedTestInterface):
 
         for i in range(inputs_to_generate):
             # initialize to random state and append the applied delta modified circuit
-            qlength, clength = get_quantum_register(circuit)
+            qlength, clength = get_circuit_register(circuit)
             init_state = QuantumCircuit(qlength)
             init_vector = random_statevector(2)
             init_state.initialize(init_vector, 0)
@@ -44,7 +44,7 @@ class EqualOutputProperty(PropertyBasedTestInterface):
     @staticmethod
     def verification_heuristic(property_idx, exp_idx, original_failing_circuit, output_distribution, input_state_list,
                                extra_info=None, measurements=1000):
-        qlength, clength = get_quantum_register(original_failing_circuit)
+        qlength, clength = get_circuit_register(original_failing_circuit)
         init_state = QuantumCircuit(qlength)
 
         init_state.initialize(input_state_list, 0)

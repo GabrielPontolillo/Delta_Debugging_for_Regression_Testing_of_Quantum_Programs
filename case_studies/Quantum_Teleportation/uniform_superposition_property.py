@@ -7,7 +7,7 @@ from qiskit.quantum_info import random_statevector
 from case_studies.property_based_test_interface import PropertyBasedTestInterface
 from dd_regression.assertions.assert_equal import assert_equal_distributions, \
     measure_qubits
-from dd_regression.helper_functions import get_quantum_register, list_to_circuit
+from dd_regression.helper_functions import get_circuit_register, list_to_circuit
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
@@ -23,7 +23,7 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
 
         for i in range(inputs_to_generate):
             # initialize to random state and append the applied delta modified circuit
-            qlength, clength = get_quantum_register(circuit)
+            qlength, clength = get_circuit_register(circuit)
             init_state = QuantumCircuit(qlength)
             init_vector = random_statevector(2)
             init_state.initialize(init_vector, 0)
@@ -35,8 +35,8 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
             qc.initialize(bell_state, [0, 1])
 
             # probably do all measurements, and get only the z for this test
-            measurements_1 = measure_qubits(inputted_circuit_to_test, [0, 1], basis=['z'])
-            measurements_2 = measure_qubits(qc, [0, 1], basis=['z'])
+            measurements_1 = measure_qubits(inputted_circuit_to_test, [0, 1], basis=['z'], measurements=measurements)
+            measurements_2 = measure_qubits(qc, [0, 1], basis=['z'], measurements=measurements)
 
             # print(measurements_1)
             # print(measurements_2)
@@ -53,7 +53,7 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
     @staticmethod
     def verification_heuristic(property_idx, exp_idx, original_failing_circuit, output_distribution, input_state_list,
                                extra_info=None, measurements=1000):
-        qlength, clength = get_quantum_register(original_failing_circuit)
+        qlength, clength = get_circuit_register(original_failing_circuit)
         init_state = QuantumCircuit(qlength)
 
         # print(input_state_list)
@@ -61,7 +61,7 @@ class UniformSuperpositionProperty(PropertyBasedTestInterface):
         init_state.initialize(input_state_list, 0)
         inputted_circuit_to_test = init_state.compose(list_to_circuit(original_failing_circuit))
 
-        measurements_1 = measure_qubits(inputted_circuit_to_test, [0, 1], basis=['z'])
+        measurements_1 = measure_qubits(inputted_circuit_to_test, [0, 1], basis=['z'], measurements=measurements)
 
         # print(measurements_1)
         # print(output_distribution)

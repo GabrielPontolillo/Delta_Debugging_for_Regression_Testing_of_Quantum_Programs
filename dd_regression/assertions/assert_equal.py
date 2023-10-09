@@ -74,6 +74,8 @@ def assert_equal(circuit_1, qubit_register_1, circuit_2, qubit_register_2, measu
 # circuit 1 = tested circuit
 # circuit 2 = expected value
 def assert_equal_state(circuit_1, qubit_register_1, merged_counts_2, measurements=1000):
+    # print("orig fail")
+    # print(circuit_1.draw(vertical_compression='high', fold=300))
     circuit_1.add_register(ClassicalRegister(1))
     c1z = measure_z(circuit_1.copy(), [qubit_register_1])
     c1x = measure_x(circuit_1.copy(), [qubit_register_1])
