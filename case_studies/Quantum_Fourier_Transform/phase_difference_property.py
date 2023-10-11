@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from qiskit import QuantumCircuit, Aer
+import random
 from qiskit.extensions import UnitaryGate
 from qiskit.quantum_info import random_statevector, Statevector, Operator
 
@@ -41,14 +42,17 @@ class PhaseDifferenceProperty(PropertyBasedTestInterface):
 
             # initialize to random state and append the applied delta modified circuit
             qlength, clength = get_circuit_register(circuit)
-            init_vector = random_statevector(8)
+            init_int = random.randint(0, 7)
+            print(init_int)
+            print(format(init_int, '03b'))
+            # init_vector = random_statevector(8)
 
             init_state_circuit = QuantumCircuit(qlength)
-            init_state_circuit.initialize(init_vector, [0, 1, 2])
+            init_state_circuit.initialize(format(init_int, '03b'), [0, 1, 2])
             inputted_circuit_to_test = init_state_circuit.compose(circuit)
 
             phase_shifted_init_state_circuit = QuantumCircuit(qlength)
-            vector_dict = init_vector.to_dict()
+            # vector_dict = init_vector.to_dict()
             shifted_vector = Statevector([vector_dict.get('001', 0), vector_dict.get('010', 0),  vector_dict.get('011', 0),
                                           vector_dict.get('100', 0), vector_dict.get('101', 0),  vector_dict.get('110', 0),
                                           vector_dict.get('111', 0), vector_dict.get('000', 0)])
