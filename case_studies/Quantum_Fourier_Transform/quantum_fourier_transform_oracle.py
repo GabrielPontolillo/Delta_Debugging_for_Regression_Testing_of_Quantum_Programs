@@ -58,7 +58,6 @@ class QuantumFourierTransformOracle(PropertyBasedTestOracleInterface):
             # print(prop_idx)
             # print(exp_idx)
             # print(composed_results[prop_idx][exp_idx][3][0])
-            composed_results[prop_idx][exp_idx][0]
 
             # this is original property only returns index, intial value, p values and measurements
             if len(composed_results[prop_idx][exp_idx]) == 4:
@@ -105,11 +104,11 @@ class QuantumFourierTransformOracle(PropertyBasedTestOracleInterface):
 
         # if any state not equal, inconclusive result
         if len(verification_failed_indexes) > 0:
-            print("test inconclusive")
+            # print("--- test inconclusive ---")
             return Inconclusive()
         elif len(failed_indexes) > 0:
-            print("test fail")
+            # print("--- test fail ---")
             return Failed()
         else:
-            print("test pass")
+            # print("--- test pass ---")
             return Passed()

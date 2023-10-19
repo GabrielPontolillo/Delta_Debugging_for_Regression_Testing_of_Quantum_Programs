@@ -64,6 +64,7 @@ class CaseStudyInterface(ABC):
         -> if insert = first compare position old, then compare object by looking at prechaff circuit
          and postchaff circuit
         """
+        log = False
         failing_circuit = self.failing_circuit()
         failing_circuit_list = [circuitIns for circuitIns in self.failing_circuit().data]
         passing_instructions = [circuitIns for circuitIns in self.passing_circuit().data]
@@ -75,10 +76,11 @@ class CaseStudyInterface(ABC):
         tests_with_all_deltas_found = 0
         perfect_result = 0
         start = time.time()
-        print("expected deltas")
-        print(expected_deltas)
-        print("passing circuit")
-        print(self.passing_circuit())
+        if log:
+            print("expected deltas")
+            print(expected_deltas)
+            print("passing circuit")
+            print(self.passing_circuit())
         # print(failing_circuit)
         # print(len(expected_deltas))
         # print(test_amount)
@@ -91,8 +93,9 @@ class CaseStudyInterface(ABC):
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
             artifacts_added += len(chaff_embedded_circuit_list) - len(failing_circuit_list)
 
-            print("chaff_embedded_circuit")
-            print(chaff_embedded_circuit)
+            if log:
+                print("chaff_embedded_circuit")
+                print(chaff_embedded_circuit)
 
             fail_deltas = diff(passing_instructions, chaff_embedded_circuit_list)
             pass_deltas = []
@@ -103,7 +106,7 @@ class CaseStudyInterface(ABC):
             pass_diff, fail_diff = dd(pass_deltas, fail_deltas, self.test_function, passing_instructions, chaff_embedded_circuit_list,
                                       inputs_to_generate=inputs_to_generate, selected_properties=selected_properties,
                                       number_of_measurements=number_of_measurements,
-                                      significance_level=significance_level)
+                                      significance_level=significance_level, logging=False)
 
             deltas = list_minus(fail_diff, pass_diff)
 

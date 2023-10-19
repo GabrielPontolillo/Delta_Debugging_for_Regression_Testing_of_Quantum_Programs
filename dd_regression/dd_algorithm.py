@@ -15,23 +15,29 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
     offset = 0
     # try:
     if logging:
-        print("test pass")
+        print("run passing circumstances test")
+        print(f"c_pass {c_pass}")
     if not isinstance(test(c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
                            selected_properties=selected_properties,
                            number_of_measurements=number_of_measurements, significance_level=significance_level),
                       Passed): return [], []
 
     if logging:
-        print("test fail")
+        print("test failing circumstances test")
+        print(f"c_fail {c_fail}")
     if not isinstance(test(c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
                            selected_properties=selected_properties,
                            number_of_measurements=number_of_measurements, significance_level=significance_level),
                       Failed): return [], []
 
     while True:
+        if logging:
+            print(f"in dd loop")
         delta = list_minus(c_fail, c_pass)
 
         if n > len(delta):
+            if logging:
+                print(f"n ({n}) < delta length ({delta})")
             return c_pass, c_fail  # No further minimizing
 
         deltas = split(delta, n)
@@ -45,23 +51,31 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
             next_c_pass = order_list_by_another_list(list_union(c_pass, deltas[i]), c_fail, logging=False)
             next_c_fail = order_list_by_another_list(list_minus(c_fail, deltas[i]), c_fail, logging=False)
 
-            # should be storing the result of test
+            if logging:
+                print("passing deltas to test:")
+                print(next_c_pass)
+                print("failing deltas to test:")
+                print(next_c_fail)
+
             if isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
                                selected_properties=selected_properties,
                                number_of_measurements=number_of_measurements, significance_level=significance_level),
                           Failed) and n == 2:
                 if logging:
                     print("Reduce to subset")
+                    print("Pass test failed")
                 c_fail = next_c_pass
                 offset = i
                 reduction_found = True
                 break
+
             elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
                                  selected_properties=selected_properties,
                                  number_of_measurements=number_of_measurements, significance_level=significance_level),
                             Passed) and n == 2:
                 if logging:
                     print("Increase to subset")
+                    print("Fail Test Passed")
                 c_pass = next_c_fail
                 offset = i  # was offset = 0 in original dd()
                 reduction_found = True
@@ -72,6 +86,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
                             Failed):
                 if logging:
                     print("Reduce to complement")
+                    print("Fail test Failed")
                 c_fail = next_c_fail
                 n = max(n - 1, 2)
                 offset = i
@@ -83,6 +98,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
                             Passed):
                 if logging:
                     print("Increase to complement")
+                    print("Pass test passed")
                 c_pass = next_c_pass
                 n = max(n - 1, 2)
                 offset = i
@@ -96,6 +112,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
         if not reduction_found:  # All tests unresolved
             if logging:
                 print("No reduction found")
+                print("All tests unresolved")
 
             if n >= len(delta):
                 return c_pass, c_fail
