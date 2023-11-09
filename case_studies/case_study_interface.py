@@ -110,11 +110,6 @@ class CaseStudyInterface(ABC):
 
             deltas = list_minus(fail_diff, pass_diff)
 
-            # deltas, _ = dd_repeat(self.passing_circuit(), chaff_embedded_circuit, self.test_function, inputs_to_generate=inputs_to_generate,
-            #                       selected_properties=selected_properties, number_of_measurements=number_of_measurements, significance_level=significance_level)
-            # print(f"passing deltas {passing_deltas}")
-
-            # print(f"failing deltas {deltas}")
             self.test_cache = {}
 
             deltas_found = 0

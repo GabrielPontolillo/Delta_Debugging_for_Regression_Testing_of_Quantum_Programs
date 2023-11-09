@@ -3,6 +3,7 @@ import warnings
 from qiskit import Aer
 
 from case_studies.property_based_test_oracle_interface import PropertyBasedTestOracleInterface
+from case_studies.Quantum_Phase_Estimation.add_eigenvectors_different_eigenvalue_property import AddEigenvectorsDifferentEigenvalueProperty
 from dd_regression.assertions.assert_equal import holm_bonferroni_correction
 from dd_regression.diff_algorithm import apply_diffs
 from dd_regression.helper_functions import list_to_circuit
@@ -39,14 +40,46 @@ class PhaseEstimationOracle(PropertyBasedTestOracleInterface):
                 for p_value in experiment[2]:
                     p_value_index_pairs.append((i, experiment[0], p_value))
 
+        print("p_value_index_pairs")
+        print(inputs_to_generate)
+        print(p_value_index_pairs)
+
         # print("verification_p_value_index_pairs")
         # print(p_value_index_pairs)
 
         # using the list of pvalues, and indexes, apply holm bonferroni correction
         failed_indexes = holm_bonferroni_correction(p_value_index_pairs, significance_level)
 
-        # print("failed_indexes")
-        # print(failed_indexes)
+        print("failed_indexes")
+        print(failed_indexes)
+
+        # here we need to check all experiment indexes from the "different property"
+        if any([i.__name__ == "AddEigenvectorsDifferentEigenvalueProperty" for i in property_classes]):
+            index_of_property = None
+            for i in range(len(property_classes)):
+                if property_classes[i].__name__ == "AddEigenvectorsDifferentEigenvalueProperty":
+                    index_of_property = i
+
+            # we need to see failures from all these indexes in the keys of this dict
+            expected_failure_indexes = dict(zip([i for i in range(inputs_to_generate)], [False for i in range(inputs_to_generate)]))
+
+            print(expected_failure_indexes)
+
+            # remove keys from dict if seen
+            for prop_idx, exp_idx in failed_indexes:
+                if prop_idx == index_of_property:
+                    expected_failure_indexes.pop(exp_idx, True)
+
+            print(expected_failure_indexes)
+
+            print(failed_indexes)
+            # remove 'failures' from failed indexes
+            failed_indexes = {(item, number) for item, number in failed_indexes if item != index_of_property}
+            print(failed_indexes)
+            # add experiment indexes to failure (where failure not observed)
+            for key in expected_failure_indexes:
+                failed_indexes.add((index_of_property, key))
+            print(failed_indexes)
 
         # print(composed_results)
 
@@ -55,8 +88,6 @@ class PhaseEstimationOracle(PropertyBasedTestOracleInterface):
         verification_p_value_index_pairs = []
 
         for prop_idx, exp_idx in failed_indexes:
-            # print(prop_idx)
-            # print(exp_idx)
             # print(composed_results[prop_idx][exp_idx][3][0])
             composed_results[prop_idx][exp_idx][0]
 

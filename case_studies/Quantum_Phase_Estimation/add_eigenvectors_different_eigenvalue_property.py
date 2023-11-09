@@ -9,7 +9,7 @@ from qiskit.extensions import UnitaryGate
 
 from case_studies.property_based_test_interface import PropertyBasedTestInterface
 from dd_regression.assertions.assert_equal import assert_equal_distributions, \
-    measure_qubits
+    measure_qubits, assert_not_equal_distributions
 from dd_regression.helper_functions import get_circuit_register, list_to_circuit
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -19,7 +19,7 @@ warnings.simplefilter(action='ignore', category=DeprecationWarning)
 backend = Aer.get_backend('aer_simulator')
 
 
-class AddEigenvectorsSameEigenvalueProperty(PropertyBasedTestInterface):
+class AddEigenvectorsDifferentEigenvalueProperty(PropertyBasedTestInterface):
     """create pool of all possible eigenvectors and eigenvalues from the unitary"""
 
     @staticmethod
@@ -75,7 +75,7 @@ class AddEigenvectorsSameEigenvalueProperty(PropertyBasedTestInterface):
                 eigenvector_eigenvalue_dict[eigenvalue] = [eigenvector]
 
         filtered_dict = {key: value for key, value in eigenvector_eigenvalue_dict.items() if
-                         len(value) >= 2 and value != 0 and value != 0j}
+                         value != 0 and value != 0j}
 
         experiments = []
 
@@ -85,44 +85,46 @@ class AddEigenvectorsSameEigenvalueProperty(PropertyBasedTestInterface):
             random_index = random.randint(0, len(filtered_dict_c[random_eigenvalue]) - 1)
             random_eigenvector = filtered_dict_c[random_eigenvalue][random_index]
             print(f"1 {filtered_dict_c} i {i}")
-            filtered_dict_c[random_eigenvalue].pop(random_index)
+            del filtered_dict_c[random_eigenvalue]
             print(f"2 {filtered_dict_c} i {i}")
-            random_eigenvector2 = random.choice(filtered_dict_c[random_eigenvalue])
-            # random_eigenvector2 = eigenvectors[0]
-            added_eigenvector = np.add(random_eigenvector, random_eigenvector2)
-            normalized_eigenvector = added_eigenvector * (1 / np.sqrt(2))
+            random_eigenvalue2 = random.choice(list(filtered_dict_c.keys()))
+            random_index2 = random.randint(0, len(filtered_dict_c[random_eigenvalue2]) - 1)
+            random_eigenvector2 = filtered_dict_c[random_eigenvalue2][random_index2]
+
+            print(random_eigenvalue)
+            print(random_eigenvalue2)
 
             s1 = qi.Statevector(random_eigenvector)
-            s2 = qi.Statevector(normalized_eigenvector)
+            s2 = qi.Statevector(random_eigenvector2)
 
             # initialize to random state and append the applied delta modified circuit
             qlength, clength = get_circuit_register(circuit)
             init_state = QuantumCircuit(qlength)
-            init_state.initialize(s1, [i+estimation_qubits for i in range(unitary_qubits)])
+            init_state.initialize(s1, [i + estimation_qubits for i in range(unitary_qubits)])
             inputted_circuit_to_test = init_state.compose(circuit)
             print(inputted_circuit_to_test.draw(vertical_compression='high', fold=300))
 
             # create a new circuit with just state initialization to compare with
             init_state2 = QuantumCircuit(qlength)
-            init_state2.initialize(s2, [i+estimation_qubits for i in range(unitary_qubits)])
+            init_state2.initialize(s2, [i + estimation_qubits for i in range(unitary_qubits)])
             inputted_circuit_to_test2 = init_state2.compose(circuit.copy())
             print(inputted_circuit_to_test2.draw(vertical_compression='high', fold=300))
 
-            # probably do all measurements, and get only the z for this test
-            measurements_1 = measure_qubits(inputted_circuit_to_test, [i for i in range(estimation_qubits)], measurements=measurements)
-            measurements_2 = measure_qubits(inputted_circuit_to_test2, [i for i in range(estimation_qubits)], measurements=measurements)
+            measurements_1 = measure_qubits(inputted_circuit_to_test, [i for i in range(estimation_qubits)],
+                                            measurements=measurements)
+            measurements_2 = measure_qubits(inputted_circuit_to_test2, [i for i in range(estimation_qubits)],
+                                            measurements=measurements)
 
             print(measurements_1)
             print(measurements_2)
             # compare the output of the merged circuit to test, with an empty circuit initialised to expected state
-            p_list = assert_equal_distributions(measurements_1, measurements_2)
+            p_list = assert_not_equal_distributions(measurements_1, measurements_2)
 
             print(p_list)
 
             # add a tuple of 3 elements index, initialised vector, p values, measurements
             # make sure we pass all p_values
-            experiments.append([i, random_eigenvector, (
-            p_list[0], p_list[1], p_list[2], p_list[3], p_list[4], p_list[5]),
+            experiments.append([i, random_eigenvector, [i for i in p_list],
                                 (measurements_1, measurements_2)])
 
         return experiments
@@ -135,10 +137,11 @@ class AddEigenvectorsSameEigenvalueProperty(PropertyBasedTestInterface):
         estimation_qubits = 2
         unitary_qubits = 3
 
-        init_state.initialize(input_state_list, [i+estimation_qubits for i in range(unitary_qubits)])
+        init_state.initialize(input_state_list, [i + estimation_qubits for i in range(unitary_qubits)])
         inputted_circuit_to_test = init_state.compose(list_to_circuit(original_failing_circuit))
 
-        measurements_1 = measure_qubits(inputted_circuit_to_test, [i for i in range(estimation_qubits)], measurements=measurements)
+        measurements_1 = measure_qubits(inputted_circuit_to_test, [i for i in range(estimation_qubits)],
+                                        measurements=measurements)
 
         print("verif")
         print(measurements_1)
@@ -146,7 +149,7 @@ class AddEigenvectorsSameEigenvalueProperty(PropertyBasedTestInterface):
 
         # not quite perfect here, should be checking all basis for the qubits, but only checking z
         # make sure we are unpacking all p values from assert equal
-        p_list = assert_equal_distributions(measurements_1, output_distribution)
+        p_list = assert_not_equal_distributions(measurements_1, output_distribution)
 
         return [property_idx, exp_idx,
-                (p_list[0], p_list[1], p_list[2], p_list[3], p_list[4], p_list[5])]
+                [i for i in p_list]]

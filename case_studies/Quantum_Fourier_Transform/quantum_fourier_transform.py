@@ -8,8 +8,9 @@ from case_studies.case_study_interface import CaseStudyInterface
 from dd_regression.diff_algorithm import diff
 from dd_regression.helper_functions import files_to_spreadsheet
 from dd_regression.result_classes import Passed, Failed, Inconclusive
-from case_studies.Quantum_Fourier_Transform.phase_difference_property import PhaseDifferenceProperty
 from case_studies.Quantum_Fourier_Transform.phase_shift_property import PhaseShiftProperty
+from case_studies.Quantum_Fourier_Transform.up_shift_property import UpShiftProperty
+from case_studies.Quantum_Fourier_Transform.identity_property import IdentityProperty
 from case_studies.Quantum_Fourier_Transform.quantum_fourier_transform_oracle import QuantumFourierTransformOracle
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -21,9 +22,8 @@ backend = Aer.get_backend('aer_simulator')
 
 class QuantumFourierTransform(CaseStudyInterface):
     def __init__(self):
-        # self.properties = [AddEigenvectorsSameEigenvalueProperty]
-        # self.properties = [PhaseDifferenceProperty]
-        self.properties = [PhaseShiftProperty]
+        # self.properties = [IdentityProperty, UpShiftProperty, PhaseShiftProperty]
+        self.properties = [IdentityProperty]
 
     def get_algorithm_name(self):
         return "Quantum_Fourier_Transform"
@@ -63,6 +63,19 @@ class QuantumFourierTransform(CaseStudyInterface):
         qft_circuit.h(1)
         qft_circuit.h(2)
         return qft_circuit
+
+    # @staticmethod
+    # def qft_update():
+    #     estimation_qubits = 3
+    #     qft_circuit = QuantumCircuit(estimation_qubits)
+    #     qft_circuit.x(0)
+    #     qft_circuit.h(0)
+    #     qft_circuit.cp(np.pi / 2, 0, 1)
+    #     qft_circuit.cp(np.pi / 4, 0, 2)
+    #     qft_circuit.h(1)
+    #     qft_circuit.cp(np.pi / 2, 1, 2)
+    #     qft_circuit.h(2)
+    #     return qft_circuit
 
     def expected_deltas_to_isolate(self):
         return diff(self.passing_circuit(), self.failing_circuit())
@@ -112,7 +125,7 @@ if __name__ == "__main__":
     inconclusive = 0
     for i in range(1):
         res = QuantumFourierTransformOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), [],
-                                                        [PhaseShiftProperty],
+                                                        [UpShiftProperty],
                                                         measurements=4000, significance_level=0.003,
                                                         inputs_to_generate=1)
         if isinstance(res, Passed):
@@ -131,28 +144,8 @@ if __name__ == "__main__":
     # failing = 0
     # inconclusive = 0
     # for i in range(10):
-    #     res = QuantumFourierTransformOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), [expected[0]],
-    #                                                     [PhaseDifferenceProperty],
-    #                                                     measurements=4000, significance_level=0.003,
-    #                                                     inputs_to_generate=1)
-    #     if isinstance(res, Passed):
-    #         passing += 1
-    #     elif isinstance(res, Failed):
-    #         failing += 1
-    #     else:
-    #         inconclusive += 1
-    #     print(res)
-    #
-    # print(f"passing {passing}")
-    # print(f"failing {failing}")
-    # print(f"inconclusive {inconclusive}")
-    #
-    # passing = 0
-    # failing = 0
-    # inconclusive = 0
-    # for i in range(10):
-    #     res = QuantumFourierTransformOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), [expected[1]],
-    #                                                     [PhaseDifferenceProperty],
+    #     res = QuantumFourierTransformOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), expected,
+    #                                                     [IdentityProperty],
     #                                                     measurements=4000, significance_level=0.003,
     #                                                     inputs_to_generate=1)
     #     if isinstance(res, Passed):
@@ -167,12 +160,12 @@ if __name__ == "__main__":
     # print(f"failing {failing}")
     # print(f"inconclusive {inconclusive}")
 
-    # chaff_lengths = [4, 2, 1, 0]
-    # inputs_to_generate = [4, 2, 1]
+    # chaff_lengths = [2]
+    # inputs_to_generate = [2]
     # numbers_of_properties = [1]
     # number_of_measurements = 4000
     # significance_level = 0.003
-    # test_amount = 50
+    # test_amount = 10
     #
     # qt_objs = [QuantumFourierTransform() for _ in
     #            range(len(chaff_lengths) * len(inputs_to_generate) * len(numbers_of_properties))]
@@ -183,7 +176,7 @@ if __name__ == "__main__":
     # results = [(qt_objs[i], inputs_for_func[i][0], inputs_for_func[i][1], inputs_for_func[i][2]) for i in
     #            range(len(qt_objs))]
     # print(results)
-    # with multiprocessing.Pool() as pool:
+    # with multiprocessing.Pool(1) as pool:
     #     results = [pool.apply_async(qt_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
     #                                                                   'inputs_to_generate': inputs_for_func[i][1],
     #                                                                   'number_of_properties': inputs_for_func[i][2],

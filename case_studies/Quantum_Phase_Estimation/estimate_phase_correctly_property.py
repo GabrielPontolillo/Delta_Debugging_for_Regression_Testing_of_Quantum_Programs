@@ -6,7 +6,6 @@ import random
 import cmath
 from qiskit import QuantumCircuit, Aer, execute
 from qiskit.extensions import UnitaryGate
-from sklearn.preprocessing import normalize
 
 from case_studies.property_based_test_interface import PropertyBasedTestInterface
 from dd_regression.assertions.assert_equal import assert_equal_distributions, \
