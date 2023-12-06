@@ -22,8 +22,9 @@ backend = Aer.get_backend('aer_simulator')
 
 class QuantumFourierTransform(CaseStudyInterface):
     def __init__(self):
+        self.verification = True
+        self.fault = "A"
         self.properties = [IdentityProperty, UpShiftProperty, PhaseShiftProperty]
-        # self.properties = [IdentityProperty]
 
     def get_algorithm_name(self):
         return "Quantum_Fourier_Transform"
@@ -86,9 +87,6 @@ class QuantumFourierTransform(CaseStudyInterface):
     def failing_circuit(self):
         return self.qft_update()
 
-    def regression_test(self, circuit_to_test):
-        pass
-
     def test_function(self, deltas, src_passing, src_failing, inputs_to_generate, selected_properties,
                       number_of_measurements, significance_level):
         self.tests_performed += 1
@@ -115,11 +113,11 @@ class QuantumFourierTransform(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    qt = QuantumFourierTransform()
-    print(qt.passing_circuit())
-    print(qt.failing_circuit())
-    print(qt.expected_deltas_to_isolate())
-    expected = qt.expected_deltas_to_isolate()
+    # qt = QuantumFourierTransform()
+    # print(qt.passing_circuit())
+    # print(qt.failing_circuit())
+    # print(qt.expected_deltas_to_isolate())
+    # expected = qt.expected_deltas_to_isolate()
 
     # passing = 0
     # failing = 0

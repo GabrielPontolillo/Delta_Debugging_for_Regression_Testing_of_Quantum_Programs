@@ -43,7 +43,8 @@ class QuantumPhaseEstimation(CaseStudyInterface):
     unitary_gate = UnitaryGate(unitary_matrix).control()
 
     def __init__(self):
-        # self.properties = [AddEigenvectorsSameEigenvalueProperty]
+        self.verification = True
+        self.fault = "A"
         self.properties = [AddEigenvectorsSameEigenvalueProperty, AddEigenvectorsDifferentEigenvalueProperty,
                            EigenvectorsDoNotModifyLowerReg]
 
@@ -161,9 +162,6 @@ class QuantumPhaseEstimation(CaseStudyInterface):
     def failing_circuit(self):
         return self.qpe_update()
 
-    def regression_test(self, quantum_circuit):
-        pass
-
     def test_function(self, deltas, src_passing, src_failing, inputs_to_generate, selected_properties,
                       number_of_measurements, significance_level):
         self.tests_performed += 1
@@ -190,90 +188,6 @@ class QuantumPhaseEstimation(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    eigenvector_eigenvalue_dict = dict()
-
-    unitary_matrix = [
-        [1, 0, 0, 0, 0, 0, 0, 0],
-        [0, np.cos(2 * 1 * np.pi / 4) + np.sin(2 * 1 * np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0],
-        [0, 0, np.cos(2 * 1 * np.pi / 4) + np.sin(2 * 1 * np.pi / 4) * 1j, 0, 0, 0, 0, 0],
-        [0, 0, 0, -1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 0, np.cos(2 * 2 * np.pi / 4) + np.sin(2 * 2 * np.pi / 4) * 1j, 0],
-        [0, 0, 0, 0, 0, 0, 0, np.cos(2 * 3 * np.pi / 4) + np.sin(2 * 3 * np.pi / 4) * 1j],
-    ]
-
-    qt = QuantumPhaseEstimation()
-    print(qt.passing_circuit())
-    print(qt.failing_circuit())
-    print(qt.expected_deltas_to_isolate())
-    expected = qt.expected_deltas_to_isolate()
-
-    # unitary_matrix = [
-    #     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, np.cos(2 * 1 * np.pi / 4) + np.sin(2 * 1 * np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, np.cos(2 * 2 * np.pi / 4) + np.sin(2 * 2 * np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, np.cos(2 * 3 * np.pi / 4) + np.sin(2 * 3 * np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, np.cos(2 * 1 * np.pi / 4) + np.sin(2 * 1 * np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, np.cos(2 * 2 * np.pi / 4) + np.sin(2 * 2 * np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, np.cos(2 * 3 * np.pi / 4) + np.sin(2 * 3 * np.pi / 4) * 1j, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(2 * 1 * np.pi / 4) + np.sin(2 * 1 * np.pi / 4) * 1j, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(2 * 2 * np.pi / 4) + np.sin(2 * 2 * np.pi / 4) * 1j, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, np.cos(2 * 3 * np.pi / 4) + np.sin(2 * 3 * np.pi / 4) * 1j, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-    # ]
-
-    passing = 0
-    failing = 0
-    inconclusive = 0
-
-    for i in range(3):
-        res = PhaseEstimationOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), [],
-                                                [AddEigenvectorsDifferentEigenvalueProperty,
-                                                 AddEigenvectorsSameEigenvalueProperty,
-                                                 EigenvectorsDoNotModifyLowerReg],
-                                                measurements=4000, significance_level=0.003,
-                                                inputs_to_generate=4)
-        if isinstance(res, Passed):
-            passing += 1
-        elif isinstance(res, Failed):
-            failing += 1
-        else:
-            inconclusive += 1
-        print(res)
-
-    print(f"passing {passing}")
-    print(f"failing {failing}")
-    print(f"inconclusive {inconclusive}")
-
-    passing = 0
-    failing = 0
-    inconclusive = 0
-
-    for i in range(3):
-        res = PhaseEstimationOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), expected,
-                                                [AddEigenvectorsDifferentEigenvalueProperty,
-                                                 AddEigenvectorsSameEigenvalueProperty,
-                                                 EigenvectorsDoNotModifyLowerReg],
-                                                measurements=4000, significance_level=0.003,
-                                                inputs_to_generate=4)
-        if isinstance(res, Passed):
-            passing += 1
-        elif isinstance(res, Failed):
-            failing += 1
-        else:
-            inconclusive += 1
-        print(res)
-
-    print(f"passing {passing}")
-    print(f"failing {failing}")
-    print(f"inconclusive {inconclusive}")
-
     chaff_lengths = [8, 4, 2, 1]
     inputs_to_generate = [4, 2, 1]
     numbers_of_properties = [3, 2, 1]

@@ -22,15 +22,15 @@ backend = Aer.get_backend('aer_simulator')
 
 class QuantumTeleportationMined(CaseStudyInterface):
     def __init__(self):
+        self.verification = True
+        self.fault = "A"
         self.properties = [EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty]
-        # self.properties = [EqualOutputProperty]
 
     def get_algorithm_name(self):
-        return "Quantum_Teleportation_Mined"
+        return "Quantum_Teleportation"
 
     # passing circuit from:
     # https://github.com/oreilly-qc/oreilly-qc.github.io/commit/2746abfe96b9f4a9a218dd049b06f4bca30c0681
-    # we did not use the sa
     # passing circuit
     @staticmethod
     def quantum_teleportation():
@@ -67,17 +67,17 @@ class QuantumTeleportationMined(CaseStudyInterface):
     #     qc.cx(1, 2)
     #     return qc
 
-    @staticmethod  # 3
-    def quantum_teleportation_update():  # added x(2) at start
-        qc = QuantumCircuit(3)
-        qc.x(2)  # added here
-        qc.h(1)
-        qc.cx(1, 2)
-        qc.cx(0, 1)
-        qc.h(0)
-        qc.cp(np.pi, 0, 2)
-        qc.cx(1, 2)
-        return qc
+    # @staticmethod  # 3
+    # def quantum_teleportation_update():  # added x(2) at start
+    #     qc = QuantumCircuit(3)
+    #     qc.x(2)  # added here
+    #     qc.h(1)
+    #     qc.cx(1, 2)
+    #     qc.cx(0, 1)
+    #     qc.h(0)
+    #     qc.cp(np.pi, 0, 2)
+    #     qc.cx(1, 2)
+    #     return qc
 
     def expected_deltas_to_isolate(self):
         return diff(self.passing_circuit(), self.failing_circuit())
@@ -87,9 +87,6 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
     def failing_circuit(self):
         return self.quantum_teleportation_update()
-
-    def regression_test(self, circuit_to_test):
-        pass
 
     def test_function(self, deltas, src_passing, src_failing, inputs_to_generate, selected_properties,
                       number_of_measurements, significance_level):
@@ -117,7 +114,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    qt = QuantumTeleportationMined()
+    # qt = QuantumTeleportationMined()
     # print(qt.passing_circuit())
     # print(qt.failing_circuit())
     # print(qt.expected_deltas_to_isolate())
@@ -125,7 +122,8 @@ if __name__ == "__main__":
     # print("------------\nexpected pass -----")
     # for i in range(3):
     #     res = TeleportationOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), [],
-    #                                           [EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty],
+    #                                           [EqualOutputProperty, UniformSuperpositionProperty,
+    #                                           DifferentPathsSameOutcomeProperty],
     #                                           measurements=4000, significance_level=0.003, inputs_to_generate=1)
     #     print(res)
 

@@ -39,13 +39,6 @@ class CaseStudyInterface(ABC):
         pass
 
     @abstractmethod
-    def regression_test(self, quantum_circuit):
-        """
-        Return the (property based) regression test that may be used to test each circuit
-        """
-        pass
-
-    @abstractmethod
     def test_function(self, deltas, src_passing, src_failing, inputs_to_generate, selected_properties,
                       number_of_measurements, significance_level):
         """
