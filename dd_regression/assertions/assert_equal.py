@@ -262,42 +262,12 @@ def assert_equal_distributions_chi(distribution_list_1, distribution_list_2, bas
 
     contingency_table = [contingency_table_row1, contingency_table_row2]
 
-    print(contingency_table)
+    # print(contingency_table)
 
     # p_val = sci.chi2_contingency(contingency_table)
     p_val = sci.chisquare(contingency_table)
 
     return p_val.pvalue
-
-
-# # i.e. [dist_q1, dist_q2] and [dist2_q1, dist2_q2]
-def assert_not_equal_distributions(distribution_list_1, distribution_list_2, basis=None):
-    """inputs:
-            distribution_list_1: list containing
-       outputs:"""
-    if basis is None:
-        basis = ['x', 'y', 'z']
-
-    assert len(distribution_list_1) == len(distribution_list_2)
-
-    p_vals = []
-
-    for i, dist_1 in enumerate(distribution_list_1):
-        if 'x' in basis:
-            contingency_table_x = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["x0", "x1"]]
-            _, p_value_x = sci.fisher_exact(contingency_table_x)
-            p_vals.append(p_value_x)
-
-        if 'y' in basis:
-            contingency_table_y = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["y0", "y1"]]
-            _, p_value_y = sci.fisher_exact(contingency_table_y)
-            p_vals.append(p_value_y)
-
-        if 'z' in basis:
-            contingency_table_z = [[dist_1.get(x, 0), distribution_list_2[i].get(x, 0)] for x in ["z0", "z1"]]
-            _, p_value_z = sci.fisher_exact(contingency_table_z)
-            p_vals.append(p_value_z)
-    return p_vals
 
 
 def measure_y(circuit, qubit_indexes):

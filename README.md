@@ -3,6 +3,7 @@
 ### Repository layout and description:
 
 - **case_studies** (package): Contains experiment set-ups (passing and failing versions of a quantum algorithm, property based test oracle, regression tests) for each quantum algorithm being tested.
+    - **Quantum Algorithm Properties**: Contains a description of the properties tested by the property based tests in the **property.py* files below 
     - **(name_of_algorithm)** (package): Contains files relating to an algorithm.
         - ***oracle.py**: Contains an oracle that evaluates multiple properties, verifies the properties to identify inconclusive outcomes, and performs the Holm-Bonferroni correction to correct the error rate due to running multiple statistical tests.
         - ***property.py**: Contains an individual property based test, which contains to components: A method to run the property based test to evaluate the property, and a method to verify whether an observed failure is the same as the original failure.

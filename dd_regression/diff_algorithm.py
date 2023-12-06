@@ -1,5 +1,3 @@
-# This code is from https://blog.robertelder.org/diff-algorithm/
-# https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
 # https://florian.github.io/diffing/
 
 import time
@@ -8,7 +6,6 @@ from dataclasses import dataclass
 from qiskit.circuit import CircuitInstruction
 
 from dd_regression.helper_functions import list_to_circuit
-
 
 
 @dataclass(eq=True, frozen=True)
@@ -143,6 +140,7 @@ def diff(li1, li2, diagnostic=False, timeit=False):
 def apply_diffs(li1, diffs, diagnostic=False, timeit=False):
     """
     Applies a list of diffs onto a list of elements (typically list of circuit instructions).
+    Modified from https://blog.robertelder.org/diff-algorithm/
 
     Args:
         li1: list of elements

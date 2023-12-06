@@ -85,7 +85,6 @@ class UpShiftProperty(PropertyBasedTestInterface):
             if log:
                 print(p_val)
 
-            print(p_val)
 
             # add a tuple of 3 elements index, initialised vector, p values, measurements
             experiments.append([i, init_vect, [i for i in p_val],
@@ -117,7 +116,6 @@ class UpShiftProperty(PropertyBasedTestInterface):
 
         p_val = assert_equal_distributions(base_measurements, output_distribution)
 
-        print(p_val)
 
         return [property_idx, exp_idx,
                 [i for i in p_val]]

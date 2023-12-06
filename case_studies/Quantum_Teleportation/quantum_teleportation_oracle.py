@@ -19,7 +19,7 @@ backend = Aer.get_backend('aer_simulator')
 class TeleportationOracle(PropertyBasedTestOracleInterface):
     @staticmethod
     def test_oracle(passing_circuit, failing_circuit, deltas, property_classes, measurements, significance_level,
-                    inputs_to_generate=25):
+                    inputs_to_generate=25, verification=True):
         # create quantum circuit by applying diffs to the passing circuit
         changed_circuit_list = apply_diffs(passing_circuit, deltas)
         changed_circuit = list_to_circuit(changed_circuit_list)
@@ -48,6 +48,12 @@ class TeleportationOracle(PropertyBasedTestOracleInterface):
 
         # using the list of pvalues, and indexes, apply holm bonferroni correction
         failed_indexes = holm_bonferroni_correction(p_value_index_pairs, significance_level)
+
+        if not verification:
+            if len(failed_indexes) == 0:
+                return Passed()
+            else:
+                return Failed()
 
         # print("failed_indexes")
         # print(failed_indexes)

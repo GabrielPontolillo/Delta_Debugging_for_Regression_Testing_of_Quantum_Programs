@@ -88,7 +88,4 @@ class IdentityProperty(PropertyBasedTestInterface):
 
         p_val = assert_equal_distributions(base_measurements, output_distribution)
 
-        return [property_idx, exp_idx,
-                [i for i in p_val]]
-        # return [property_idx, exp_idx,
-        #         (p_list[0], p_list[1], p_list[2], p_list[3], p_list[4], p_list[5], p_list[6], p_list[7], p_list[8])]
+        return [property_idx, exp_idx, [i for i in p_val]]

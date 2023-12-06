@@ -127,7 +127,7 @@ def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, n
     """
     output_dict = dict()
     """
-    Iterate over each list of experiment configurations and attempt to read all combinations of files, 
+    Iterate over each list of experiment configurations and attempt to read all combinations of files,
     Store the result file contents to a dict.
     """
     for number_of_properties in numbers_of_properties:
@@ -212,3 +212,98 @@ def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, n
             'w', newline='') as file:
         writer = csv.writer(file, dialect='excel')
         writer.writerows(rows)
+
+# def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, numbers_of_properties,
+#                          number_of_measurements,
+#                          significance_level, test_amount):
+#     """
+#     Collects a set number of predictably named text files containing the results of each configuration,
+#     and generates a csv file with all aggregated data.
+#
+#     Args:
+#         algorithm_name: The algorithm name (as specified in each algorithm case study)
+#         chaff_lengths: A list of all chaff lengths iterated on for the experiments
+#         inputs_per_properties: A list of all numbers of inputs generated per properties iterated on for the experiments
+#         numbers_of_properties: A list the numbers of properties iterated on for the experiments
+#         number_of_measurements: The number of measurements to make for each property based test
+#         significance_level: alpha value for the statistical tests (Holm-Bonferroni correction)
+#         test_amount: The number of times the experiment is repeated (How many times we repeat an experiment)
+#     Returns:
+#         Saves all experiment data to a csv file.
+#     """
+#     output_dict = dict()
+#     """
+#     Iterate over each list of experiment configurations and attempt to read all combinations of files,
+#     Store the result file contents to a dict.
+#     """
+#     for number_of_properties in numbers_of_properties:
+#         for chaff_length in chaff_lengths:
+#             for inputs_per_property in inputs_per_properties:
+#                 try:
+#                     f = open(
+#                         f"{algorithm_name}_cl{chaff_length}_in{inputs_per_property}_prop{number_of_properties}_meas{number_of_measurements}_sig{significance_level}_tests{test_amount}.txt",
+#                         "r")
+#                     output = f.read().split('\n')
+#                     print(output)
+#                     output_dict[(chaff_length, inputs_per_property, number_of_properties, "correctly found")] = output[1]
+#                     output_dict[(chaff_length, inputs_per_property, number_of_properties, "artifacts in output")] = output[3]
+#                     f.close()
+#                 except OSError as err:
+#                     """
+#                     If a result file is not present, save an empty string to csv file.
+#                     """
+#                     output_dict[(chaff_length, inputs_per_property, number_of_properties, "correctly found")] = ""
+#                     output_dict[(chaff_length, inputs_per_property, number_of_properties, "artifacts in output")] = ""
+#
+#     """
+#         Store all rows in the csv file in a 2d list, and save to csv file
+#     """
+#     rows = [[f"{number_of_measurements} measurements"], [f"{significance_level} alpha"], [f"{test_amount} repetitions"],
+#             [], []]
+#
+#     for number_of_properties in numbers_of_properties:
+#
+#         row1 = [f"{number_of_properties} properties", ""]
+#         for i in range(len(chaff_lengths)):
+#             row1.append(f"{chaff_lengths[i] * 2} inserted deltas")
+#         rows.append(row1)
+#
+#         for inputs_per_property in inputs_per_properties:
+#             for outputs in ["correctly found", "artifacts in output"]:
+#                 row = [""]
+#                 if outputs == "correctly found":
+#                     row[0] = f"{inputs_per_property} inputs/test "
+#                 row.append(outputs)
+#                 for chaff_length in chaff_lengths:
+#                     if outputs == "percentage found":
+#                         correctly_found = output_dict.get(
+#                             (chaff_length, inputs_per_property, number_of_properties, "correctly found"))
+#                         expected_to_find = output_dict.get(
+#                             (chaff_length, inputs_per_property, number_of_properties, "expected to find"))
+#                         if correctly_found != "" and expected_to_find != "":
+#                             row.append(f"{(int(correctly_found) / int(expected_to_find)) * 100:.2f}%")
+#                         else:
+#                             row.append("")
+#                     elif outputs == "ratio correct/artifact":
+#                         correctly_found = output_dict.get(
+#                             (chaff_length, inputs_per_property, number_of_properties, "correctly found"))
+#                         artifacts_in_output = output_dict.get(
+#                             (chaff_length, inputs_per_property, number_of_properties, "artifacts in output"))
+#                         if correctly_found != "" and artifacts_in_output != "":
+#                             try:
+#                                 row.append(
+#                                     f"{(int(correctly_found) / (int(artifacts_in_output) + int(correctly_found))) * 100:.2f}%")
+#                             except ZeroDivisionError as err:
+#                                 row.append(f"N/A")
+#                         else:
+#                             row.append("")
+#                     else:
+#                         row.append(output_dict.get((chaff_length, inputs_per_property, number_of_properties, outputs)))
+#                 rows.append(row)
+#         rows.append([])
+#
+#     with open(
+#             f"test_results_{algorithm_name}_meas{number_of_measurements}_sig{significance_level}_tests{test_amount}.csv",
+#             'w', newline='') as file:
+#         writer = csv.writer(file, dialect='excel')
+#         writer.writerows(rows)

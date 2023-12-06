@@ -87,7 +87,10 @@ class CaseStudyInterface(ABC):
         amount_to_find = len(expected_deltas) * test_amount
         for i in range(test_amount):
             selected_properties = random.sample(self.properties, number_of_properties)
-            # print(f"loop number {i}")
+
+            if i % 10 == 0:
+                print(f"loop number {i}, chaff {chaff_length}, props {number_of_properties}, inputs {inputs_to_generate}")
+
             chaff_embedded_circuit_list = add_random_chaff(failing_circuit.copy(), chaff_length=chaff_length)
 
             chaff_embedded_circuit = list_to_circuit(chaff_embedded_circuit_list)
