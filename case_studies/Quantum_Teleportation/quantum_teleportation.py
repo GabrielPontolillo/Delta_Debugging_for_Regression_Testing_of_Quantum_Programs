@@ -21,9 +21,10 @@ backend = Aer.get_backend('aer_simulator')
 
 
 class QuantumTeleportationMined(CaseStudyInterface):
+    fault = "A"
+    apply_verification = True
+
     def __init__(self):
-        self.verification = True
-        self.fault = "A"
         self.properties = [EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty]
 
     def get_algorithm_name(self):
@@ -44,40 +45,38 @@ class QuantumTeleportationMined(CaseStudyInterface):
         qc.cx(1, 2)
         return qc
 
-    @staticmethod # 1
+    @staticmethod  # 1
     def quantum_teleportation_update():  # remove h
         qc = QuantumCircuit(3)
-        qc.h(1)
-        qc.cx(1, 2)
-        qc.cx(0, 1)
-        # removed hadamard here
-        qc.cp(np.pi, 0, 2)
-        qc.cx(1, 2)
+
+        if fault == "A":
+            # this fault removes a hadamard
+            qc.h(1)
+            qc.cx(1, 2)
+            qc.cx(0, 1)
+            # removed hadamard here
+            qc.cp(np.pi, 0, 2)
+            qc.cx(1, 2)
+        elif fault == "B":
+            # this fault adds a controlled phase
+            qc.h(1)
+            qc.cx(1, 2)
+            qc.cx(0, 1)
+            qc.h(0)
+            qc.cp(np.pi, 0, 2)
+            qc.cp(np.pi/2, 0, 2)  # added here
+            qc.cx(1, 2)
+        elif fault == "C":
+            # this fault adds an x gate
+            qc.x(2)  # added here
+            qc.h(1)
+            qc.cx(1, 2)
+            qc.cx(0, 1)
+            qc.h(0)
+            qc.cp(np.pi, 0, 2)
+            qc.cx(1, 2)
+
         return qc
-
-    # @staticmethod  # add pi/2
-    # def quantum_teleportation_update():  # 2
-    #     qc = QuantumCircuit(3)
-    #     qc.h(1)
-    #     qc.cx(1, 2)
-    #     qc.cx(0, 1)
-    #     qc.h(0)
-    #     qc.cp(np.pi, 0, 2)
-    #     qc.cp(np.pi/2, 0, 2)  # added here
-    #     qc.cx(1, 2)
-    #     return qc
-
-    # @staticmethod  # 3
-    # def quantum_teleportation_update():  # added x(2) at start
-    #     qc = QuantumCircuit(3)
-    #     qc.x(2)  # added here
-    #     qc.h(1)
-    #     qc.cx(1, 2)
-    #     qc.cx(0, 1)
-    #     qc.h(0)
-    #     qc.cp(np.pi, 0, 2)
-    #     qc.cx(1, 2)
-    #     return qc
 
     def expected_deltas_to_isolate(self):
         return diff(self.passing_circuit(), self.failing_circuit())
@@ -102,7 +101,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
                                                         inputs_to_generate=inputs_to_generate,
                                                         measurements=number_of_measurements,
                                                         significance_level=significance_level,
-                                                        verification=False
+                                                        verification=apply_verification
                                                         )
         if isinstance(oracle_result, Passed):
             self.test_cache[tuple(deltas)] = Passed()
@@ -114,19 +113,10 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    # qt = QuantumTeleportationMined()
-    # print(qt.passing_circuit())
-    # print(qt.failing_circuit())
-    # print(qt.expected_deltas_to_isolate())
-    # expected = qt.expected_deltas_to_isolate()
-    # print("------------\nexpected pass -----")
-    # for i in range(3):
-    #     res = TeleportationOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), [],
-    #                                           [EqualOutputProperty, UniformSuperpositionProperty,
-    #                                           DifferentPathsSameOutcomeProperty],
-    #                                           measurements=4000, significance_level=0.003, inputs_to_generate=1)
-    #     print(res)
-
+    # set fault = "B" or "C" to run experimnets on the other faults
+    fault = "A"
+    # set apply_verification = False to run the property based test oracle without the verification step
+    apply_verification = True
     chaff_lengths = [8, 4, 2, 1]
     inputs_to_generate = [4, 2, 1]
     numbers_of_properties = [3, 2, 1]

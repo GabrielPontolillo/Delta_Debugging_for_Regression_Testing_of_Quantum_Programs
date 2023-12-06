@@ -21,9 +21,10 @@ backend = Aer.get_backend('aer_simulator')
 
 
 class QuantumFourierTransform(CaseStudyInterface):
+    fault = "A"
+    apply_verification = True
+
     def __init__(self):
-        self.verification = True
-        self.fault = "A"
         self.properties = [IdentityProperty, UpShiftProperty, PhaseShiftProperty]
 
     def get_algorithm_name(self):
@@ -41,41 +42,34 @@ class QuantumFourierTransform(CaseStudyInterface):
                 qft_circuit.cp((np.pi / 2 ** (j + 1)), i, 1 + i + j)
         return qft_circuit
 
-    # @staticmethod # 1
-    # def qft_update(): # remove controlled pi/2 rotation
-    #     estimation_qubits = 3
-    #     qft_circuit = QuantumCircuit(estimation_qubits)
-    #     qft_circuit.h(0)
-    #     qft_circuit.cp(np.pi / 2, 0, 1)
-    #     qft_circuit.cp(np.pi / 4, 0, 2)
-    #     qft_circuit.h(1)
-    #     qft_circuit.h(2)
-    #     return qft_circuit
-
-    # @staticmethod # 2
-    # def qft_update(): # add cp 3pi/2
-    #     estimation_qubits = 3
-    #     qft_circuit = QuantumCircuit(estimation_qubits)
-    #     qft_circuit.h(0)
-    #     qft_circuit.cp(np.pi / 2, 0, 1)
-    #     qft_circuit.cp(np.pi / 4, 0, 2)
-    #     qft_circuit.h(1)
-    #     qft_circuit.cp(np.pi / 2, 1, 2)
-    #     qft_circuit.cp(3*np.pi / 2, 1, 2)
-    #     qft_circuit.h(2)
-    #     return qft_circuit
-
-    @staticmethod # 3
-    def qft_update(): # add x to register 0 at the start
+    @staticmethod
+    def qft_update():
         estimation_qubits = 3
         qft_circuit = QuantumCircuit(estimation_qubits)
-        qft_circuit.x(0)
-        qft_circuit.h(0)
-        qft_circuit.cp(np.pi / 2, 0, 1)
-        qft_circuit.cp(np.pi / 4, 0, 2)
-        qft_circuit.h(1)
-        qft_circuit.cp(np.pi / 2, 1, 2)
-        qft_circuit.h(2)
+
+        if fault == "A":  # remove controlled pi/2 rotation
+            qft_circuit.h(0)
+            qft_circuit.cp(np.pi / 2, 0, 1)
+            qft_circuit.cp(np.pi / 4, 0, 2)
+            qft_circuit.h(1)
+            # removed from here
+            qft_circuit.h(2)
+        elif fault == "B":  # add cp 3pi/2
+            qft_circuit.h(0)
+            qft_circuit.cp(np.pi / 2, 0, 1)
+            qft_circuit.cp(np.pi / 4, 0, 2)
+            qft_circuit.h(1)
+            qft_circuit.cp(np.pi / 2, 1, 2)
+            qft_circuit.cp(3*np.pi / 2, 1, 2) # added here
+            qft_circuit.h(2)
+        elif fault == "C":  # add x to register 0 at the start
+            qft_circuit.x(0)  # added here
+            qft_circuit.h(0)
+            qft_circuit.cp(np.pi / 2, 0, 1)
+            qft_circuit.cp(np.pi / 4, 0, 2)
+            qft_circuit.h(1)
+            qft_circuit.cp(np.pi / 2, 1, 2)
+            qft_circuit.h(2)
         return qft_circuit
 
     def expected_deltas_to_isolate(self):
@@ -101,7 +95,7 @@ class QuantumFourierTransform(CaseStudyInterface):
                                                                   inputs_to_generate=inputs_to_generate,
                                                                   measurements=number_of_measurements,
                                                                   significance_level=significance_level,
-                                                                  verification=False
+                                                                  verification=apply_verification
                                                                   )
         if isinstance(oracle_result, Passed):
             self.test_cache[tuple(deltas)] = Passed()
@@ -113,32 +107,10 @@ class QuantumFourierTransform(CaseStudyInterface):
 
 
 if __name__ == "__main__":
-    # qt = QuantumFourierTransform()
-    # print(qt.passing_circuit())
-    # print(qt.failing_circuit())
-    # print(qt.expected_deltas_to_isolate())
-    # expected = qt.expected_deltas_to_isolate()
-
-    # passing = 0
-    # failing = 0
-    # inconclusive = 0
-    # for i in range(10):
-    #     res = QuantumFourierTransformOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), expected,
-    #                                                     [IdentityProperty],
-    #                                                     measurements=4000, significance_level=0.003,
-    #                                                     inputs_to_generate=1)
-    #     if isinstance(res, Passed):
-    #         passing += 1
-    #     elif isinstance(res, Failed):
-    #         failing += 1
-    #     else:
-    #         inconclusive += 1
-    #     print(res)
-    #
-    # print(f"passing {passing}")
-    # print(f"failing {failing}")
-    # print(f"inconclusive {inconclusive}")
-
+    # set fault = "B" or "C" to run experimnets on the other faults
+    fault = "A"
+    # set apply_verification = False to run the property based test oracle without the verification step
+    apply_verification = True
     chaff_lengths = [8, 4, 2, 1]
     inputs_to_generate = [4, 2, 1]
     numbers_of_properties = [3, 2, 1]

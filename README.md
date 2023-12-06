@@ -19,3 +19,29 @@
     - **diff_algorithm.py**: Contains the diffing algorithm, as well as an algorithm to apply diffs to a circuit, and classes for each diff type: Addition, Removal.
     - **helper_functions.py**: Contains loose function that may be used throughout the project.
     - **result_classes.py**: Contains classes for property based test oracle outcomes: Passed, Failed and Inconclusive. 
+    
+    # qt = QuantumFourierTransform()
+    # print(qt.passing_circuit())
+    # print(qt.failing_circuit())
+    # print(qt.expected_deltas_to_isolate())
+    # expected = qt.expected_deltas_to_isolate()
+
+    # passing = 0
+    # failing = 0
+    # inconclusive = 0
+    # for i in range(10):
+    #     res = QuantumFourierTransformOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), expected,
+    #                                                     [IdentityProperty],
+    #                                                     measurements=4000, significance_level=0.003,
+    #                                                     inputs_to_generate=1)
+    #     if isinstance(res, Passed):
+    #         passing += 1
+    #     elif isinstance(res, Failed):
+    #         failing += 1
+    #     else:
+    #         inconclusive += 1
+    #     print(res)
+    #
+    # print(f"passing {passing}")
+    # print(f"failing {failing}")
+    # print(f"inconclusive {in

@@ -26,6 +26,9 @@ backend = Aer.get_backend('aer_simulator')
 
 
 class QuantumPhaseEstimation(CaseStudyInterface):
+    fault = "A"
+    apply_verification = True
+
     estimation_qubits = 2
     unitary_qubits = 3
 
@@ -43,8 +46,6 @@ class QuantumPhaseEstimation(CaseStudyInterface):
     unitary_gate = UnitaryGate(unitary_matrix).control()
 
     def __init__(self):
-        self.verification = True
-        self.fault = "A"
         self.properties = [AddEigenvectorsSameEigenvalueProperty, AddEigenvectorsDifferentEigenvalueProperty,
                            EigenvectorsDoNotModifyLowerReg]
 
@@ -74,80 +75,64 @@ class QuantumPhaseEstimation(CaseStudyInterface):
         # print(qc.draw(vertical_compression='high', fold=300))
         return qc
 
-    # @staticmethod  # 1
-    # def qpe_update():  # add x at start
-    #     estimation_qubits = QuantumPhaseEstimation.estimation_qubits
-    #     unitary_qubits = QuantumPhaseEstimation.unitary_qubits
-    #
-    #     qc = QuantumCircuit(estimation_qubits + unitary_qubits, estimation_qubits)
-    #
-    #     qc.x(estimation_qubits + unitary_qubits - 1)
-    #
-    #     for i in range(estimation_qubits):
-    #         qc.h(i)
-    #
-    #     for i in range(estimation_qubits):
-    #         for j in range(2 ** i):
-    #             qc.compose(QuantumPhaseEstimation.unitary_gate,
-    #                        [i] + [x + estimation_qubits for x in range(unitary_qubits)],
-    #                        inplace=True)
-    #
-    #     for i in range(estimation_qubits).__reversed__():
-    #         for j in range(estimation_qubits - i - 1).__reversed__():
-    #             qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
-    #         qc.h(i)
-    #
-    #     # print(qc.draw(vertical_compression='high', fold=300))
-    #     return qc
-
-    # failing circuit
-    # @staticmethod  # 2
-    # def qpe_update():  # remove 1 h gate in initial superposition
-    #     estimation_qubits = 2
-    #     unitary_qubits = 3
-    #
-    #     qc = QuantumCircuit(estimation_qubits + unitary_qubits, estimation_qubits)
-    #
-    #     for i in range(estimation_qubits):
-    #         if i == 1:
-    #             qc.h(i)
-    #
-    #     for i in range(estimation_qubits):
-    #         for j in range(2 ** i):
-    #             qc.compose(QuantumPhaseEstimation.unitary_gate,
-    #                        [i] + [x + estimation_qubits for x in range(unitary_qubits)],
-    #                        inplace=True)
-    #
-    #     for i in range(estimation_qubits).__reversed__():
-    #         for j in range(estimation_qubits - i - 1).__reversed__():
-    #             qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
-    #         qc.h(i)
-    #
-    #     # print(qc.draw(vertical_compression='high', fold=300))
-    #     return qc
-
-    @staticmethod  # 3
-    def qpe_update(): # add one h gate to the qubit after the estimation register (lower register with unitary qubits)
-        estimation_qubits = 2
-        unitary_qubits = 3
+    @staticmethod  # 1
+    def qpe_update():  # add x at start
+        estimation_qubits = QuantumPhaseEstimation.estimation_qubits
+        unitary_qubits = QuantumPhaseEstimation.unitary_qubits
 
         qc = QuantumCircuit(estimation_qubits + unitary_qubits, estimation_qubits)
 
-        for i in range(estimation_qubits+1):
-            qc.h(i)
+        if fault == "A":  # this fault adds an x at the start
 
-        for i in range(estimation_qubits):
-            for j in range(2 ** i):
-                qc.compose(QuantumPhaseEstimation.unitary_gate,
-                           [i] + [x + estimation_qubits for x in range(unitary_qubits)],
-                           inplace=True)
+            qc.x(estimation_qubits + unitary_qubits - 1)  # we add x here
 
-        for i in range(estimation_qubits).__reversed__():
-            for j in range(estimation_qubits - i - 1).__reversed__():
-                qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
-            qc.h(i)
+            for i in range(estimation_qubits):
+                qc.h(i)
 
-        # print(qc.draw(vertical_compression='high', fold=300))
+            for i in range(estimation_qubits):
+                for j in range(2 ** i):
+                    qc.compose(QuantumPhaseEstimation.unitary_gate,
+                               [i] + [x + estimation_qubits for x in range(unitary_qubits)],
+                               inplace=True)
+
+            for i in range(estimation_qubits).__reversed__():
+                for j in range(estimation_qubits - i - 1).__reversed__():
+                    qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
+                qc.h(i)
+
+        elif fault == "B":  # remove 1 H gate in initial superposition
+
+            for i in range(estimation_qubits):
+                if i == 1:  # ends up only applying the h at 1, and not register 0
+                    qc.h(i)
+
+            for i in range(estimation_qubits):
+                for j in range(2 ** i):
+                    qc.compose(QuantumPhaseEstimation.unitary_gate,
+                               [i] + [x + estimation_qubits for x in range(unitary_qubits)],
+                               inplace=True)
+
+            for i in range(estimation_qubits).__reversed__():
+                for j in range(estimation_qubits - i - 1).__reversed__():
+                    qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
+                qc.h(i)
+
+        elif fault == "C":  # add one h gate to the qubit after the estimation register (lower register with unitary qubits)
+
+            for i in range(estimation_qubits + 1):  # this causes 1 more H to be added
+                qc.h(i)
+
+            for i in range(estimation_qubits):
+                for j in range(2 ** i):
+                    qc.compose(QuantumPhaseEstimation.unitary_gate,
+                               [i] + [x + estimation_qubits for x in range(unitary_qubits)],
+                               inplace=True)
+
+            for i in range(estimation_qubits).__reversed__():
+                for j in range(estimation_qubits - i - 1).__reversed__():
+                    qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
+                qc.h(i)
+
         return qc
 
     def expected_deltas_to_isolate(self):
@@ -176,7 +161,7 @@ class QuantumPhaseEstimation(CaseStudyInterface):
                                                           inputs_to_generate=inputs_to_generate,
                                                           measurements=number_of_measurements,
                                                           significance_level=significance_level,
-                                                          verification=False
+                                                          verification=apply_verification
                                                           )
         if isinstance(oracle_result, Passed):
             self.test_cache[tuple(deltas)] = Passed()
@@ -188,6 +173,10 @@ class QuantumPhaseEstimation(CaseStudyInterface):
 
 
 if __name__ == "__main__":
+    # set fault = "B" or "C" to run experimnets on the other faults
+    fault = "A"
+    # set apply_verification = False to run the property based test oracle without the verification step
+    apply_verification = True
     chaff_lengths = [8, 4, 2, 1]
     inputs_to_generate = [4, 2, 1]
     numbers_of_properties = [3, 2, 1]
