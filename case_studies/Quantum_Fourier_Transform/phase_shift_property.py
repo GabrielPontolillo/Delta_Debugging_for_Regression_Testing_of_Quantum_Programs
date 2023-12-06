@@ -7,7 +7,7 @@ from qiskit.extensions import UnitaryGate
 from qiskit.quantum_info import random_statevector, Statevector, Operator
 
 from case_studies.property_based_test_interface import PropertyBasedTestInterface
-from dd_regression.assertions.assert_equal import assert_equal, assert_equal_state, measure_qubits, \
+from dd_regression.assertions.statistical_analysis import assert_equal, assert_equal_state, measure_qubits, \
     assert_equal_distributions
 from dd_regression.helper_functions import get_circuit_register, list_to_circuit
 

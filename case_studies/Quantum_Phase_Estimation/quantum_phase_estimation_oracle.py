@@ -4,7 +4,7 @@ from qiskit import Aer
 
 from case_studies.property_based_test_oracle_interface import PropertyBasedTestOracleInterface
 from case_studies.Quantum_Phase_Estimation.add_eigenvectors_different_eigenvalue_property import AddEigenvectorsDifferentEigenvalueProperty
-from dd_regression.assertions.assert_equal import holm_bonferroni_correction
+from dd_regression.assertions.statistical_analysis import holm_bonferroni_correction
 from dd_regression.diff_algorithm import apply_diffs
 from dd_regression.helper_functions import list_to_circuit
 from dd_regression.result_classes import Passed, Failed, Inconclusive

@@ -115,33 +115,6 @@ def assert_equal_state(circuit_1, qubit_register_1, merged_counts_2, measurement
     return p_value_x, p_value_y, p_value_z, merged_counts_1, merged_counts_2
 
 
-# circuit 1 = tested circuit
-# circuit 2 = expected value
-# def measure_qubits(circuit_1, register, measurements=1000):
-#     # receives a circuit to measure, and a list of qubit registers to measure
-#     # returns a list of measurements for respective qubits
-#     results = []
-#     circuit_1.add_register(ClassicalRegister(len(register)))
-#     c1z = measure_z(circuit_1.copy(), register)
-#     c1x = measure_x(circuit_1.copy(), register)
-#     c1y = measure_y(circuit_1, register)
-#     z_counts_1 = execute(c1z, backend, shots=measurements, memory=True).result().get_counts()
-#     x_counts_1 = execute(c1x, backend, shots=measurements, memory=True).result().get_counts()
-#     y_counts_1 = execute(c1y, backend, shots=measurements, memory=True).result().get_counts()
-#     print(z_counts_1.items())
-#     print(x_counts_1.items())
-#     print(y_counts_1.items())
-#     for i in range(len(register)):
-#         z1 = sum([v for (k, v) in z_counts_1.items() if k[-(i + 1)] == '1'])
-#         z0 = measurements - z1
-#         x1 = sum([v for (k, v) in x_counts_1.items() if k[-(i + 1)] == '1'])
-#         x0 = measurements - x1
-#         y1 = sum([v for (k, v) in y_counts_1.items() if k[-(i + 1)] == '1'])
-#         y0 = measurements - y1
-#         results.append({"x0": x0, "x1": x1, "y0": y0, "y1": y1, "z0": z0, "z1": z1})
-#
-#     return results
-
 def measure_qubits(circuit_1, register, measurements=1000, basis=None):
     # receives a circuit to measure, and a list of qubit registers to measure
     # returns a list of measurements for respective qubits
@@ -306,21 +279,6 @@ def holm_bonferroni_correction(exp_pairs, family_wise_alpha):
     for i in range(len(exp_pairs)):
         if exp_pairs[i][2] <= (family_wise_alpha / (len(exp_pairs) - i)):
             failing_indexes.add((exp_pairs[i][0], exp_pairs[i][1]))
-
-    # print("failing indexes")
-    # print(failing_indexes)
-    return failing_indexes
-
-
-# make this return a list of failures p_value, index pairs
-def holm_bonferroni_correction_old(exp_pairs, family_wise_alpha):
-    # print(exp_pairs)
-
-    failing_indexes = set()
-    exp_pairs.sort(key=lambda x: x[1])
-    for i in range(len(exp_pairs)):
-        if exp_pairs[i][1] <= (family_wise_alpha / (len(exp_pairs) - i)):
-            failing_indexes.add(exp_pairs[i][0])
 
     # print("failing indexes")
     # print(failing_indexes)

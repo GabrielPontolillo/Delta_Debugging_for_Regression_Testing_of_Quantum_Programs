@@ -1,4 +1,11 @@
-# https://florian.github.io/diffing/
+"""
+Diffing code (complute_lcs_len and diff) from:
+https://florian.github.io/diffing/
+
+Application of deltas (Apply diffs) code modified from:
+https://blog.robertelder.org/diff-algorithm/
+
+"""
 
 import time
 from dataclasses import dataclass

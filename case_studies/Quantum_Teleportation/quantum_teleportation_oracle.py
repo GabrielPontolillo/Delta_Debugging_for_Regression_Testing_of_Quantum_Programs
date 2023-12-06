@@ -4,7 +4,7 @@ from time import perf_counter as pc
 from qiskit import Aer
 
 from case_studies.property_based_test_oracle_interface import PropertyBasedTestOracleInterface
-from dd_regression.assertions.assert_equal import holm_bonferroni_correction
+from dd_regression.assertions.statistical_analysis import holm_bonferroni_correction
 from dd_regression.diff_algorithm import apply_diffs
 from dd_regression.helper_functions import list_to_circuit
 from dd_regression.result_classes import Passed, Failed, Inconclusive

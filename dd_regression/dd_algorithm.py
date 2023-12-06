@@ -1,6 +1,5 @@
 """
-   A lot of this code is from the 'Why Programs Fail' book from Andreas Zeller
-   *Some modifications made
+   Adapted from https://www.debuggingbook.org/html/DeltaDebugger.html#General-Delta-Debugging
 """
 from dd_regression.helper_functions import order_list_by_another_list
 from dd_regression.result_classes import Passed, Failed
