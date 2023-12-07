@@ -3,7 +3,7 @@
 ### Repository layout and description:
 - **Results and graphs.xslx**: Contains all experiment data, grouped in one spreadsheet. We draw from the data within the sheet to draw various graphs (featuring the figures from the paper, as well as values cited in the results section).
 
-- **properties.md**: Contains a description of the properties tested by the property based tests in the **property.py* files below 
+- **properties.ipynb**: Contains a description of the properties tested by the property based tests in the **property.py* files below 
 
 - **case_studies** (package): Contains experiment set-ups (passing and failing versions of a quantum algorithm, property based test oracle, regression tests) for each quantum algorithm being tested.
     - **(name_of_algorithm)** (package): Contains files relating to an algorithm.
@@ -37,4 +37,4 @@
  
  Each case study has a propery based test oracle, which calls 3 properties. In the folder structure, the files that contain the property based tests end in *property.py*.
  
- A detailed description on all of the tested properties can be found in the *properties.md* file as can be seen in the above structure. 
+ A detailed description on all of the tested properties can be found in the *properties.ipynb* file as can be seen in the above structure. 
