@@ -1,9 +1,11 @@
 # Delta Debugging for the Regression testing of quantum programs.
 
 ### Repository layout and description:
+- **Results and graphs.xslx**: Contains all experiment data, grouped in one spreadsheet. We draw from the data within the sheet to draw various graphs (featuring the figures from the paper, as well as values cited in the results section).
+
+- **properties.md**: Contains a description of the properties tested by the property based tests in the **property.py* files below 
 
 - **case_studies** (package): Contains experiment set-ups (passing and failing versions of a quantum algorithm, property based test oracle, regression tests) for each quantum algorithm being tested.
-    - **Quantum Algorithm Properties**: Contains a description of the properties tested by the property based tests in the **property.py* files below 
     - **(name_of_algorithm)** (package): Contains files relating to an algorithm.
         - ***oracle.py**: Contains an oracle that evaluates multiple properties, verifies the properties to identify inconclusive outcomes, and performs the Holm-Bonferroni correction to correct the error rate due to running multiple statistical tests.
         - ***property.py**: Contains an individual property based test, which contains to components: A method to run the property based test to evaluate the property, and a method to verify whether an observed failure is the same as the original failure.
@@ -20,28 +22,19 @@
     - **helper_functions.py**: Contains loose function that may be used throughout the project.
     - **result_classes.py**: Contains classes for property based test oracle outcomes: Passed, Failed and Inconclusive. 
     
-    # qt = QuantumFourierTransform()
-    # print(qt.passing_circuit())
-    # print(qt.failing_circuit())
-    # print(qt.expected_deltas_to_isolate())
-    # expected = qt.expected_deltas_to_isolate()
-
-    # passing = 0
-    # failing = 0
-    # inconclusive = 0
-    # for i in range(10):
-    #     res = QuantumFourierTransformOracle.test_oracle(qt.passing_circuit(), qt.failing_circuit(), expected,
-    #                                                     [IdentityProperty],
-    #                                                     measurements=4000, significance_level=0.003,
-    #                                                     inputs_to_generate=1)
-    #     if isinstance(res, Passed):
-    #         passing += 1
-    #     elif isinstance(res, Failed):
-    #         failing += 1
-    #     else:
-    #         inconclusive += 1
-    #     print(res)
-    #
-    # print(f"passing {passing}")
-    # print(f"failing {failing}")
-    # print(f"inconclusive {in
+------
+    
+ ### Reproducing the experiments:
+ 
+ 1) Within the (name_of_algoirthm).py files in each case study, scroll down to the "\_\_main__".
+ 2) Modify the fault = "A" variable to the fault you want to test ("A", "B", "C").
+ 3) Modify the apply_verification = True to False to turn off verification. 
+ 4) The rest of the independent variables can be modified by changing the *chaff_lengths*, *inputs_to_generate*, *numbers_of_properties* variables, but by default are lists containing all values in the paper.
+ 5) Running the file will start a multiprocessing pool utilising all threads available on the pc, and evaluate the case study with the *selected fault*, *apply verification in the property based tests as specified*, and all combinations of independent variables as in each list. it will then generate a CSV file containing the results of all experiments for that specific fault and verification combination.
+ 6) Repeat this process for all case studies, and group all CSV files as in **Results and graphs.xslx**
+ 
+ ### Properties evaluated within the property based test oracle:
+ 
+ Each case study has a propery based test oracle, which calls 3 properties. In the folder structure, the files that contain the property based tests end in *property.py*.
+ 
+ A detailed description on all of the tested properties can be found in the *properties.md* file as can be seen in the above structure. 
