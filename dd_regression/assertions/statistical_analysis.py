@@ -1,4 +1,3 @@
-# This code is modified from previous work at https://github.com/GabrielPontolillo/Quantum_Algorithm_Implementations
 import warnings
 import numpy as np
 
