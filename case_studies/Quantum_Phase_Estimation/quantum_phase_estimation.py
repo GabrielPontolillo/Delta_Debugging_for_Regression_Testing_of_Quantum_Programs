@@ -45,7 +45,9 @@ class QuantumPhaseEstimation(CaseStudyInterface):
 
     unitary_gate = UnitaryGate(unitary_matrix).control()
 
-    def __init__(self):
+    def __init__(self, fault, apply_verification):
+        self.fault = fault
+        self.apply_verification = apply_verification
         self.properties = [AddEigenvectorsSameEigenvalueProperty, AddEigenvectorsDifferentEigenvalueProperty,
                            EigenvectorsDoNotModifyLowerReg]
 
@@ -53,8 +55,7 @@ class QuantumPhaseEstimation(CaseStudyInterface):
         return "Quantum_Phase_Estimation"
 
     # passing circuit
-    @staticmethod
-    def qpe():
+    def qpe(self):
         estimation_qubits = QuantumPhaseEstimation.estimation_qubits
         unitary_qubits = QuantumPhaseEstimation.unitary_qubits
 
@@ -75,14 +76,13 @@ class QuantumPhaseEstimation(CaseStudyInterface):
         # print(qc.draw(vertical_compression='high', fold=300))
         return qc
 
-    @staticmethod  # 1
-    def qpe_update():  # add x at start
+    def qpe_update(self):  # add x at start
         estimation_qubits = QuantumPhaseEstimation.estimation_qubits
         unitary_qubits = QuantumPhaseEstimation.unitary_qubits
 
         qc = QuantumCircuit(estimation_qubits + unitary_qubits, estimation_qubits)
 
-        if fault == "A":  # this fault adds an x at the start
+        if self.fault == "A":  # this fault adds an x at the start
 
             qc.x(estimation_qubits + unitary_qubits - 1)  # we add x here
 
@@ -100,7 +100,7 @@ class QuantumPhaseEstimation(CaseStudyInterface):
                     qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
                 qc.h(i)
 
-        elif fault == "B":  # remove 1 H gate in initial superposition
+        elif self.fault == "B":  # remove 1 H gate in initial superposition
 
             for i in range(estimation_qubits):
                 if i == 1:  # ends up only applying the h at 1, and not register 0
@@ -117,7 +117,7 @@ class QuantumPhaseEstimation(CaseStudyInterface):
                     qc.cp(-(np.pi / 2 ** (j + 1)), i, 1 + i + j)
                 qc.h(i)
 
-        elif fault == "C":  # add one h gate to the qubit after the estimation register (lower register with unitary qubits)
+        elif self.fault == "C":  # add one h gate to the qubit after the estimation register (lower register with unitary qubits)
 
             for i in range(estimation_qubits + 1):  # this causes 1 more H to be added
                 qc.h(i)
@@ -161,7 +161,7 @@ class QuantumPhaseEstimation(CaseStudyInterface):
                                                           inputs_to_generate=inputs_to_generate,
                                                           measurements=number_of_measurements,
                                                           significance_level=significance_level,
-                                                          verification=apply_verification
+                                                          verification=self.apply_verification
                                                           )
         if isinstance(oracle_result, Passed):
             self.test_cache[tuple(deltas)] = Passed()
@@ -174,9 +174,10 @@ class QuantumPhaseEstimation(CaseStudyInterface):
 
 if __name__ == "__main__":
     # set fault = "B" or "C" to run experimnets on the other faults
-    fault = "A"
+    _fault = "A"
     # set apply_verification = False to run the property based test oracle without the verification step
-    apply_verification = True
+    _apply_verification = True
+
     chaff_lengths = [8, 4, 2, 1]
     inputs_to_generate = [4, 2, 1]
     numbers_of_properties = [3, 2, 1]
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     significance_level = 0.003
     test_amount = 50
 
-    qt_objs = [QuantumPhaseEstimation() for _ in
+    qt_objs = [QuantumPhaseEstimation(_fault, _apply_verification) for _ in
                range(len(chaff_lengths) * len(inputs_to_generate) * len(numbers_of_properties))]
     print(qt_objs)
     inputs_for_func = [(i1, i2, i3) for i1 in chaff_lengths for i2 in inputs_to_generate for i3 in

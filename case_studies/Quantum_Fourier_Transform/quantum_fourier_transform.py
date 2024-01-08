@@ -24,7 +24,9 @@ class QuantumFourierTransform(CaseStudyInterface):
     fault = "A"
     apply_verification = True
 
-    def __init__(self):
+    def __init__(self, fault, apply_verification):
+        self.fault = fault
+        self.apply_verification = apply_verification
         self.properties = [IdentityProperty, UpShiftProperty, PhaseShiftProperty]
 
     def get_algorithm_name(self):
@@ -32,8 +34,7 @@ class QuantumFourierTransform(CaseStudyInterface):
 
     # failing circuit without parameter input for length
     # fixed length of 3
-    @staticmethod
-    def qft():
+    def qft(self):
         estimation_qubits = 3
         qft_circuit = QuantumCircuit(estimation_qubits)
         for i in range(estimation_qubits):
@@ -42,19 +43,18 @@ class QuantumFourierTransform(CaseStudyInterface):
                 qft_circuit.cp((np.pi / 2 ** (j + 1)), i, 1 + i + j)
         return qft_circuit
 
-    @staticmethod
-    def qft_update():
+    def qft_update(self):
         estimation_qubits = 3
         qft_circuit = QuantumCircuit(estimation_qubits)
 
-        if fault == "A":  # remove controlled pi/2 rotation
+        if self.fault == "A":  # remove controlled pi/2 rotation
             qft_circuit.h(0)
             qft_circuit.cp(np.pi / 2, 0, 1)
             qft_circuit.cp(np.pi / 4, 0, 2)
             qft_circuit.h(1)
             # removed from here
             qft_circuit.h(2)
-        elif fault == "B":  # add cp 3pi/2
+        elif self.fault == "B":  # add cp 3pi/2
             qft_circuit.h(0)
             qft_circuit.cp(np.pi / 2, 0, 1)
             qft_circuit.cp(np.pi / 4, 0, 2)
@@ -62,7 +62,7 @@ class QuantumFourierTransform(CaseStudyInterface):
             qft_circuit.cp(np.pi / 2, 1, 2)
             qft_circuit.cp(3*np.pi / 2, 1, 2) # added here
             qft_circuit.h(2)
-        elif fault == "C":  # add x to register 0 at the start
+        elif self.fault == "C":  # add x to register 0 at the start
             qft_circuit.x(0)  # added here
             qft_circuit.h(0)
             qft_circuit.cp(np.pi / 2, 0, 1)
@@ -95,7 +95,7 @@ class QuantumFourierTransform(CaseStudyInterface):
                                                                   inputs_to_generate=inputs_to_generate,
                                                                   measurements=number_of_measurements,
                                                                   significance_level=significance_level,
-                                                                  verification=apply_verification
+                                                                  verification=self.apply_verification
                                                                   )
         if isinstance(oracle_result, Passed):
             self.test_cache[tuple(deltas)] = Passed()
@@ -108,9 +108,10 @@ class QuantumFourierTransform(CaseStudyInterface):
 
 if __name__ == "__main__":
     # set fault = "B" or "C" to run experimnets on the other faults
-    fault = "A"
+    _fault = "A"
     # set apply_verification = False to run the property based test oracle without the verification step
-    apply_verification = True
+    _apply_verification = True
+
     chaff_lengths = [8, 4, 2, 1]
     inputs_to_generate = [4, 2, 1]
     numbers_of_properties = [3, 2, 1]
@@ -118,7 +119,7 @@ if __name__ == "__main__":
     significance_level = 0.003
     test_amount = 50
 
-    qt_objs = [QuantumFourierTransform() for _ in
+    qt_objs = [QuantumFourierTransform(_fault, _apply_verification) for _ in
                range(len(chaff_lengths) * len(inputs_to_generate) * len(numbers_of_properties))]
     print(qt_objs)
     inputs_for_func = [(i1, i2, i3) for i1 in chaff_lengths for i2 in inputs_to_generate for i3 in

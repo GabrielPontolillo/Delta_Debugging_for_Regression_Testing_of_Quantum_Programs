@@ -24,7 +24,9 @@ class QuantumTeleportationMined(CaseStudyInterface):
     fault = "A"
     apply_verification = True
 
-    def __init__(self):
+    def __init__(self, fault, apply_verification):
+        self.fault = fault
+        self.apply_verification = apply_verification
         self.properties = [EqualOutputProperty, UniformSuperpositionProperty, DifferentPathsSameOutcomeProperty]
 
     def get_algorithm_name(self):
@@ -33,8 +35,8 @@ class QuantumTeleportationMined(CaseStudyInterface):
     # passing circuit from:
     # https://github.com/oreilly-qc/oreilly-qc.github.io/commit/2746abfe96b9f4a9a218dd049b06f4bca30c0681
     # passing circuit
-    @staticmethod
-    def quantum_teleportation():
+
+    def quantum_teleportation(self):
         # Translation of the QCengine code.
         qc = QuantumCircuit(3)
         qc.h(1)
@@ -45,11 +47,10 @@ class QuantumTeleportationMined(CaseStudyInterface):
         qc.cx(1, 2)
         return qc
 
-    @staticmethod  # 1
-    def quantum_teleportation_update():  # remove h
+    def quantum_teleportation_update(self):  # remove h
         qc = QuantumCircuit(3)
 
-        if fault == "A":
+        if self.fault == "A":
             # this fault removes a hadamard
             qc.h(1)
             qc.cx(1, 2)
@@ -57,7 +58,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
             # removed hadamard here
             qc.cp(np.pi, 0, 2)
             qc.cx(1, 2)
-        elif fault == "B":
+        elif self.fault == "B":
             # this fault adds a controlled phase
             qc.h(1)
             qc.cx(1, 2)
@@ -66,7 +67,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
             qc.cp(np.pi, 0, 2)
             qc.cp(np.pi/2, 0, 2)  # added here
             qc.cx(1, 2)
-        elif fault == "C":
+        elif self.fault == "C":
             # this fault adds an x gate
             qc.x(2)  # added here
             qc.h(1)
@@ -101,7 +102,7 @@ class QuantumTeleportationMined(CaseStudyInterface):
                                                         inputs_to_generate=inputs_to_generate,
                                                         measurements=number_of_measurements,
                                                         significance_level=significance_level,
-                                                        verification=apply_verification
+                                                        verification=self.apply_verification
                                                         )
         if isinstance(oracle_result, Passed):
             self.test_cache[tuple(deltas)] = Passed()
@@ -114,9 +115,10 @@ class QuantumTeleportationMined(CaseStudyInterface):
 
 if __name__ == "__main__":
     # set fault = "B" or "C" to run experimnets on the other faults
-    fault = "A"
+    _fault = "A"
     # set apply_verification = False to run the property based test oracle without the verification step
-    apply_verification = True
+    _apply_verification = True
+
     chaff_lengths = [8, 4, 2, 1]
     inputs_to_generate = [4, 2, 1]
     numbers_of_properties = [3, 2, 1]
@@ -124,7 +126,7 @@ if __name__ == "__main__":
     significance_level = 0.003
     test_amount = 50
 
-    qt_objs = [QuantumTeleportationMined() for _ in
+    qt_objs = [QuantumTeleportationMined(fault=_fault, apply_verification=_apply_verification) for _ in
                range(len(chaff_lengths) * len(inputs_to_generate) * len(numbers_of_properties))]
 
     print(qt_objs)
@@ -134,7 +136,7 @@ if __name__ == "__main__":
     results = [(qt_objs[i], inputs_for_func[i][0], inputs_for_func[i][1], inputs_for_func[i][2]) for i in
                range(len(qt_objs))]
     print(results)
-    with multiprocessing.Pool(14) as pool:
+    with multiprocessing.Pool() as pool:
         results = [pool.apply_async(qt_objs[i].analyse_results, kwds={'chaff_length': inputs_for_func[i][0],
                                                                       'inputs_to_generate': inputs_for_func[i][1],
                                                                       'number_of_properties': inputs_for_func[i][2],

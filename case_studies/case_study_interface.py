@@ -74,8 +74,8 @@ class CaseStudyInterface(ABC):
             print(expected_deltas)
             print("passing circuit")
             print(self.passing_circuit())
-        # print(failing_circuit)
         # print(len(expected_deltas))
+        # print(failing_circuit)
         # print(test_amount)
         amount_to_find = len(expected_deltas) * test_amount
         for i in range(test_amount):
