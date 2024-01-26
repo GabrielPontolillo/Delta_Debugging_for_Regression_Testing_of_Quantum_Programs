@@ -1,7 +1,7 @@
 # Delta Debugging for the Regression testing of quantum programs.
 
 ### Repository layout and description:
-- **Results and graphs.xslx**: Contains all experiment data, grouped in one spreadsheet. We draw from the data within the sheet to draw various graphs (featuring the figures from the paper, as well as values cited in the results section).
+- **Paper Data and Figures.xslx**: Contains all experiment data, grouped in one spreadsheet. We draw from the data within the sheet to draw various graphs (featuring the figures from the paper, as well as values cited in the results section).
 
 - **properties.ipynb**: Contains a description of the properties tested by the property based tests in the **property.py* files below 
 

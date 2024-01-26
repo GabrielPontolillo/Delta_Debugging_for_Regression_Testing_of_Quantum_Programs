@@ -51,15 +51,22 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
             next_c_fail = order_list_by_another_list(list_minus(c_fail, deltas[i]), c_fail, logging=False)
 
             if logging:
+                print(f"delta i = {i}")
+                print(deltas[i])
                 print("passing deltas to test:")
                 print(next_c_pass)
                 print("failing deltas to test:")
                 print(next_c_fail)
 
+            # if isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
+            #                    selected_properties=selected_properties,
+            #                    number_of_measurements=number_of_measurements, significance_level=significance_level),
+            #               Failed) and n == 2:
             if isinstance(test(next_c_pass, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
-                               selected_properties=selected_properties,
-                               number_of_measurements=number_of_measurements, significance_level=significance_level),
-                          Failed) and n == 2:
+                                   selected_properties=selected_properties,
+                                   number_of_measurements=number_of_measurements,
+                                   significance_level=significance_level),
+                              Failed):
                 if logging:
                     print("Reduce to subset")
                     print("Pass test failed")
@@ -68,10 +75,15 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
                 reduction_found = True
                 break
 
+            # elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
+            #                      selected_properties=selected_properties,
+            #                      number_of_measurements=number_of_measurements, significance_level=significance_level),
+            #                 Passed) and n == 2:
             elif isinstance(test(next_c_fail, source_pass, source_fail, inputs_to_generate=inputs_to_generate,
-                                 selected_properties=selected_properties,
-                                 number_of_measurements=number_of_measurements, significance_level=significance_level),
-                            Passed) and n == 2:
+                                     selected_properties=selected_properties,
+                                     number_of_measurements=number_of_measurements,
+                                     significance_level=significance_level),
+                                Passed):
                 if logging:
                     print("Increase to subset")
                     print("Fail Test Passed")
@@ -117,7 +129,7 @@ def dd(c_pass, c_fail, test, source_pass, source_fail, inputs_to_generate, selec
                 return c_pass, c_fail
 
             if logging:
-                print("Increase granularity")
+                print(f"Increase granularity to {min(n * 2, len(delta))}")
             n = min(n * 2, len(delta))
 
 

@@ -213,6 +213,23 @@ def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, n
         writer = csv.writer(file, dialect='excel')
         writer.writerows(rows)
 
+
+def select_values(filename, rows=[6, 9, 13, 16, 20, 23, 29, 32, 36, 39, 43, 46, 52, 55, 59, 62, 66, 69], start_column=2, end_column=6):
+    with open(filename, newline='') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        rows_to_write = []
+        for current_row_index, row in enumerate(csv_reader):
+            if current_row_index in rows:
+                rows_to_write.append(row[start_column:end_column + 1])
+
+    print(rows_to_write)
+
+    # rows_to_write = [[0, 1, 2, 3], [1,2,3]]
+
+    with open("grouped_" + filename, 'w', newline='') as file:
+        writer = csv.writer(file, dialect='excel')
+        writer.writerows(rows_to_write)
+
 # def files_to_spreadsheet(algorithm_name, chaff_lengths, inputs_per_properties, numbers_of_properties,
 #                          number_of_measurements,
 #                          significance_level, test_amount):
